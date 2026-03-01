@@ -26,9 +26,14 @@ backend/temp/
 # Session summaries and debug files
 *_SUMMARY.md
 *_COMPLETE.md
+*_READY*.md
 SYNC_FIX_*.md
 SETUP_CLASSES_*.md
 STEERING_FILES_*.md
+WORKSPACE_*.md
+GITHUB_READY*.md
+GITHUB_PREPARATION*.md
+FINAL_WORKSPACE*.md
 
 # ============================================
 # PYTHON
