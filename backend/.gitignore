@@ -1,0 +1,95 @@
+# Backend Specific .gitignore
+
+# ============================================
+# SENSITIVE DATA - NEVER COMMIT
+# ============================================
+
+# Environment variables with secrets
+.env
+.env.local
+.env.*.local
+
+# Database with user data and credentials
+fsm_workbench.db
+*.db
+*.sqlite
+*.sqlite3
+
+# ============================================
+# PYTHON
+# ============================================
+
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Pycache in all subdirectories
+app/**/__pycache__/
+app/core/__pycache__/
+app/models/__pycache__/
+app/modules/**/__pycache__/
+app/services/__pycache__/
+app/utils/__pycache__/
+
+# Distribution
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# ============================================
+# UPLOADED FILES
+# ============================================
+
+# User uploaded CSV files (may contain sensitive data)
+uploads/*
+!uploads/.gitkeep
+
+# ============================================
+# TEMPORARY FILES
+# ============================================
+
+# Temporary test and debug files
+temp/
+test_check_account.py
+test_sync_debug.py
+delete_test_account.py
+dependency_map.json
+
+# ============================================
+# LOGS
+# ============================================
+
+# Application logs
+*.log
+logs/
+
+# ============================================
+# TESTING
+# ============================================
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# ============================================
+# MIGRATION OUTPUTS
+# ============================================
+
+# Migration logs
+migrate_*.log
+
+# ============================================
+# BACKUP FILES
+# ============================================
+
+*.bak
+*.backup
+*.old

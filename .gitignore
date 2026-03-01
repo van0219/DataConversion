@@ -1,0 +1,245 @@
+# FSM Conversion Workbench - Root .gitignore
+
+# ============================================
+# SENSITIVE DATA - NEVER COMMIT
+# ============================================
+
+# FSM Credentials and API Keys
+*.ionapi
+Van_Test.ionapi
+backend/.env
+backend/fsm_workbench.db
+
+# Environment files with secrets
+.env
+.env.local
+.env.*.local
+
+# ============================================
+# TEMPORARY FILES
+# ============================================
+
+# Temporary workspace files
+temp/
+backend/temp/
+
+# Session summaries and debug files
+*_SUMMARY.md
+*_COMPLETE.md
+SYNC_FIX_*.md
+SETUP_CLASSES_*.md
+STEERING_FILES_*.md
+
+# ============================================
+# PYTHON
+# ============================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ============================================
+# NODE / FRONTEND
+# ============================================
+
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Production build
+frontend/dist/
+frontend/build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ============================================
+# DATABASE FILES
+# ============================================
+
+# SQLite databases (contains sensitive data)
+*.db
+*.sqlite
+*.sqlite3
+backend/fsm_workbench.db
+
+# Database backups
+*.db.backup
+*.sql.backup
+
+# ============================================
+# UPLOADED FILES
+# ============================================
+
+# User uploaded CSV files (may contain sensitive data)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Import files (may contain real data)
+Import_Files/*.csv
+Import_Files/*.xlsx
+Import_Files/*.xls
+!Import_Files/README.md
+!Import_Files/*_DEMO.csv
+!Import_Files/*_SAMPLE.csv
+
+# ============================================
+# LOGS
+# ============================================
+
+# Application logs
+*.log
+logs/
+backend/logs/
+
+# ============================================
+# TESTING
+# ============================================
+
+# Test output
+test-results/
+coverage/
+.coverage
+
+# Debug files
+debug_*.json
+debug_*.csv
+
+# ============================================
+# OPERATING SYSTEM
+# ============================================
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+.directory
+
+# ============================================
+# KIRO SPECIFIC
+# ============================================
+
+# Kiro workspace files (may contain sensitive context)
+.kiro/workspace.json
+.kiro/settings/mcp.json
+
+# Keep steering files (documentation)
+!.kiro/steering/
+
+# ============================================
+# MIGRATION SCRIPTS
+# ============================================
+
+# Keep migration scripts but ignore their outputs
+migrate_*.log
+
+# ============================================
+# DOCUMENTATION TO EXCLUDE
+# ============================================
+
+# Workspace cleanup summary (temporary)
+WORKSPACE_CLEANUP_SUMMARY.md
+
+# ============================================
+# LEGACY CODE
+# ============================================
+
+# Legacy MCP server (if moved back from temp)
+src/
+
+# ============================================
+# MISCELLANEOUS
+# ============================================
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# Compressed files
+*.zip
+*.tar.gz
+*.rar
+
+# Temporary files
+*.tmp
+*.temp
+~*

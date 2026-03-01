@@ -1,0 +1,122 @@
+from fastapi import APIRouter, Depends, HTTPException, status, Response
+from sqlalchemy.orm import Session
+from typing import List
+from app.core.database import get_db
+from app.modules.accounts.router import get_current_account_id
+from app.modules.validation.service import ValidationService
+from app.modules.validation.schemas import (
+    ValidationStartRequest,
+    ValidationProgress,
+    ValidationSummary,
+    ValidationErrorItem
+)
+
+router = APIRouter()
+
+@router.post("/start")
+async def start_validation(
+    request: ValidationStartRequest,
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """Start validation process for uploaded file"""
+    try:
+        await ValidationService.start_validation(
+            db,
+            account_id,
+            request.job_id,
+            request.business_class,
+            request.mapping,
+            request.enable_rules
+        )
+        return {"message": "Validation started", "job_id": request.job_id}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Validation failed: {str(e)}"
+        )
+
+@router.get("/{job_id}/progress", response_model=ValidationProgress)
+def get_validation_progress(
+    job_id: int,
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """Get validation progress for job"""
+    progress = ValidationService.get_progress(db, account_id, job_id)
+    
+    if not progress:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found"
+        )
+    
+    return ValidationProgress(**progress)
+
+@router.get("/{job_id}/summary", response_model=ValidationSummary)
+def get_validation_summary(
+    job_id: int,
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """Get validation summary with top errors"""
+    summary = ValidationService.get_summary(db, account_id, job_id)
+    
+    if not summary:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found"
+        )
+    
+    return ValidationSummary(**summary)
+
+@router.get("/{job_id}/errors", response_model=List[ValidationErrorItem])
+def get_validation_errors(
+    job_id: int,
+    error_type: str = None,
+    field_name: str = None,
+    limit: int = 100,
+    offset: int = 0,
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """Get validation errors with filtering"""
+    errors = ValidationService.get_errors(
+        db,
+        account_id,
+        job_id,
+        error_type,
+        field_name,
+        limit,
+        offset
+    )
+    
+    return [ValidationErrorItem(**e) for e in errors]
+
+@router.get("/{job_id}/errors/export")
+def export_validation_errors(
+    job_id: int,
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """Export validation errors as CSV"""
+    csv_content = ValidationService.export_errors_csv(db, account_id, job_id)
+    
+    if not csv_content:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No errors found for job"
+        )
+    
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f"attachment; filename=validation_errors_{job_id}.csv"
+        }
+    )
