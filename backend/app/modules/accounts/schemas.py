@@ -40,7 +40,9 @@ class AccountListItem(BaseModel):
 
 class LoginResponse(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
+    expires_in: int = 28800  # 8 hours in seconds
     account: AccountResponse
 
 class AccountUpdate(BaseModel):
@@ -50,3 +52,12 @@ class AccountUpdate(BaseModel):
     client_id: Optional[str] = None
     client_secret: Optional[str] = None
     password: Optional[str] = None
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+class RefreshTokenResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    expires_in: int = 28800  # 8 hours in seconds

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.modules.accounts.router import get_current_account_id
@@ -10,7 +10,7 @@ router = APIRouter()
 @router.post("/", response_model=UploadResponse)
 async def upload_file(
     file: UploadFile = File(...),
-    business_class: str = None,
+    business_class: str = Form(None),
     account_id: int = Depends(get_current_account_id),
     db: Session = Depends(get_db)
 ):

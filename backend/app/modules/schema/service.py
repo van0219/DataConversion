@@ -34,6 +34,7 @@ class SchemaService:
         """
         Parse local swagger file to extract schema fields.
         Looks for components.schemas.createAllFieldsMultipart.
+        Returns format compatible with OpenAPIParser.parse_schema().
         """
         try:
             # Navigate to the schema
@@ -52,27 +53,33 @@ class SchemaService:
             properties = schema.get("properties", {})
             required_fields = schema.get("required", [])
             
-            # Build parsed schema in our format
-            parsed_schema = {
-                "business_class": business_class,
-                "total_fields": len(properties),
-                "required_fields": required_fields,
-                "fields": {}
-            }
-            
-            # Convert each field
+            # Build parsed schema in OpenAPIParser format (list of field objects)
+            fields = []
             for field_name, field_def in properties.items():
-                parsed_schema["fields"][field_name] = {
+                field_info = {
+                    "name": field_name,
                     "type": field_def.get("type", "string"),
                     "required": field_name in required_fields,
                     "enum": field_def.get("enum"),
                     "pattern": field_def.get("pattern"),
+                    "format": field_def.get("format"),
+                    "maxLength": field_def.get("maxLength"),
+                    "minLength": field_def.get("minLength"),
+                    "minimum": field_def.get("minimum"),
+                    "maximum": field_def.get("maximum"),
                     "description": field_def.get("description"),
                     "example": field_def.get("example"),
                     "default": field_def.get("default")
                 }
+                fields.append(field_info)
             
-            logger.info(f"Parsed schema: {len(properties)} fields, {len(required_fields)} required")
+            parsed_schema = {
+                "business_class": business_class,
+                "fields": fields,
+                "raw_schema": schema
+            }
+            
+            logger.info(f"Parsed schema: {len(fields)} fields, {len(required_fields)} required")
             return parsed_schema
             
         except Exception as e:

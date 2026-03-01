@@ -81,6 +81,135 @@ This steering file establishes meta-rules for managing knowledge, learnings, and
 
 ## AI Assistant Guidelines for Learning Capture
 
+### Critical: Pydantic Schema Validation - CHECK SCHEMAS FIRST
+
+**RULE**: When backend returns data but frontend receives `undefined` for specific fields, check Pydantic response schemas IMMEDIATELY.
+
+**Problem Pattern**:
+- Backend service returns field in dictionary: `{"filename": "file.csv"}`
+- Frontend receives `undefined` for that field
+- Backend logs show no errors
+- API endpoint returns 200 OK
+
+**Root Cause**: Pydantic `response_model` filters out fields not defined in the schema class.
+
+**Immediate Action**:
+1. ✅ **Check the router's response_model** - Look at the endpoint decorator
+2. ✅ **Check the Pydantic schema class** - Verify all fields are defined
+3. ✅ **Add missing fields to schema** - Update the BaseModel class
+4. ✅ **Restart backend** - Uvicorn should auto-reload
+
+**Example**: Export filename issue (March 2026)
+- Backend service returned `{"filename": job.filename}` in `get_progress()`
+- Router had `response_model=ValidationProgress`
+- `ValidationProgress` schema was missing `filename: str` field
+- Pydantic filtered out the field, frontend received `undefined`
+- Solution: Added `filename: str` to `ValidationProgress` class
+
+**Code Pattern**:
+```python
+# Backend service (service.py)
+def get_progress(...) -> Dict:
+    return {
+        "job_id": job_id,
+        "filename": job.filename  # Added this field
+    }
+
+# Router (router.py)
+@router.get("/{job_id}/progress", response_model=ValidationProgress)
+def get_progress(...):
+    return ValidationService.get_progress(...)
+
+# Schema (schemas.py) - MUST MATCH SERVICE RETURN
+class ValidationProgress(BaseModel):
+    job_id: int
+    filename: str  # MUST ADD THIS!
+```
+
+**Troubleshooting Checklist**:
+1. ✅ Check backend service returns the field (add logging)
+2. ✅ Check router has `response_model` parameter
+3. ✅ Check Pydantic schema class has ALL fields
+4. ✅ Check field types match (str, int, Optional[str], etc.)
+5. ✅ Restart backend after schema changes
+
+**DO NOT**:
+- ❌ Assume backend isn't returning the data
+- ❌ Debug frontend first (if backend returns 200 OK)
+- ❌ Add complex header parsing workarounds
+- ❌ Waste time with Content-Disposition headers
+
+**DO**:
+- ✅ Check Pydantic schemas FIRST when fields are undefined
+- ✅ Verify schema matches service return dictionary
+- ✅ Use simple solutions (add field to schema)
+
+### Critical: Code Changes Not Applying - IMMEDIATE ACTION
+
+**RULE**: When code changes don't apply after editing files, do a COMPLETE CLEAN RESTART immediately. Don't waste time with incremental troubleshooting.
+
+**BUT FIRST**: Check if the issue is in BOTH frontend AND backend!
+
+**Troubleshooting Checklist**:
+1. ✅ **Check BOTH frontend and backend code** - Don't assume the issue is only in one place
+2. ✅ **Trace the complete flow** - From UI button → API call → Backend endpoint
+3. ✅ **Check for hardcoded values** - Frontend might override backend responses
+4. ✅ **Then do clean restart** if code changes aren't applying
+
+**Example**: Export filename issue
+- Backend was setting correct filename in Content-Disposition header
+- Frontend was IGNORING it and using hardcoded `validation_errors_${jobId}.csv`
+- Wasted hours troubleshooting backend when frontend was the problem
+
+**Immediate Action Sequence**:
+```powershell
+# 1. Stop ALL processes
+Get-Process python -ErrorAction SilentlyContinue | Stop-Process -Force
+
+# 2. Clear ALL Python cache
+Get-ChildItem -Path backend/app -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force
+
+# 3. Start fresh
+cd backend
+python -m uvicorn app.main:app --reload
+```
+
+**DO NOT**:
+- ❌ Try restarting just once and hope it works
+- ❌ Check if files are correct (waste of time)
+- ❌ Add debug logging to verify (adds more complexity)
+- ❌ Try multiple small restarts
+- ❌ Assume --reload flag will catch changes
+
+**DO**:
+- ✅ Kill ALL Python processes immediately
+- ✅ Clear ALL __pycache__ directories
+- ✅ Do ONE complete clean restart
+- ✅ Test immediately after restart
+
+**Why**: Python bytecode caching and multiple process instances cause code changes to not apply. A complete clean restart solves 99% of these issues immediately.
+
+### User Communication Best Practices
+
+**Rule**: When instructing users to test the application, always refer to the frontend URL, not backend API ports.
+
+**Correct Communication**:
+- ✅ "Open http://localhost:5173 in your browser to test"
+- ✅ "Refresh the frontend and try the workflow"
+- ✅ "Go to the app and upload your file"
+
+**Incorrect Communication**:
+- ❌ "The server is ready at http://localhost:8000" (backend API, not user-facing)
+- ❌ "Check port 8000" (confusing for users)
+- ❌ Mentioning backend ports when asking users to test features
+
+**Rationale**: Users interact with the frontend application, not the backend API directly. Mentioning backend ports causes confusion about which URL to use.
+
+**Application URLs**:
+- Frontend (user-facing): http://localhost:5173
+- Backend API (internal): http://localhost:8000
+- API Documentation: http://localhost:8000/docs
+
 ### When to Capture Learnings
 
 **Automatic Triggers** - Capture learnings immediately when:

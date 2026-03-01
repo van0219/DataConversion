@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import Optional, List
 from app.models.account import Account
-from app.core.security import hash_password, verify_password, create_access_token
+from app.core.security import hash_password, verify_password, create_access_token, create_refresh_token
 from app.utils.encryption import encryption
 from datetime import timedelta
 
@@ -51,8 +51,8 @@ class AccountService:
         return account
     
     @staticmethod
-    def authenticate(db: Session, account_name: str, password: str) -> Optional[str]:
-        """Authenticate account and return JWT token"""
+    def authenticate(db: Session, account_name: str, password: str) -> Optional[dict]:
+        """Authenticate account and return JWT tokens"""
         account = db.query(Account).filter(Account.account_name == account_name).first()
         
         if not account:
@@ -61,14 +61,19 @@ class AccountService:
         if not verify_password(password, account.password_hash):
             return None
         
-        # Create JWT token
+        # Create JWT tokens
         token_data = {
             "sub": str(account.id),
             "account_name": account.account_name,
             "account_id": account.id
         }
         access_token = create_access_token(token_data)
-        return access_token
+        refresh_token = create_refresh_token(token_data)
+        
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token
+        }
     
     @staticmethod
     def authenticate_account(db: Session, account_name: str, password: str) -> Optional[Account]:

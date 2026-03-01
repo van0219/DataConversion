@@ -16,6 +16,7 @@ class ValidationProgress(BaseModel):
     invalid_records: int
     current_chunk: int
     total_chunks: int
+    filename: str
 
 class ValidationErrorItem(BaseModel):
     row_number: int

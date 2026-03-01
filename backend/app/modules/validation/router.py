@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
+from app.core.logging import logger
 from app.modules.accounts.router import get_current_account_id
 from app.modules.validation.service import ValidationService
 from app.modules.validation.schemas import (
@@ -104,19 +105,45 @@ def export_validation_errors(
     account_id: int = Depends(get_current_account_id),
     db: Session = Depends(get_db)
 ):
-    """Export validation errors as CSV"""
+    """Export original CSV with ErrorMessage column added"""
+    from app.models.job import ConversionJob
+    
+    # Get job to get original filename
+    job = db.query(ConversionJob).filter(
+        ConversionJob.id == job_id,
+        ConversionJob.account_id == account_id
+    ).first()
+    
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found"
+        )
+    
     csv_content = ValidationService.export_errors_csv(db, account_id, job_id)
     
     if not csv_content:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="No errors found for job"
+            detail="No errors found for job or original file not available"
         )
+    
+    # Create filename based on original filename
+    # Example: "file.csv" -> "file_error.csv"
+    # Example: "data.xlsx" -> "data_error.xlsx"
+    original_filename = job.filename
+    logger.info(f"EXPORT DEBUG: Original filename = {original_filename}")
+    if '.' in original_filename:
+        name_part, ext_part = original_filename.rsplit('.', 1)
+        export_filename = f"{name_part}_error.{ext_part}"
+    else:
+        export_filename = f"{original_filename}_error"
+    logger.info(f"EXPORT DEBUG: Export filename = {export_filename}")
     
     return Response(
         content=csv_content,
         media_type="text/csv",
         headers={
-            "Content-Disposition": f"attachment; filename=validation_errors_{job_id}.csv"
+            "Content-Disposition": f"attachment; filename={export_filename}"
         }
     )

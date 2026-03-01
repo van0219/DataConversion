@@ -214,7 +214,8 @@ class ValidationService:
             "valid_records": job.valid_records,
             "invalid_records": job.invalid_records,
             "current_chunk": current_chunk,
-            "total_chunks": total_chunks
+            "total_chunks": total_chunks,
+            "filename": job.filename
         }
     
     @staticmethod

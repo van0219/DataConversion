@@ -90,7 +90,8 @@ class SchemaValidator:
                     field_name,
                     value,
                     field_def["pattern"],
-                    row_number
+                    row_number,
+                    field_def  # Pass field definition for description/example
                 )
                 if error:
                     errors.append(error)
@@ -213,19 +214,41 @@ class SchemaValidator:
         field_name: str,
         value: any,
         pattern: str,
-        row_number: int
+        row_number: int,
+        field_def: Dict = None
     ) -> Optional[ValidationError]:
         """Validate field value matches regex pattern"""
         value_str = str(value).strip()
         
         try:
             if not re.match(pattern, value_str):
+                # Use user-friendly description if available, otherwise show pattern
+                if field_def:
+                    description = field_def.get("description", "")
+                    example = field_def.get("example", "")
+                    
+                    logger.info(f"Pattern validation - field_def provided: description='{description}', example='{example}'")
+                    
+                    if description and example:
+                        message = f"Field '{field_name}' has invalid format. Expected: {description} (e.g., {example})"
+                    elif description:
+                        message = f"Field '{field_name}' has invalid format. Expected: {description}"
+                    elif example:
+                        message = f"Field '{field_name}' has invalid format. Example: {example}"
+                    else:
+                        message = f"Field '{field_name}' does not match required pattern: {pattern}"
+                else:
+                    logger.warning(f"Pattern validation - NO field_def provided for {field_name}")
+                    message = f"Field '{field_name}' does not match required pattern: {pattern}"
+                
+                logger.info(f"Pattern error message: {message}")
+                
                 return ValidationError(
                     row_number,
                     field_name,
                     value,
                     "pattern",
-                    f"Field '{field_name}' does not match required pattern: {pattern}"
+                    message
                 )
         except re.error as e:
             logger.error(f"Invalid regex pattern '{pattern}': {e}")

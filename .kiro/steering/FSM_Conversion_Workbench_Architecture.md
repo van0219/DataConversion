@@ -173,6 +173,69 @@ for setup_class in setup_classes:
 business_classes = ["Currency", "Vendor", "Customer"]  # Not extensible
 ```
 
+### 10. Mapping Format Consistency (CRITICAL)
+
+Frontend and backend must use consistent mapping formats. Frontend maintains TWO mapping structures for different purposes.
+
+```typescript
+// Frontend maintains two mapping structures:
+
+// 1. UI state (FSM field → CSV column) - for display
+const mapping: Record<string, string> = {
+  "SequenceNumber": "Sequence",
+  "Amount": "Amount"
+};
+
+// 2. Backend-compatible state (CSV column → FSM field object) - for API calls
+const mappingData = {
+  mapping: {
+    "Sequence": {
+      "fsm_field": "SequenceNumber",
+      "confidence": "exact",
+      "score": 0.0
+    },
+    "Amount": {
+      "fsm_field": "Amount",
+      "confidence": "exact",
+      "score": 0.0
+    }
+  }
+};
+
+// CORRECT: Send backend-compatible format to validation
+await api.post('/validation/start', {
+  mapping: mappingData.mapping  // CSV → FSM format
+});
+
+// WRONG: Send UI state format
+await api.post('/validation/start', {
+  mapping: mapping  // FSM → CSV format - will cause "string indices" error
+});
+```
+
+**Why Two Formats?**
+- UI format (FSM → CSV): Easy to display which CSV column maps to each FSM field
+- Backend format (CSV → FSM): Backend transforms CSV records by looking up each CSV column
+
+**Keeping Them in Sync**: When user manually changes mapping, update BOTH structures:
+```typescript
+// Update UI state
+updateMapping(fsmField, csvCol);
+
+// Update backend-compatible state
+setMappingData({
+  ...mappingData,
+  mapping: {
+    ...mappingData.mapping,
+    [csvCol]: {
+      fsm_field: fsmField,
+      confidence: 'manual',
+      score: 0.0
+    }
+  }
+});
+```
+
 ## Code Conventions
 
 ### Backend (Python)
@@ -384,6 +447,20 @@ npm run dev  # http://localhost:5173
 
 ### Common Issues
 
+**Pydantic schema filtering fields**: When backend returns data but frontend receives `undefined`
+- Check router's `response_model` parameter
+- Verify Pydantic schema class has ALL fields defined
+- Field types must match service return dictionary
+- Example: `ValidationProgress` missing `filename: str` field caused export filename issue
+
+**Code changes not applying**: IMMEDIATELY do complete clean restart
+```powershell
+Get-Process python | Stop-Process -Force
+Get-ChildItem -Path backend/app -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force
+cd backend
+python -m uvicorn app.main:app --reload
+```
+
 **Import errors**: Use `python -m uvicorn` instead of `uvicorn` directly
 
 **Database locked**: Close all connections, restart backend
@@ -415,6 +492,15 @@ logging.basicConfig(level=logging.DEBUG)
 **Status**: Production-ready core, demo-ready
 
 ## Recent Updates (March 1, 2026)
+
+### Validation Mapping Format Fix
+- **Issue**: Validation endpoint returned "string indices must be integers, not 'str'" error
+- **Root Cause**: Frontend was sending wrong mapping format (FSM → CSV instead of CSV → FSM)
+- **Solution**: Updated `handleStartValidation` to send `mappingData.mapping` instead of `mapping`
+- **Impact**: Validation now works correctly, successfully validates records and identifies errors
+- **Documentation**: Added Pattern #10 for mapping format consistency
+- **Test Results**: Successfully validated 20 records, identified pattern validation errors on PostingDate field
+- **Files Changed**: `frontend/src/pages/ConversionWorkflow.tsx`
 
 ### Workspace Cleanup & GitHub Preparation
 - **Workspace Organization**: Created temp/ directories for temporary files
@@ -530,4 +616,4 @@ python verify_github_ready.py
 
 ---
 
-**Version**: 2.2 (March 2026) | **Authors**: Van Anthony Silleza (FSM Consultant), Kiro AI Assistant
+**Version**: 2.3 (March 2026) | **Authors**: Van Anthony Silleza (FSM Consultant), Kiro AI Assistant

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
-from app.core.security import decode_access_token
+from app.core.security import decode_access_token, create_access_token, create_refresh_token
 from app.modules.accounts.service import AccountService
 from app.modules.accounts.schemas import (
     AccountCreate,
@@ -10,7 +10,9 @@ from app.modules.accounts.schemas import (
     AccountResponse,
     AccountListItem,
     LoginResponse,
-    AccountUpdate
+    AccountUpdate,
+    RefreshTokenRequest,
+    RefreshTokenResponse
 )
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
@@ -42,14 +44,14 @@ def get_current_account_id(
 
 @router.post("/login", response_model=LoginResponse)
 def login(login_data: AccountLogin, db: Session = Depends(get_db)):
-    """Authenticate account and return JWT token"""
-    access_token = AccountService.authenticate(
+    """Authenticate account and return JWT tokens"""
+    tokens = AccountService.authenticate(
         db,
         login_data.account_name,
         login_data.password
     )
     
-    if not access_token:
+    if not tokens:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid account name or password"
@@ -58,8 +60,57 @@ def login(login_data: AccountLogin, db: Session = Depends(get_db)):
     account = AccountService.get_account_by_name(db, login_data.account_name)
     
     return LoginResponse(
-        access_token=access_token,
+        access_token=tokens["access_token"],
+        refresh_token=tokens["refresh_token"],
         account=AccountResponse.from_orm(account)
+    )
+
+@router.post("/refresh", response_model=RefreshTokenResponse)
+def refresh_token(request: RefreshTokenRequest, db: Session = Depends(get_db)):
+    """Refresh access token using refresh token"""
+    # Decode refresh token
+    payload = decode_access_token(request.refresh_token)
+    
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token"
+        )
+    
+    # Verify it's a refresh token
+    if payload.get("type") != "refresh":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token type"
+        )
+    
+    account_id = payload.get("account_id")
+    if not account_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload"
+        )
+    
+    # Verify account still exists
+    account = AccountService.get_account_by_id(db, account_id)
+    if not account:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Account not found"
+        )
+    
+    # Create new tokens
+    token_data = {
+        "sub": str(account.id),
+        "account_name": account.account_name,
+        "account_id": account.id
+    }
+    new_access_token = create_access_token(token_data)
+    new_refresh_token = create_refresh_token(token_data)
+    
+    return RefreshTokenResponse(
+        access_token=new_access_token,
+        refresh_token=new_refresh_token
     )
 
 @router.post("/", response_model=AccountResponse, status_code=status.HTTP_201_CREATED)

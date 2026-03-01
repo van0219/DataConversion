@@ -25,6 +25,23 @@ Complete web application for Infor FSM (Financials and Supply Management) data c
 
 ### Running the Application
 
+**Option 1: Using Scripts (Recommended)**
+```bash
+# Start both servers
+.\start.ps1
+
+# Check status
+.\status.ps1
+
+# Stop both servers
+.\stop.ps1
+
+# Restart both servers
+.\restart.ps1
+```
+
+**Option 2: Manual Start**
+
 1. **Start Backend Server** (Terminal 1)
    ```bash
    cd backend
@@ -253,6 +270,25 @@ When backend is running, visit:
 - Can be safely deleted
 
 ## 📝 Recent Updates (March 1, 2026)
+
+### Validation Mapping Format Fix
+- ✅ Fixed validation endpoint "string indices" error
+- ✅ Corrected mapping format sent from frontend to backend
+- ✅ Validation pipeline now fully functional
+- ✅ Successfully validates records and identifies errors
+- ✅ Error summary and CSV export working
+
+### Token Refresh Implementation
+- ✅ Automatic token refresh on 401 errors
+- ✅ 8-hour access tokens, 30-day refresh tokens
+- ✅ Request queuing during refresh
+- ✅ Seamless user experience
+
+### Upload & Mapping Enhancements
+- ✅ Fixed FormData handling in upload endpoint
+- ✅ Fixed Content-Type header issues
+- ✅ Added searchable dropdown for manual field mapping
+- ✅ Equal-width column layout with proper alignment
 
 ### Setup Data Sync Fix
 - ✅ Fixed OAuth URL construction

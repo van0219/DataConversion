@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Steering File Load Reminder",
+  "description": "Reminds AI to explicitly load relevant steering files when user asks questions or reports issues, rather than relying on auto-inclusion keywords",
+  "version": "1",
+  "when": {
+    "type": "promptSubmit"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "CRITICAL REMINDER: Before responding, check if you need to explicitly load steering files using discloseContext tool. Don't rely only on auto-inclusion. Available steering files:\n- workspace-learning: Knowledge management, documentation standards\n- fsm-fundamentals: FSM architecture, modules, authentication\n- fsm-business-classes: Field definitions, validation rules\n- fsm-data-conversion: Conversion lifecycle, field mapping\n- fsm-mcp-server-usage: MCP tools usage (legacy)\n- mcp-tools-status: Tool implementation status (legacy)\n\nIf the user's question relates to ANY of these topics, load the relevant steering file NOW before responding. This prevents wasting user time with incomplete knowledge."
+  }
+}

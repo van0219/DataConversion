@@ -371,6 +371,52 @@ Root Documentation/         - Setup, demo, and status docs
 
 ## Troubleshooting Guide
 
+### CRITICAL: Always Check Frontend AND Backend
+
+**When a feature doesn't work as expected**:
+
+1. ✅ **Trace the complete flow**: UI button → API call → Backend endpoint → Response → UI display
+2. ✅ **Check frontend code**: Look for hardcoded values, overrides, or client-side logic
+3. ✅ **Check backend code**: Verify the endpoint is returning correct data
+4. ✅ **Check response headers**: Frontend might ignore backend headers (like Content-Disposition)
+
+**Example**: Export filename not changing
+- ❌ Wrong: Only fix backend, restart server multiple times
+- ✅ Right: Check frontend exportErrors function, find hardcoded filename, fix it
+
+### CRITICAL: Code Changes Not Applying
+
+**If code changes don't work after editing files, do this IMMEDIATELY**:
+
+```powershell
+# Kill all Python processes
+Get-Process python -ErrorAction SilentlyContinue | Stop-Process -Force
+
+# Clear Python cache
+Get-ChildItem -Path backend/app -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force
+
+# Start fresh
+cd backend
+python -m uvicorn app.main:app --reload
+```
+
+**Don't waste time**:
+- ❌ Checking if files are correct
+- ❌ Adding debug logging
+- ❌ Restarting multiple times
+- ✅ Do ONE complete clean restart immediately
+
+### User Communication Guidelines
+
+**When instructing users to test the application**:
+- ✅ Always refer to frontend URL: http://localhost:5173
+- ❌ Don't mention backend port (8000) when asking users to test
+- Backend (8000) is for API, Frontend (5173) is for users
+
+**Example**:
+- Good: "Open http://localhost:5173 to test the validation"
+- Bad: "The server is ready at http://localhost:8000"
+
 ### Setup Issues
 
 **Dependencies won't install**
@@ -452,6 +498,23 @@ Root Documentation/         - Setup, demo, and status docs
 
 ## Version History
 
+### March 1, 2026 - Validation Mapping Format Fix ⭐
+
+- **Issue Fixed**: Validation endpoint "string indices must be integers, not 'str'" error
+- **Root Cause**: Frontend sending wrong mapping format to backend
+  - Frontend had two mapping structures: UI state (FSM → CSV) and backend state (CSV → FSM)
+  - Was sending UI state instead of backend-compatible state
+- **Solution**: Updated `handleStartValidation` to send `mappingData.mapping`
+- **Impact**: Validation pipeline now fully functional
+  - Successfully validates records with streaming architecture
+  - Identifies schema and rule validation errors
+  - Displays error summary with top 10 errors
+  - Export errors as CSV working
+- **Documentation**: Added Pattern #10 to FSM_Conversion_Workbench_Architecture.md
+- **Test Results**: Validated 20 records, identified pattern errors on PostingDate field
+- **Files Changed**: `frontend/src/pages/ConversionWorkflow.tsx`
+- **Status**: 87% complete (20/23 tasks), validation fully working
+
 ### March 1, 2026 - Workspace Cleanup & GitHub Preparation ⭐
 
 - **Workspace Cleanup**:
@@ -531,6 +594,10 @@ Architecture, implementation, testing, documentation
 **Demo Ready**: Wednesday, March 4, 2026
 
 **Recent Additions**:
+- ✅ Validation mapping format fix (validation fully working)
+- ✅ Token refresh implementation (8-hour access, 30-day refresh)
+- ✅ Upload endpoint fixes (FormData handling, Content-Type)
+- ✅ Searchable dropdown for manual field mapping
 - ✅ Setup Data Management UI (12 FSM classes, 5,720 records synced)
 - ✅ Local swagger file support for schema fetching (13 files)
 - ✅ Sync functionality with real-time progress display
