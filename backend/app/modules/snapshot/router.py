@@ -89,6 +89,21 @@ def get_all_setup_classes(db: Session = Depends(get_db)):
     classes = SnapshotService.get_all_setup_classes(db)
     return [SetupBusinessClassResponse.from_orm(cls) for cls in classes]
 
+@router.get("/available-swagger-files")
+def get_available_swagger_files(db: Session = Depends(get_db)):
+    """
+    Get list of available swagger files that haven't been added yet.
+    Returns business class names from FSM_Swagger/Setup/ and FSM_Swagger/Conversion/ folders.
+    """
+    try:
+        available_files = SnapshotService.get_available_swagger_files(db)
+        return {"available_files": available_files}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to list swagger files: {str(e)}"
+        )
+
 @router.get("/setup-classes/{class_id}", response_model=SetupBusinessClassResponse)
 def get_setup_class(class_id: int, db: Session = Depends(get_db)):
     """Get setup business class by ID"""
@@ -186,4 +201,25 @@ def toggle_setup_class_active(class_id: int, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to toggle setup class: {str(e)}"
+        )
+
+@router.post("/setup-classes/{class_id}/reset", response_model=SetupBusinessClassResponse)
+def reset_setup_class(class_id: int, db: Session = Depends(get_db)):
+    """
+    Reset setup business class to original values.
+    - Standard classes: Revert to out-of-the-box values
+    - Custom classes: Revert to first saved values
+    """
+    try:
+        setup_class = SnapshotService.reset_setup_class(db, class_id)
+        return SetupBusinessClassResponse.from_orm(setup_class)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to reset setup class: {str(e)}"
         )

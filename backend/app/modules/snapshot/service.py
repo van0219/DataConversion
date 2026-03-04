@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import List, Dict, Optional
 from datetime import datetime
+from pathlib import Path
 from app.models.snapshot import SnapshotRegistry, SnapshotRecord
 from app.models.setup_business_class import SetupBusinessClass
 from app.services.fsm_client import FSMClient
@@ -278,7 +279,7 @@ class SnapshotService:
         key_field: str,
         is_active: bool = True
     ) -> SetupBusinessClass:
-        """Create new setup business class"""
+        """Create new setup business class (marked as 'custom')"""
         # Check if name already exists
         existing = db.query(SetupBusinessClass).filter(SetupBusinessClass.name == name).first()
         if existing:
@@ -288,14 +289,17 @@ class SnapshotService:
             name=name,
             endpoint_url=endpoint_url,
             key_field=key_field,
-            is_active=is_active
+            is_active=is_active,
+            category='custom',  # User-added classes are 'custom'
+            original_endpoint_url=endpoint_url,  # Store original values for reset
+            original_key_field=key_field
         )
         
         db.add(setup_class)
         db.commit()
         db.refresh(setup_class)
         
-        logger.info(f"Created setup business class: {name}")
+        logger.info(f"Created custom setup business class: {name}")
         return setup_class
     
     @staticmethod
@@ -339,16 +343,23 @@ class SnapshotService:
     
     @staticmethod
     def delete_setup_class(db: Session, class_id: int):
-        """Delete setup business class"""
+        """Delete setup business class (only allowed for 'custom' classes)"""
         setup_class = SnapshotService.get_setup_class_by_id(db, class_id)
         if not setup_class:
             raise ValueError(f"Setup business class with ID {class_id} not found")
+        
+        # Only allow deletion of custom classes
+        if setup_class.category == 'standard':
+            raise ValueError(
+                f"Cannot delete standard setup business class '{setup_class.name}'. "
+                "Use deactivate instead."
+            )
         
         name = setup_class.name
         db.delete(setup_class)
         db.commit()
         
-        logger.info(f"Deleted setup business class: {name}")
+        logger.info(f"Deleted custom setup business class: {name}")
     
     @staticmethod
     def toggle_setup_class_active(db: Session, class_id: int) -> SetupBusinessClass:
@@ -363,3 +374,224 @@ class SnapshotService:
         
         logger.info(f"Toggled {setup_class.name} active status to: {setup_class.is_active}")
         return setup_class
+    
+    @staticmethod
+    def reset_setup_class(db: Session, class_id: int) -> SetupBusinessClass:
+        """
+        Reset setup business class to original values.
+        - Standard classes: Revert to out-of-the-box configuration
+        - Custom classes: Revert to first saved values
+        """
+        setup_class = SnapshotService.get_setup_class_by_id(db, class_id)
+        if not setup_class:
+            raise ValueError(f"Setup business class with ID {class_id} not found")
+        
+        # Check if original values exist
+        if not setup_class.original_endpoint_url or not setup_class.original_key_field:
+            raise ValueError(
+                f"No original values found for '{setup_class.name}'. Cannot reset."
+            )
+        
+        # Revert to original values
+        setup_class.endpoint_url = setup_class.original_endpoint_url
+        setup_class.key_field = setup_class.original_key_field
+        
+        db.commit()
+        db.refresh(setup_class)
+        
+        logger.info(
+            f"Reset {setup_class.category} setup business class '{setup_class.name}' "
+            f"to original values"
+        )
+        return setup_class
+    @staticmethod
+    def get_available_swagger_files(db: Session) -> List[Dict]:
+        """
+        Get list of available swagger files that haven't been added yet.
+        Scans ONLY FSM_Swagger/Setup/ folder (reference data classes).
+        Supports both formats:
+        - Single .json files (swagger format)
+        - Folders with .schema.json files (JSON Schema format)
+        Returns list with business class name, endpoint_url, and key_field parsed from swagger.
+        """
+        # Get existing setup class names
+        existing_classes = db.query(SetupBusinessClass.name).all()
+        existing_names = {cls.name for cls in existing_classes}
+        
+        # Get swagger base directory
+        swagger_base_dir = Path(__file__).parent.parent.parent.parent.parent / "FSM_Swagger"
+        
+        available_files = []
+        
+        # Scan Setup folder ONLY (reference data classes for validation)
+        setup_dir = swagger_base_dir / "Setup"
+        if setup_dir.exists():
+            # Scan for .json files (swagger format)
+            for swagger_file in setup_dir.glob("*.json"):
+                business_class = swagger_file.stem  # Filename without .json
+                if business_class not in existing_names:
+                    # Parse swagger to get endpoint and key field
+                    swagger_data = SnapshotService._parse_swagger_file(swagger_file, business_class)
+                    if swagger_data:
+                        available_files.append({
+                            "name": business_class,
+                            "endpoint_url": swagger_data["endpoint_url"],
+                            "key_field": swagger_data["key_field"],
+                            "folder": "Setup"
+                        })
+            
+            # Scan for folders (JSON Schema format)
+            for item in setup_dir.iterdir():
+                if item.is_dir():
+                    business_class = item.name
+                    if business_class not in existing_names:
+                        # Parse JSON Schema folder
+                        swagger_data = SnapshotService._parse_swagger_file(item, business_class)
+                        if swagger_data:
+                            available_files.append({
+                                "name": business_class,
+                                "endpoint_url": swagger_data["endpoint_url"],
+                                "key_field": swagger_data["key_field"],
+                                "folder": "Setup"
+                            })
+        
+        logger.info(f"Found {len(available_files)} available setup class swagger files not yet added")
+        return available_files
+    
+    @staticmethod
+    def _parse_swagger_file(swagger_file: Path, business_class: str) -> Optional[Dict]:
+        """
+        Parse swagger file OR JSON Schema folder to extract endpoint URL and key field.
+        Supports two formats:
+        1. Single .json file (swagger format)
+        2. Folder with .schema.json and .properties.json files (JSON Schema format)
+        
+        Returns dict with endpoint_url and key_field, or None if parsing fails.
+        """
+        try:
+            # Check if it's a folder (JSON Schema format)
+            if swagger_file.is_dir():
+                return SnapshotService._parse_json_schema_folder(swagger_file, business_class)
+            
+            # Otherwise, parse as single swagger file
+            with open(swagger_file, 'r') as f:
+                swagger_json = json.load(f)
+            
+            # Extract endpoint URL from paths (e.g., "/api/v2/Account")
+            endpoint_url = None
+            if "paths" in swagger_json:
+                # Get first path that contains the business class name
+                for path in swagger_json["paths"].keys():
+                    if business_class in path:
+                        # Remove leading slash and extract relative path
+                        endpoint_url = path.lstrip('/')
+                        break
+            
+            # If not found in paths, construct default
+            if not endpoint_url:
+                endpoint_url = f"api/v2/{business_class}"
+            
+            # Extract key field from schema
+            key_field = None
+            if "components" in swagger_json and "schemas" in swagger_json["components"]:
+                # Look for schema with business class name
+                for schema_name, schema_def in swagger_json["components"]["schemas"].items():
+                    if business_class in schema_name:
+                        # Look for common key field patterns
+                        if "properties" in schema_def:
+                            props = schema_def["properties"]
+                            # Try common patterns
+                            if "Id" in props:
+                                key_field = "Id"
+                            elif f"{business_class}Id" in props:
+                                key_field = f"{business_class}Id"
+                            elif "id" in props:
+                                key_field = "id"
+                            else:
+                                # Use first property as fallback
+                                key_field = list(props.keys())[0] if props else "Id"
+                        break
+            
+            # Default key field if not found
+            if not key_field:
+                key_field = "Id"
+            
+            return {
+                "endpoint_url": endpoint_url,
+                "key_field": key_field
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to parse swagger file {swagger_file}: {e}")
+            return None
+    
+    @staticmethod
+    def _parse_json_schema_folder(folder_path: Path, business_class: str) -> Optional[Dict]:
+        """
+        Parse JSON Schema folder format (schema.json + properties.json).
+        Example: FinanceDimension6/FSM_FinanceDimension06.schema.json
+        """
+        try:
+            # Find schema.json file
+            schema_files = list(folder_path.glob("*.schema.json"))
+            if not schema_files:
+                logger.error(f"No .schema.json file found in {folder_path}")
+                return None
+            
+            schema_file = schema_files[0]
+            
+            # Find properties.json file
+            properties_files = list(folder_path.glob("*.properties.json"))
+            
+            # Parse schema.json
+            with open(schema_file, 'r') as f:
+                schema_json = json.load(f)
+            
+            # Extract key field from properties.json if available
+            key_field = None
+            if properties_files:
+                with open(properties_files[0], 'r') as f:
+                    properties_json = json.load(f)
+                
+                # Get key field from IdentifierPaths
+                if "IdentifierPaths" in properties_json:
+                    identifier_paths = properties_json["IdentifierPaths"]
+                    if identifier_paths:
+                        # Extract field name from JSON path (e.g., "$.FinanceDimension6" -> "FinanceDimension6")
+                        # Use the last identifier (most specific)
+                        last_identifier = identifier_paths[-1].replace("$.", "")
+                        key_field = last_identifier
+            
+            # If not found in properties, try to extract from schema
+            if not key_field and "properties" in schema_json:
+                props = schema_json["properties"]
+                # Look for field matching business class name
+                if business_class in props:
+                    key_field = business_class
+                elif f"{business_class}Key" in props:
+                    key_field = f"{business_class}Key"
+                elif "Id" in props:
+                    key_field = "Id"
+                else:
+                    # Use first property
+                    key_field = list(props.keys())[0] if props else "Id"
+            
+            # Generate endpoint URL based on business class pattern
+            # Special handling for FinanceDimension classes
+            if business_class.startswith("FinanceDimension"):
+                # FinanceDimension classes use FlatList format
+                endpoint_url = f"soap/classes/{business_class}/lists/{business_class}FlatList?_fields=_all&_limit=100000&_links=false&_pageNav=true&_out=JSON&_flatten=false"
+            else:
+                # For other classes, provide a generic template that user can edit
+                # Common patterns: PrimaryXXXList, DetailXXXList, XXXFlatList
+                # User will need to update the list name in the UI
+                endpoint_url = f"soap/classes/{business_class}/lists/Primary{business_class}List?_fields=_all&_limit=100000&_links=false&_pageNav=true&_out=JSON&_flatten=false"
+            
+            return {
+                "endpoint_url": endpoint_url,
+                "key_field": key_field or "Id"
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to parse JSON Schema folder {folder_path}: {e}")
+            return None

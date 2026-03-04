@@ -67,6 +67,7 @@ class ValidationService:
         
         for chunk in StreamingEngine.stream_csv(file_path, chunk_size=1000):
             chunk_num += 1
+            chunk_errors = []  # Collect all errors for this chunk
             
             for record in chunk:
                 row_number = record.get('_row_number', 0)
@@ -81,9 +82,9 @@ class ValidationService:
                     row_number
                 )
                 
-                # Rule validation (if schema passed)
+                # Rule validation (always run, regardless of schema errors)
                 rule_errors = []
-                if not schema_errors and enable_rules:
+                if enable_rules:
                     for rule in rules:
                         error = await rule_executor.execute_rule(
                             rule,
@@ -98,17 +99,20 @@ class ValidationService:
                 
                 if all_errors:
                     total_invalid += 1
-                    # Persist errors
-                    ValidationService._persist_errors(db, job_id, all_errors)
+                    chunk_errors.extend(all_errors)  # Add to chunk errors
                 else:
                     total_valid += 1
+            
+            # Persist all errors for this chunk at once (bulk insert)
+            if chunk_errors:
+                ValidationService._persist_errors(db, job_id, chunk_errors)
             
             # Update progress after each chunk
             job.valid_records = total_valid
             job.invalid_records = total_invalid
             db.commit()
             
-            logger.debug(f"Processed chunk {chunk_num}: {total_valid} valid, {total_invalid} invalid")
+            logger.debug(f"Processed chunk {chunk_num}: {total_valid} valid, {total_invalid} invalid, {len(chunk_errors)} errors")
         
         # Update final job status
         job.status = "validated"
@@ -178,17 +182,25 @@ class ValidationService:
     
     @staticmethod
     def _persist_errors(db: Session, job_id: int, errors: List[ValidationError]):
-        """Persist validation errors to database"""
-        for error in errors:
-            error_record = ValidationErrorModel(
-                conversion_job_id=job_id,
-                row_number=error.row_number,
-                field_name=error.field_name,
-                invalid_value=error.invalid_value,
-                error_type=error.error_type,
-                error_message=error.error_message
-            )
-            db.add(error_record)
+        """Persist validation errors to database using bulk insert for performance"""
+        if not errors:
+            return
+        
+        # Prepare error records for bulk insert
+        error_records = [
+            {
+                'conversion_job_id': job_id,
+                'row_number': error.row_number,
+                'field_name': error.field_name,
+                'invalid_value': error.invalid_value,
+                'error_type': error.error_type,
+                'error_message': error.error_message
+            }
+            for error in errors
+        ]
+        
+        # Bulk insert - much faster than individual inserts
+        db.bulk_insert_mappings(ValidationErrorModel, error_records)
         db.commit()
     
     @staticmethod
@@ -303,7 +315,7 @@ class ValidationService:
     
     @staticmethod
     def export_errors_csv(db: Session, account_id: int, job_id: int) -> Optional[str]:
-        """Export validation errors as CSV"""
+        """Export validation errors as CSV with grouped errors per row"""
         errors = db.query(ValidationErrorModel).filter(
             ValidationErrorModel.conversion_job_id == job_id
         ).order_by(ValidationErrorModel.row_number).all()
@@ -311,20 +323,36 @@ class ValidationService:
         if not errors:
             return None
         
+        # Group errors by row number
+        grouped_errors = {}
+        for error in errors:
+            row_num = error.row_number
+            if row_num not in grouped_errors:
+                grouped_errors[row_num] = []
+            grouped_errors[row_num].append(error)
+        
         output = io.StringIO()
         writer = csv.writer(output)
         
         # Write header
-        writer.writerow(['row_number', 'field_name', 'invalid_value', 'error_type', 'error_message'])
+        writer.writerow(['row_number', 'field_names', 'invalid_values', 'error_types', 'error_messages'])
         
-        # Write errors
-        for error in errors:
+        # Write grouped errors
+        for row_num in sorted(grouped_errors.keys()):
+            row_errors = grouped_errors[row_num]
+            
+            # Combine multiple errors with semicolon separator
+            field_names = '; '.join([e.field_name for e in row_errors])
+            invalid_values = '; '.join([e.invalid_value or '(empty)' for e in row_errors])
+            error_types = '; '.join([e.error_type for e in row_errors])
+            error_messages = '; '.join([e.error_message for e in row_errors])
+            
             writer.writerow([
-                error.row_number,
-                error.field_name,
-                error.invalid_value or '',
-                error.error_type,
-                error.error_message
+                row_num,
+                field_names,
+                invalid_values,
+                error_types,
+                error_messages
             ])
         
         return output.getvalue()

@@ -127,8 +127,8 @@ def migrate():
     print("Migration Complete")
     print("=" * 80)
     print("\nNOTE: All 12 business classes are reference data classes")
-    print("      GLTransactionInterface excluded (staging/transaction table)")
-    print("      All classes match available swagger files in FSM_Swagger/")
+    print("      GLTransactionInterface excluded (conversion target, not reference data)")
+    print("      All classes match available swagger files in FSM_Swagger/Setup/")
 
 if __name__ == "__main__":
     migrate()

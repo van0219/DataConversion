@@ -1,0 +1,4900 @@
+{
+  "components": {
+    "examples": {},
+    "schemas": {
+      "contextFields": {
+        "type": "object",
+        "properties": {
+          "PurchaseOrderImportLineDistribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportLineDistribution"
+        ]
+      },
+      "createAllFieldsMultipart": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/createMinimumFieldsMultipart"
+          }
+        ],
+        "properties": {
+          "Company": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.GeneralLedgerChartAccount": {
+            "default": "",
+            "type": "string"
+          },
+          "LineNumber": {
+            "default": "",
+            "type": "string"
+          },
+          "TransientFromCurrency": {
+            "default": "",
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "default": "",
+            "type": "string"
+          },
+          "TransientPostingDate": {
+            "default": "",
+            "pattern": "^\\d{4}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])$",
+            "description": "Date in format YYYYMMDD",
+            "type": "string",
+            "example": "20260304"
+          },
+          "Asset": {
+            "default": "",
+            "type": "string"
+          },
+          "PurchaseOrderImportLineDistribution": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.AccountingUnit": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.Project": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension10": {
+            "default": "",
+            "type": "string"
+          },
+          "TransientExchangeDate": {
+            "default": "",
+            "pattern": "^\\d{4}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])$",
+            "description": "Date in format YYYYMMDD",
+            "type": "string",
+            "example": "20260304"
+          },
+          "DistributionQuantity": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.Ledger": {
+            "default": "",
+            "type": "string"
+          },
+          "POCode": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionPercent": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAmount": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension9": {
+            "default": "",
+            "type": "string"
+          },
+          "AssetTemplate": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionSequence": {
+            "default": "",
+            "type": "string"
+          },
+          "AddOnCharge": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.ToAccountingEntity": {
+            "default": "",
+            "type": "string"
+          },
+          "RunGroup": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension4": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension3": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension2": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension1": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension8": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension7": {
+            "default": "",
+            "type": "string"
+          },
+          "HasError": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension6": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension5": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportLineDistribution",
+          "Company",
+          "PurchaseOrderImport",
+          "LineNumber"
+        ]
+      },
+      "allFields": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/minimumFields"
+          }
+        ],
+        "properties": {
+          "TransientExchangeDate": {
+            "pattern": "^\\d{4}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])$",
+            "description": "Date in format YYYYMMDD",
+            "type": "string",
+            "example": "20260304"
+          },
+          "Company": {
+            "type": "string"
+          },
+          "DistributionQuantity": {
+            "type": "string"
+          },
+          "LineNumber": {
+            "type": "string"
+          },
+          "TransientFromCurrency": {
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "type": "string"
+          },
+          "POCode": {
+            "type": "string"
+          },
+          "DistributionPercent": {
+            "type": "string"
+          },
+          "TransientPostingDate": {
+            "pattern": "^\\d{4}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])$",
+            "description": "Date in format YYYYMMDD",
+            "type": "string",
+            "example": "20260304"
+          },
+          "DistributionAmount": {
+            "type": "string"
+          },
+          "AssetTemplate": {
+            "type": "string"
+          },
+          "DistributionSequence": {
+            "type": "string"
+          },
+          "AddOnCharge": {
+            "type": "string"
+          },
+          "DistributionAccount": {
+            "$ref": "#/components/schemas/DistributionAccount"
+          },
+          "RunGroup": {
+            "type": "string"
+          },
+          "Asset": {
+            "type": "string"
+          },
+          "PurchaseOrderImportLineDistribution": {
+            "type": "string"
+          },
+          "HasError": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportLineDistribution",
+          "Company",
+          "PurchaseOrderImport",
+          "LineNumber"
+        ]
+      },
+      "Raw_Fields": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "Raw_JSONBatchRequest": {
+        "type": "object",
+        "properties": {
+          "_records": {
+            "$ref": "#/components/schemas/Raw_RecordArray"
+          }
+        }
+      },
+      "FLR_RecordsArray": {
+        "type": "object",
+        "properties": {
+          "ResponseArray": {
+            "$ref": "#/components/schemas/FLR_RecordArray"
+          }
+        }
+      },
+      "FLR_Fields": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "Update_allFields": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/contextFields"
+          },
+          {
+            "$ref": "#/components/schemas/allFields"
+          }
+        ],
+        "properties": {}
+      },
+      "contextFieldsMultipart": {
+        "type": "object",
+        "properties": {
+          "PurchaseOrderImportLineDistribution": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportLineDistribution"
+        ]
+      },
+      "Update_allMPFields": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/contextFieldsMultipart"
+          },
+          {
+            "$ref": "#/components/schemas/allFieldsMultipart"
+          }
+        ],
+        "properties": {}
+      },
+      "createContextFields": {
+        "type": "object",
+        "properties": {
+          "PurchaseOrderImportLineDistribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportLineDistribution"
+        ]
+      },
+      "DistributionAccount": {
+        "type": "object",
+        "properties": {
+          "DistributionAccount.Ledger": {
+            "type": "string"
+          },
+          "DistributionAccount.GeneralLedgerChartAccount": {
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension9": {
+            "type": "string"
+          },
+          "DistributionAccount.ToAccountingEntity": {
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension4": {
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension3": {
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension2": {
+            "type": "string"
+          },
+          "DistributionAccount.AccountingUnit": {
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension1": {
+            "type": "string"
+          },
+          "DistributionAccount.Project": {
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension8": {
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension10": {
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension7": {
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension6": {
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension5": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "DistributionAccount.GeneralLedgerChartAccount"
+        ]
+      },
+      "createMinimumFieldsMultipart": {
+        "type": "object",
+        "properties": {
+          "Company": {
+            "default": "",
+            "type": "string"
+          },
+          "PurchaseOrderImportLineDistribution": {
+            "default": "",
+            "type": "string"
+          },
+          "LineNumber": {
+            "default": "",
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportLineDistribution",
+          "Company",
+          "PurchaseOrderImport",
+          "LineNumber"
+        ]
+      },
+      "FLR_Error": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "createMinimumFieldsJSON": {
+        "type": "object",
+        "properties": {
+          "Company": {
+            "type": "string"
+          },
+          "PurchaseOrderImportLineDistribution": {
+            "type": "string"
+          },
+          "LineNumber": {
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportLineDistribution",
+          "Company",
+          "PurchaseOrderImport",
+          "LineNumber"
+        ]
+      },
+      "Raw_RecordArray": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Raw_Record"
+        }
+      },
+      "createContextFieldsJSON": {
+        "type": "object",
+        "properties": {
+          "PurchaseOrderImportLineDistribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportLineDistribution"
+        ]
+      },
+      "FLR_Record": {
+        "type": "object",
+        "properties": {
+          "Response": {
+            "$ref": "#/components/schemas/FLR_Fields"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "allFieldsMultipart": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/minimumFieldsMultipart"
+          }
+        ],
+        "properties": {
+          "Company": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.GeneralLedgerChartAccount": {
+            "default": "",
+            "type": "string"
+          },
+          "LineNumber": {
+            "default": "",
+            "type": "string"
+          },
+          "TransientFromCurrency": {
+            "default": "",
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "default": "",
+            "type": "string"
+          },
+          "TransientPostingDate": {
+            "default": "",
+            "pattern": "^\\d{4}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])$",
+            "description": "Date in format YYYYMMDD",
+            "type": "string",
+            "example": "20260304"
+          },
+          "Asset": {
+            "default": "",
+            "type": "string"
+          },
+          "PurchaseOrderImportLineDistribution": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.AccountingUnit": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.Project": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension10": {
+            "default": "",
+            "type": "string"
+          },
+          "TransientExchangeDate": {
+            "default": "",
+            "pattern": "^\\d{4}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])$",
+            "description": "Date in format YYYYMMDD",
+            "type": "string",
+            "example": "20260304"
+          },
+          "DistributionQuantity": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.Ledger": {
+            "default": "",
+            "type": "string"
+          },
+          "POCode": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionPercent": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAmount": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension9": {
+            "default": "",
+            "type": "string"
+          },
+          "AssetTemplate": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionSequence": {
+            "default": "",
+            "type": "string"
+          },
+          "AddOnCharge": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.ToAccountingEntity": {
+            "default": "",
+            "type": "string"
+          },
+          "RunGroup": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension4": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension3": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension2": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension1": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension8": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension7": {
+            "default": "",
+            "type": "string"
+          },
+          "HasError": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension6": {
+            "default": "",
+            "type": "string"
+          },
+          "DistributionAccount.FinanceDimension5": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportLineDistribution",
+          "Company",
+          "PurchaseOrderImport",
+          "LineNumber"
+        ]
+      },
+      "FLR_JSONBatchRequest": {
+        "type": "object",
+        "properties": {
+          "_records": {
+            "type": "object",
+            "$ref": "#/components/schemas/FLR_RecordsArray"
+          }
+        },
+        "example": {
+          "value": "{   \"_records\": [       {           \"_fields\": {             \"RunGroup\":\"\",\n             \"Company\":\"\",\n             \"PurchaseOrderImport\":\"\",\n             \"POCode\":\"\",\n             \"LineNumber\":\"\",\n             \"AddOnCharge\":\"\",\n             \"DistributionSequence\":\"\",\n             \"AssetTemplate\":\"\",\n             \"Asset\":\"\",\n             \"HasError\":\"\",\n             \"DistributionPercent\":\"\",\n             \"DistributionQuantity\":\"\",\n             \"DistributionAmount\":\"\",\n             \"DistributionAccount\":\"\",\n             \"DistributionAccount.Ledger\":\"\",\n             \"DistributionAccount.ToAccountingEntity\":\"\",\n             \"DistributionAccount.AccountingUnit\":\"\",\n             \"DistributionAccount.GeneralLedgerChartAccount\":\"\",\n             \"DistributionAccount.Project\":\"\",\n             \"DistributionAccount.FinanceDimension1\":\"\",\n             \"DistributionAccount.FinanceDimension2\":\"\",\n             \"DistributionAccount.FinanceDimension3\":\"\",\n             \"DistributionAccount.FinanceDimension4\":\"\",\n             \"DistributionAccount.FinanceDimension5\":\"\",\n             \"DistributionAccount.FinanceDimension6\":\"\",\n             \"DistributionAccount.FinanceDimension7\":\"\",\n             \"DistributionAccount.FinanceDimension8\":\"\",\n             \"DistributionAccount.FinanceDimension9\":\"\",\n             \"DistributionAccount.FinanceDimension10\":\"\",\n             \"TransientExchangeDate\":\"\",\n             \"TransientPostingDate\":\"\",\n             \"TransientFromCurrency\":\"\",\n             \"ContextPurchaseOrderImport\":\"\",\n             \"PrmFinanceEnterpriseGroup\":\"\",\n             \"PrmRunGroup\":\"\",\n             \"NewRunGroup\":\"\",\n             \"PrmFinanceEnterpriseGroup\":\"\",\n             \"PrmRunGroup\":\"\",\n             \"PrmCompany\":\"\",\n             \"PrmResult\":\"\",\n             \"PrmSpecificAction\":\"\"             }         },       {           \"_fields\": {             \"RunGroup\":\"\",\n             \"Company\":\"\",\n             \"PurchaseOrderImport\":\"\",\n             \"POCode\":\"\",\n             \"LineNumber\":\"\",\n             \"AddOnCharge\":\"\",\n             \"DistributionSequence\":\"\",\n             \"AssetTemplate\":\"\",\n             \"Asset\":\"\",\n             \"HasError\":\"\",\n             \"DistributionPercent\":\"\",\n             \"DistributionQuantity\":\"\",\n             \"DistributionAmount\":\"\",\n             \"DistributionAccount\":\"\",\n             \"DistributionAccount.Ledger\":\"\",\n             \"DistributionAccount.ToAccountingEntity\":\"\",\n             \"DistributionAccount.AccountingUnit\":\"\",\n             \"DistributionAccount.GeneralLedgerChartAccount\":\"\",\n             \"DistributionAccount.Project\":\"\",\n             \"DistributionAccount.FinanceDimension1\":\"\",\n             \"DistributionAccount.FinanceDimension2\":\"\",\n             \"DistributionAccount.FinanceDimension3\":\"\",\n             \"DistributionAccount.FinanceDimension4\":\"\",\n             \"DistributionAccount.FinanceDimension5\":\"\",\n             \"DistributionAccount.FinanceDimension6\":\"\",\n             \"DistributionAccount.FinanceDimension7\":\"\",\n             \"DistributionAccount.FinanceDimension8\":\"\",\n             \"DistributionAccount.FinanceDimension9\":\"\",\n             \"DistributionAccount.FinanceDimension10\":\"\",\n             \"TransientExchangeDate\":\"\",\n             \"TransientPostingDate\":\"\",\n             \"TransientFromCurrency\":\"\",\n             \"ContextPurchaseOrderImport\":\"\",\n             \"PrmFinanceEnterpriseGroup\":\"\",\n             \"PrmRunGroup\":\"\",\n             \"NewRunGroup\":\"\",\n             \"PrmFinanceEnterpriseGroup\":\"\",\n             \"PrmRunGroup\":\"\",\n             \"PrmCompany\":\"\",\n             \"PrmResult\":\"\",\n             \"PrmSpecificAction\":\"\"             }         }     ]}",
+          "summmary": "JSON Batch Example"
+        }
+      },
+      "Error": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "minimumFields": {
+        "type": "object",
+        "properties": {
+          "Company": {
+            "type": "string"
+          },
+          "PurchaseOrderImportLineDistribution": {
+            "type": "string"
+          },
+          "LineNumber": {
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportLineDistribution",
+          "Company",
+          "PurchaseOrderImport",
+          "LineNumber"
+        ]
+      },
+      "FLR_RecordArray": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/FLR_Record"
+        }
+      },
+      "createMinimumFields": {
+        "type": "object",
+        "properties": {
+          "Company": {
+            "type": "string"
+          },
+          "PurchaseOrderImportLineDistribution": {
+            "type": "string"
+          },
+          "LineNumber": {
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportLineDistribution",
+          "Company",
+          "PurchaseOrderImport",
+          "LineNumber"
+        ]
+      },
+      "Raw_Record": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "_fields": {
+            "$ref": "#/components/schemas/Raw_Fields"
+          }
+        }
+      },
+      "createContextFieldsMultipart": {
+        "type": "object",
+        "properties": {
+          "PurchaseOrderImportLineDistribution": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportLineDistribution"
+        ]
+      },
+      "minimumFieldsJSON": {
+        "type": "object",
+        "properties": {
+          "Company": {
+            "type": "string"
+          },
+          "PurchaseOrderImportLineDistribution": {
+            "type": "string"
+          },
+          "LineNumber": {
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportLineDistribution",
+          "Company",
+          "PurchaseOrderImport",
+          "LineNumber"
+        ]
+      },
+      "minimumFieldsMultipart": {
+        "type": "object",
+        "properties": {
+          "Company": {
+            "default": "",
+            "type": "string"
+          },
+          "PurchaseOrderImportLineDistribution": {
+            "default": "",
+            "type": "string"
+          },
+          "LineNumber": {
+            "default": "",
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportLineDistribution",
+          "Company",
+          "PurchaseOrderImport",
+          "LineNumber"
+        ]
+      },
+      "contextFieldsJSON": {
+        "type": "object",
+        "properties": {
+          "PurchaseOrderImportLineDistribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportLineDistribution"
+        ]
+      },
+      "createAllFields": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/createMinimumFields"
+          }
+        ],
+        "properties": {
+          "TransientExchangeDate": {
+            "pattern": "^\\d{4}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])$",
+            "description": "Date in format YYYYMMDD",
+            "type": "string",
+            "example": "20260304"
+          },
+          "Company": {
+            "type": "string"
+          },
+          "DistributionQuantity": {
+            "type": "string"
+          },
+          "LineNumber": {
+            "type": "string"
+          },
+          "TransientFromCurrency": {
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "type": "string"
+          },
+          "POCode": {
+            "type": "string"
+          },
+          "DistributionPercent": {
+            "type": "string"
+          },
+          "TransientPostingDate": {
+            "pattern": "^\\d{4}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])$",
+            "description": "Date in format YYYYMMDD",
+            "type": "string",
+            "example": "20260304"
+          },
+          "DistributionAmount": {
+            "type": "string"
+          },
+          "AssetTemplate": {
+            "type": "string"
+          },
+          "DistributionSequence": {
+            "type": "string"
+          },
+          "AddOnCharge": {
+            "type": "string"
+          },
+          "DistributionAccount": {
+            "$ref": "#/components/schemas/DistributionAccount"
+          },
+          "RunGroup": {
+            "type": "string"
+          },
+          "Asset": {
+            "type": "string"
+          },
+          "PurchaseOrderImportLineDistribution": {
+            "type": "string"
+          },
+          "HasError": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportLineDistribution",
+          "Company",
+          "PurchaseOrderImport",
+          "LineNumber"
+        ]
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://mingle-stage01-ionapi.inforcloudsuite.com/VWF68LHJUP5D6NUB_PP1/FSM/fsm/soap"
+    }
+  ],
+  "openapi": "3.0.0",
+  "paths": {
+    "/ldrest/PurchaseOrderImportLineDistribution/FastDelete_PurchaseOrderImportLineDistribution_Primary_FormOperation": {
+      "delete": {
+        "summary": "FastDelete_PurchaseOrderImportLineDistribution_Primary_FormOperation",
+        "deprecated": false,
+        "description": "FastDelete_PurchaseOrderImportLineDistribution_Primary_FormOperation",
+        "operationId": "FastDelete_PurchaseOrderImportLineDistribution_Primary_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension8Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension8Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Company",
+            "description": "Company",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension2Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension2Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.AccountingEntity",
+            "description": "DistributionAccount.AccountingEntity",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension10Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension10Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.GeneralLedgerChartAccount",
+            "description": "DistributionAccount.GeneralLedgerChartAccount",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension5Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension5Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "LineNumber",
+            "description": "LineNumber",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.AccountLabel_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.AccountLabel_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "TransientFromCurrency",
+            "description": "TransientFromCurrency",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImport",
+            "description": "PurchaseOrderImport",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "TransientPostingDate",
+            "description": "TransientPostingDate",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.AccountingEntityLabel_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.AccountingEntityLabel_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Asset",
+            "description": "Asset",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension7Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension7Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImportLineDistribution",
+            "description": "PurchaseOrderImportLineDistribution",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.AccountingUnit",
+            "description": "DistributionAccount.AccountingUnit",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.ProjectLabel_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.ProjectLabel_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.Project",
+            "description": "DistributionAccount.Project",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension10",
+            "description": "DistributionAccount.FinanceDimension10",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension4Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension4Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension1Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension1Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "TransientExchangeDate",
+            "description": "TransientExchangeDate",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionQuantity",
+            "description": "DistributionQuantity",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.Ledger",
+            "description": "DistributionAccount.Ledger",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceEnterpriseGroup",
+            "description": "DistributionAccount.FinanceEnterpriseGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "POCode",
+            "description": "POCode",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionPercent",
+            "description": "DistributionPercent",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension3Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension3Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAmount",
+            "description": "DistributionAmount",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension9",
+            "description": "DistributionAccount.FinanceDimension9",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "AssetTemplate",
+            "description": "AssetTemplate",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionSequence",
+            "description": "DistributionSequence",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.AccountingUnitLabel_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.AccountingUnitLabel_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension6Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension6Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension9Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension9Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "AddOnCharge",
+            "description": "AddOnCharge",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.ToAccountingEntity",
+            "description": "DistributionAccount.ToAccountingEntity",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "RunGroup",
+            "description": "RunGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension4",
+            "description": "DistributionAccount.FinanceDimension4",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension3",
+            "description": "DistributionAccount.FinanceDimension3",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension2",
+            "description": "DistributionAccount.FinanceDimension2",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension1",
+            "description": "DistributionAccount.FinanceDimension1",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension8",
+            "description": "DistributionAccount.FinanceDimension8",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension7",
+            "description": "DistributionAccount.FinanceDimension7",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "HasError",
+            "description": "HasError",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension6",
+            "description": "DistributionAccount.FinanceDimension6",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension5",
+            "description": "DistributionAccount.FinanceDimension5",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ContextPurchaseOrderImport",
+            "description": "ContextPurchaseOrderImport",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/ldrest/PurchaseOrderImportLineDistribution/Update_PurchaseOrderImportLineDistribution_Primary_FormOperation": {
+      "put": {
+        "summary": "Update_PurchaseOrderImportLineDistribution_Primary_FormOperation",
+        "requestBody": {
+          "description": "Update_PurchaseOrderImportLineDistribution_Primary_FormOperation Request",
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Company": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension8Label_translation___": {},
+                  "DistributionAccount.AccountingEntity": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension10Label_translation___": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension2Label_translation___": {},
+                  "TransientFromCurrency": {},
+                  "PurchaseOrderImport": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension3Label_translation___": {},
+                  "Asset": {},
+                  "PurchaseOrderImportLineDistribution": {},
+                  "DistributionAccount.Project": {},
+                  "DistributionAccount.FinanceDimension10": {},
+                  "TransientExchangeDate": {},
+                  "DistributionQuantity": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension9Label_translation___": {},
+                  "__actor.context.FinanceEnterpriseGroup.AccountLabel_translation___": {},
+                  "DistributionAccount.FinanceEnterpriseGroup": {},
+                  "AssetTemplate": {},
+                  "AddOnCharge": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension4Label_translation___": {},
+                  "__actor.context.FinanceEnterpriseGroup.AccountingUnitLabel_translation___": {},
+                  "ContextPurchaseOrderImport": {},
+                  "DistributionAccount.GeneralLedgerChartAccount": {},
+                  "LineNumber": {},
+                  "TransientPostingDate": {},
+                  "DistributionAccount.AccountingUnit": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension5Label_translation___": {},
+                  "__actor.context.FinanceEnterpriseGroup.ProjectLabel_translation___": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension1Label_translation___": {},
+                  "DistributionAccount.Ledger": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension7Label_translation___": {},
+                  "POCode": {},
+                  "DistributionPercent": {},
+                  "DistributionAmount": {},
+                  "DistributionAccount.FinanceDimension9": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension6Label_translation___": {},
+                  "DistributionSequence": {},
+                  "DistributionAccount.ToAccountingEntity": {},
+                  "RunGroup": {},
+                  "DistributionAccount.FinanceDimension4": {},
+                  "DistributionAccount.FinanceDimension3": {},
+                  "__actor.context.FinanceEnterpriseGroup.AccountingEntityLabel_translation___": {},
+                  "DistributionAccount.FinanceDimension2": {},
+                  "DistributionAccount.FinanceDimension1": {},
+                  "DistributionAccount.FinanceDimension8": {},
+                  "DistributionAccount.FinanceDimension7": {},
+                  "HasError": {},
+                  "DistributionAccount.FinanceDimension6": {},
+                  "DistributionAccount.FinanceDimension5": {}
+                },
+                "required": [
+                  "Company",
+                  "LineNumber",
+                  "PurchaseOrderImport",
+                  "PurchaseOrderImportLineDistribution"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "deprecated": false,
+        "description": "Update_PurchaseOrderImportLineDistribution_Primary_FormOperation",
+        "operationId": "Update_PurchaseOrderImportLineDistribution_Primary_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/ldrest/PurchaseOrderImportLineDistribution/PurchaseOrderImportLineDistributionList_ListOperation": {
+      "get": {
+        "summary": "PurchaseOrderImportLineDistributionList_ListOperation",
+        "deprecated": false,
+        "description": "PurchaseOrderImportLineDistributionList_ListOperation",
+        "operationId": "PurchaseOrderImportLineDistributionList_ListOperation",
+        "responses": {
+          "200": {
+            "description": "List Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount",
+            "description": "DistributionAccount",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Asset",
+            "description": "Asset",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "AssetTemplate",
+            "description": "AssetTemplate",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionPercent",
+            "description": "DistributionPercent",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionQuantity",
+            "description": "DistributionQuantity",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAmount",
+            "description": "DistributionAmount",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Company",
+            "description": "Company",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImportLineDistribution",
+            "description": "PurchaseOrderImportLineDistribution",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 5,
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_limit",
+            "description": "How many records to return",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "FIRST",
+                "LAST",
+                "NEXT",
+                "PREVIOUS"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_paging",
+            "description": "Name of paging operation",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_returnFieldState",
+            "description": "Return the Field state label instead of the value",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/classes/PurchaseOrderImportLineDistribution/lists/{list}": {
+      "get": {
+        "summary": "List Service",
+        "deprecated": false,
+        "operationId": "List Service",
+        "responses": {
+          "200": {
+            "description": "List Service Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PurchaseOrderImportLineDistributionList"
+              ]
+            },
+            "in": "path",
+            "explode": false,
+            "name": "list",
+            "description": "List",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "_all"
+                ]
+              }
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_fields",
+            "description": "Return All Fields",
+            "style": "form",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 5,
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_limit",
+            "description": "How many records to return",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NEXT",
+                "PREVIOUS"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_paging",
+            "description": "Name of paging operation",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_fts",
+            "description": "Replicate Dataset - FROM Time Stamp - YYYYMMDDHHMMSSFF",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_tts",
+            "description": "Replicate Dataset - TO Time Stamp - YYYYMMDDHHMMSSFF",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_recordCountOnly",
+            "description": "Display only the number of records returned in a list action.",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_nonHistReplOptimization",
+            "description": "Enable replication read oprimization when no historical changes have been done since _fts.",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_rrs",
+            "description": "Replicate Dataset - Related Replicates: Fill in with comma separated list of values e.g. Item,ItemGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_syncWait",
+            "description": "Replicate Dataset - Replication sync wait time in seconds",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_filter",
+            "description": "Simple Filter - name::value|name2::value2|name3::value3",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_lplFilter",
+            "description": "Complex Filter - LPL Filter String Example: (AirportCode like \"MSP*\")",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_returnFieldState",
+            "description": "Return the Field state label instead of the value",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ByRunGroup",
+                "Set1"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_setName",
+            "description": "Order results by this set/index",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_groupBy",
+            "description": "Group By Field Names - Name,Age,City",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "count",
+                "sum",
+                "avg",
+                "min",
+                "max"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_aggregateOperation",
+            "description": "Aggregate Operation Name",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_aggregateColumn",
+            "description": "Aggregate Column Name",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_links",
+            "description": "Show hypertext",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": true,
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_pageNav",
+            "description": "Include Paging Header",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_flatten",
+            "description": "Display all Group Field members as individual Fields in list output.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Lists"
+        ]
+      },
+      "description": "List Service"
+    },
+    "/classes/PurchaseOrderImportLineDistribution/lists/_generic": {
+      "get": {
+        "summary": "Generic List Service",
+        "deprecated": false,
+        "operationId": "Generic List Service",
+        "responses": {
+          "200": {
+            "description": "Generic List Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "AddOnCharge",
+                  "Asset",
+                  "AssetTemplate",
+                  "Company",
+                  "ContextPurchaseOrderImport",
+                  "DistributionAccount",
+                  "DistributionAccount.AccountingUnit",
+                  "DistributionAccount.FinanceDimension1",
+                  "DistributionAccount.FinanceDimension10",
+                  "DistributionAccount.FinanceDimension2",
+                  "DistributionAccount.FinanceDimension3",
+                  "DistributionAccount.FinanceDimension4",
+                  "DistributionAccount.FinanceDimension5",
+                  "DistributionAccount.FinanceDimension6",
+                  "DistributionAccount.FinanceDimension7",
+                  "DistributionAccount.FinanceDimension8",
+                  "DistributionAccount.FinanceDimension9",
+                  "DistributionAccount.GeneralLedgerChartAccount",
+                  "DistributionAccount.Ledger",
+                  "DistributionAccount.Project",
+                  "DistributionAccount.ToAccountingEntity",
+                  "DistributionAmount",
+                  "DistributionPercent",
+                  "DistributionQuantity",
+                  "DistributionSequence",
+                  "HasError",
+                  "LineNumber",
+                  "POCode",
+                  "PurchaseOrderImport",
+                  "PurchaseOrderImportLineDistribution",
+                  "RunGroup",
+                  "TransientExchangeDate",
+                  "TransientFromCurrency",
+                  "TransientPostingDate",
+                  "_all"
+                ]
+              }
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_fields",
+            "description": "Fields To Return",
+            "required": true
+          },
+          {
+            "schema": {
+              "default": 5,
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_limit",
+            "description": "How many records to return",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NEXT",
+                "PREVIOUS"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_paging",
+            "description": "Name of paging operation",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_fts",
+            "description": "Replicate Dataset - FROM Time Stamp - YYYYMMDDHHMMSSFF",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_tts",
+            "description": "Replicate Dataset - TO Time Stamp - YYYYMMDDHHMMSSFF",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_recordCountOnly",
+            "description": "Display only the number of records returned in a list action.",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_nonHistReplOptimization",
+            "description": "Enable replication read oprimization when no historical changes have been done since _fts.",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_rrs",
+            "description": "Replicate Dataset - Related Replicates: Fill in with comma separated list of values e.g. Item,ItemGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_syncWait",
+            "description": "Replicate Dataset - Replication sync wait time in seconds",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_filter",
+            "description": "Simple Filter - name::value|name2::value2|name3::value3",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_lplFilter",
+            "description": "Complex Filter - LPL Filter String Example: (AirportCode like \"MSP*\")",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_returnFieldState",
+            "description": "Return the Field state label instead of the value",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ByRunGroup",
+                "Set1"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_setName",
+            "description": "Order results by this set/index",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_links",
+            "description": "Show hypertext",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": true,
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_pageNav",
+            "description": "Include Paging Header",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_flatten",
+            "description": "Display all Group Field members as individual Fields in list output.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Lists"
+        ]
+      },
+      "description": "Generic List Service"
+    },
+    "/ldrest/PurchaseOrderImportLineDistribution/UpdateRunGroup_UpdateRunGroup_implicit_action_form_FormOperation": {
+      "get": {
+        "summary": "UpdateRunGroup_UpdateRunGroup_implicit_action_form_FormOperation",
+        "deprecated": false,
+        "description": "UpdateRunGroup_UpdateRunGroup_implicit_action_form_FormOperation",
+        "operationId": "UpdateRunGroup_UpdateRunGroup_implicit_action_form_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "NewRunGroup",
+            "description": "NewRunGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PrmRunGroup",
+            "description": "PrmRunGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PrmFinanceEnterpriseGroup",
+            "description": "PrmFinanceEnterpriseGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ContextPurchaseOrderImport",
+            "description": "ContextPurchaseOrderImport",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/classes/PurchaseOrderImportLineDistribution/actions/Delete": {
+      "delete": {
+        "summary": "Delete",
+        "deprecated": false,
+        "description": "Delete Delete Action",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Raw_Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImportLineDistribution",
+            "description": "PurchaseOrderImportLineDistribution",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "RunGroup",
+            "description": "RunGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Company",
+            "description": "Company",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImport",
+            "description": "PurchaseOrderImport",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "POCode",
+            "description": "POCode",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "LineNumber",
+            "description": "LineNumber",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "AddOnCharge",
+            "description": "AddOnCharge",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionSequence",
+            "description": "DistributionSequence",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "AssetTemplate",
+            "description": "AssetTemplate",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Asset",
+            "description": "Asset",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "HasError",
+            "description": "HasError",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionPercent",
+            "description": "DistributionPercent",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionQuantity",
+            "description": "DistributionQuantity",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAmount",
+            "description": "DistributionAmount",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.Ledger",
+            "description": "DistributionAccount.Ledger",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.ToAccountingEntity",
+            "description": "DistributionAccount.ToAccountingEntity",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.AccountingUnit",
+            "description": "DistributionAccount.AccountingUnit",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.GeneralLedgerChartAccount",
+            "description": "DistributionAccount.GeneralLedgerChartAccount",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.Project",
+            "description": "DistributionAccount.Project",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension1",
+            "description": "DistributionAccount.FinanceDimension1",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension2",
+            "description": "DistributionAccount.FinanceDimension2",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension3",
+            "description": "DistributionAccount.FinanceDimension3",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension4",
+            "description": "DistributionAccount.FinanceDimension4",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension5",
+            "description": "DistributionAccount.FinanceDimension5",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension6",
+            "description": "DistributionAccount.FinanceDimension6",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension7",
+            "description": "DistributionAccount.FinanceDimension7",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension8",
+            "description": "DistributionAccount.FinanceDimension8",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension9",
+            "description": "DistributionAccount.FinanceDimension9",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension10",
+            "description": "DistributionAccount.FinanceDimension10",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "TransientExchangeDate",
+            "description": "TransientExchangeDate",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "TransientPostingDate",
+            "description": "TransientPostingDate",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "TransientFromCurrency",
+            "description": "TransientFromCurrency",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ContextPurchaseOrderImport",
+            "description": "ContextPurchaseOrderImport",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/classes/PurchaseOrderImportLineDistribution/actions/Find": {
+      "get": {
+        "summary": "Find A Record",
+        "deprecated": false,
+        "description": "Find A Record",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Raw_Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImportLineDistribution",
+            "description": "PurchaseOrderImportLineDistribution",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/classes/PurchaseOrderImportLineDistribution/actions/FastDelete": {
+      "delete": {
+        "summary": "FastDelete",
+        "deprecated": false,
+        "description": "FastDelete Delete Action",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Raw_Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImportLineDistribution",
+            "description": "PurchaseOrderImportLineDistribution",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "RunGroup",
+            "description": "RunGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Company",
+            "description": "Company",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImport",
+            "description": "PurchaseOrderImport",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "POCode",
+            "description": "POCode",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "LineNumber",
+            "description": "LineNumber",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "AddOnCharge",
+            "description": "AddOnCharge",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionSequence",
+            "description": "DistributionSequence",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "AssetTemplate",
+            "description": "AssetTemplate",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Asset",
+            "description": "Asset",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "HasError",
+            "description": "HasError",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionPercent",
+            "description": "DistributionPercent",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionQuantity",
+            "description": "DistributionQuantity",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAmount",
+            "description": "DistributionAmount",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.Ledger",
+            "description": "DistributionAccount.Ledger",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.ToAccountingEntity",
+            "description": "DistributionAccount.ToAccountingEntity",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.AccountingUnit",
+            "description": "DistributionAccount.AccountingUnit",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.GeneralLedgerChartAccount",
+            "description": "DistributionAccount.GeneralLedgerChartAccount",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.Project",
+            "description": "DistributionAccount.Project",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension1",
+            "description": "DistributionAccount.FinanceDimension1",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension2",
+            "description": "DistributionAccount.FinanceDimension2",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension3",
+            "description": "DistributionAccount.FinanceDimension3",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension4",
+            "description": "DistributionAccount.FinanceDimension4",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension5",
+            "description": "DistributionAccount.FinanceDimension5",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension6",
+            "description": "DistributionAccount.FinanceDimension6",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension7",
+            "description": "DistributionAccount.FinanceDimension7",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension8",
+            "description": "DistributionAccount.FinanceDimension8",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension9",
+            "description": "DistributionAccount.FinanceDimension9",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension10",
+            "description": "DistributionAccount.FinanceDimension10",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "TransientExchangeDate",
+            "description": "TransientExchangeDate",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "TransientPostingDate",
+            "description": "TransientPostingDate",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "TransientFromCurrency",
+            "description": "TransientFromCurrency",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ContextPurchaseOrderImport",
+            "description": "ContextPurchaseOrderImport",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/classes/PurchaseOrderImportLineDistribution/actions/Update": {
+      "put": {
+        "summary": "Update",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/contextFieldsJSON"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Update_allFields"
+                  }
+                ]
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Update_allMPFields"
+              }
+            }
+          },
+          "required": false
+        },
+        "deprecated": false,
+        "description": "Update Update Action",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Raw_Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/ldrest/PurchaseOrderImportLineDistribution/Delete_PurchaseOrderImportLineDistribution_Primary_FormOperation": {
+      "delete": {
+        "summary": "Delete_PurchaseOrderImportLineDistribution_Primary_FormOperation",
+        "deprecated": false,
+        "description": "Delete_PurchaseOrderImportLineDistribution_Primary_FormOperation",
+        "operationId": "Delete_PurchaseOrderImportLineDistribution_Primary_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension8Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension8Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Company",
+            "description": "Company",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension2Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension2Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.AccountingEntity",
+            "description": "DistributionAccount.AccountingEntity",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension10Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension10Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.GeneralLedgerChartAccount",
+            "description": "DistributionAccount.GeneralLedgerChartAccount",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension5Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension5Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "LineNumber",
+            "description": "LineNumber",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.AccountLabel_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.AccountLabel_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "TransientFromCurrency",
+            "description": "TransientFromCurrency",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImport",
+            "description": "PurchaseOrderImport",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "TransientPostingDate",
+            "description": "TransientPostingDate",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.AccountingEntityLabel_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.AccountingEntityLabel_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Asset",
+            "description": "Asset",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension7Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension7Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImportLineDistribution",
+            "description": "PurchaseOrderImportLineDistribution",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.AccountingUnit",
+            "description": "DistributionAccount.AccountingUnit",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.ProjectLabel_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.ProjectLabel_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.Project",
+            "description": "DistributionAccount.Project",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension10",
+            "description": "DistributionAccount.FinanceDimension10",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension4Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension4Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension1Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension1Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "TransientExchangeDate",
+            "description": "TransientExchangeDate",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionQuantity",
+            "description": "DistributionQuantity",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.Ledger",
+            "description": "DistributionAccount.Ledger",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceEnterpriseGroup",
+            "description": "DistributionAccount.FinanceEnterpriseGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "POCode",
+            "description": "POCode",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionPercent",
+            "description": "DistributionPercent",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension3Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension3Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAmount",
+            "description": "DistributionAmount",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension9",
+            "description": "DistributionAccount.FinanceDimension9",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "AssetTemplate",
+            "description": "AssetTemplate",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionSequence",
+            "description": "DistributionSequence",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.AccountingUnitLabel_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.AccountingUnitLabel_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension6Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension6Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__actor.context.FinanceEnterpriseGroup.FinanceDimension9Label_translation___",
+            "description": "__actor.context.FinanceEnterpriseGroup.FinanceDimension9Label_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "AddOnCharge",
+            "description": "AddOnCharge",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.ToAccountingEntity",
+            "description": "DistributionAccount.ToAccountingEntity",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "RunGroup",
+            "description": "RunGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension4",
+            "description": "DistributionAccount.FinanceDimension4",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension3",
+            "description": "DistributionAccount.FinanceDimension3",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension2",
+            "description": "DistributionAccount.FinanceDimension2",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension1",
+            "description": "DistributionAccount.FinanceDimension1",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension8",
+            "description": "DistributionAccount.FinanceDimension8",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension7",
+            "description": "DistributionAccount.FinanceDimension7",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "HasError",
+            "description": "HasError",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension6",
+            "description": "DistributionAccount.FinanceDimension6",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DistributionAccount.FinanceDimension5",
+            "description": "DistributionAccount.FinanceDimension5",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ContextPurchaseOrderImport",
+            "description": "ContextPurchaseOrderImport",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/classes/PurchaseOrderImportLineDistribution/attachment/upload": {
+      "post": {
+        "summary": "Upload Attachment",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fieldName": {
+                    "description": "Field Name on the Business Class to Upload",
+                    "type": "string"
+                  },
+                  "f.DistributionPercent": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.POCode": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.AssetTemplate": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.DistributionAccount.FinanceDimension6": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.DistributionAccount.FinanceDimension5": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "findFirst": {
+                    "description": "Perform pre-emptive Find",
+                    "type": "boolean"
+                  },
+                  "f.DistributionAccount.FinanceDimension8": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.DistributionAccount.FinanceDimension7": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.Asset": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.DistributionAccount.FinanceDimension2": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.DistributionAccount.FinanceDimension1": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.DistributionAccount.AccountingUnit": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.DistributionAccount.FinanceDimension4": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.Company": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.AddOnCharge": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.DistributionAccount.FinanceDimension3": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.ContextPurchaseOrderImport": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "file": {
+                    "format": "binary",
+                    "description": "File To Upload",
+                    "type": "string"
+                  },
+                  "k.PurchaseOrderImportLineDistribution": {
+                    "description": "Key",
+                    "type": "string"
+                  },
+                  "f.LineNumber": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.DistributionAccount.Ledger": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.TransientExchangeDate": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "formName": {
+                    "description": "Form Name",
+                    "type": "string"
+                  },
+                  "f.TransientPostingDate": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.DistributionAccount.Project": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.DistributionAccount.GeneralLedgerChartAccount": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.DistributionAccount": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.RunGroup": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.PurchaseOrderImport": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.HasError": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.DistributionAccount.ToAccountingEntity": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.TransientFromCurrency": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.DistributionAmount": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.DistributionSequence": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.DistributionAccount.FinanceDimension9": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.DistributionQuantity": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "listName": {
+                    "description": "List Name",
+                    "type": "string"
+                  },
+                  "f.DistributionAccount.FinanceDimension10": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "actionName": {
+                    "description": "Action Name",
+                    "type": "string",
+                    "enum": [
+                      "Create",
+                      "Update",
+                      "Delete",
+                      "FastDelete",
+                      "UpdateRunGroup",
+                      "LoadInterfacedPurchaseOrderLineDistributions"
+                    ]
+                  }
+                },
+                "required": [
+                  "actionName",
+                  "fieldName",
+                  "file",
+                  "k.PurchaseOrderImportLineDistribution"
+                ]
+              }
+            }
+          },
+          "required": false
+        },
+        "deprecated": false,
+        "operationId": "Upload Attachment",
+        "responses": {
+          "200": {
+            "description": "Upload Attachment Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Attachments"
+        ]
+      }
+    },
+    "/ldrest/PurchaseOrderImportLineDistribution/Create_PurchaseOrderImportLineDistribution_Primary_FormOperation": {
+      "post": {
+        "summary": "Create_PurchaseOrderImportLineDistribution_Primary_FormOperation",
+        "requestBody": {
+          "description": "Create_PurchaseOrderImportLineDistribution_Primary_FormOperation Request",
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Company": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension8Label_translation___": {},
+                  "DistributionAccount.AccountingEntity": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension10Label_translation___": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension2Label_translation___": {},
+                  "TransientFromCurrency": {},
+                  "PurchaseOrderImport": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension3Label_translation___": {},
+                  "Asset": {},
+                  "PurchaseOrderImportLineDistribution": {},
+                  "DistributionAccount.Project": {},
+                  "DistributionAccount.FinanceDimension10": {},
+                  "TransientExchangeDate": {},
+                  "DistributionQuantity": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension9Label_translation___": {},
+                  "__actor.context.FinanceEnterpriseGroup.AccountLabel_translation___": {},
+                  "DistributionAccount.FinanceEnterpriseGroup": {},
+                  "AssetTemplate": {},
+                  "AddOnCharge": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension4Label_translation___": {},
+                  "__actor.context.FinanceEnterpriseGroup.AccountingUnitLabel_translation___": {},
+                  "ContextPurchaseOrderImport": {},
+                  "DistributionAccount.GeneralLedgerChartAccount": {},
+                  "LineNumber": {},
+                  "TransientPostingDate": {},
+                  "DistributionAccount.AccountingUnit": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension5Label_translation___": {},
+                  "__actor.context.FinanceEnterpriseGroup.ProjectLabel_translation___": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension1Label_translation___": {},
+                  "DistributionAccount.Ledger": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension7Label_translation___": {},
+                  "POCode": {},
+                  "DistributionPercent": {},
+                  "DistributionAmount": {},
+                  "DistributionAccount.FinanceDimension9": {},
+                  "__actor.context.FinanceEnterpriseGroup.FinanceDimension6Label_translation___": {},
+                  "DistributionSequence": {},
+                  "DistributionAccount.ToAccountingEntity": {},
+                  "RunGroup": {},
+                  "DistributionAccount.FinanceDimension4": {},
+                  "DistributionAccount.FinanceDimension3": {},
+                  "__actor.context.FinanceEnterpriseGroup.AccountingEntityLabel_translation___": {},
+                  "DistributionAccount.FinanceDimension2": {},
+                  "DistributionAccount.FinanceDimension1": {},
+                  "DistributionAccount.FinanceDimension8": {},
+                  "DistributionAccount.FinanceDimension7": {},
+                  "HasError": {},
+                  "DistributionAccount.FinanceDimension6": {},
+                  "DistributionAccount.FinanceDimension5": {}
+                },
+                "required": [
+                  "Company",
+                  "LineNumber",
+                  "PurchaseOrderImport",
+                  "PurchaseOrderImportLineDistribution"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "deprecated": false,
+        "description": "Create_PurchaseOrderImportLineDistribution_Primary_FormOperation",
+        "operationId": "Create_PurchaseOrderImportLineDistribution_Primary_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/classes/PurchaseOrderImportLineDistribution/actions/{action}/batch": {
+      "post": {
+        "summary": "Action Batch Service",
+        "requestBody": {
+          "description": "JSON Payload",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Raw_JSONBatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "deprecated": false,
+        "description": "Action Batch Service",
+        "operationId": "Action Batch Service",
+        "responses": {
+          "200": {
+            "description": "Action Batch Service Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Create",
+                "Delete",
+                "FastDelete",
+                "Find",
+                "LoadInterfacedPurchaseOrderLineDistributions",
+                "Update",
+                "UpdateRunGroup"
+              ]
+            },
+            "in": "path",
+            "explode": false,
+            "name": "action",
+            "description": "Action",
+            "required": true
+          },
+          {
+            "schema": {
+              "default": -1,
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_maxFailures",
+            "description": "maximum allowed batch entry failures before the batch will terminate",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Batch Action"
+        ]
+      }
+    },
+    "/ldrest/PurchaseOrderImportLineDistribution/LoadInterfacedPurchaseOrderLineDistributions_LoadInterfacedPurchaseOrderLineDistributions_implicit_action_form_FormOperation": {
+      "get": {
+        "summary": "LoadInterfacedPurchaseOrderLineDistributions_LoadInterfacedPurchaseOrderLineDistributions_implicit_action_form_FormOperation",
+        "deprecated": false,
+        "description": "LoadInterfacedPurchaseOrderLineDistributions_LoadInterfacedPurchaseOrderLineDistributions_implicit_action_form_FormOperation",
+        "operationId": "LoadInterfacedPurchaseOrderLineDistributions_LoadInterfacedPurchaseOrderLineDistributions_implicit_action_form_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PrmRunGroup",
+            "description": "PrmRunGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PrmSpecificAction",
+            "description": "PrmSpecificAction",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PrmResult",
+            "description": "PrmResult",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PrmFinanceEnterpriseGroup",
+            "description": "PrmFinanceEnterpriseGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PrmCompany",
+            "description": "PrmCompany",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ContextPurchaseOrderImport",
+            "description": "ContextPurchaseOrderImport",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/classes/PurchaseOrderImportLineDistribution/actions/Create": {
+      "post": {
+        "summary": "Create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/createMinimumFieldsJSON"
+                  },
+                  {
+                    "$ref": "#/components/schemas/allFields"
+                  }
+                ]
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/createAllFieldsMultipart"
+              }
+            }
+          },
+          "required": false
+        },
+        "deprecated": false,
+        "description": "Create Create Action",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Raw_Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/classes/PurchaseOrderImportLineDistribution/attachment/download": {
+      "get": {
+        "summary": "Download Attachment",
+        "deprecated": false,
+        "operationId": "Download Attachment",
+        "responses": {
+          "200": {
+            "description": "Download Attachment Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "fieldName",
+            "description": "Field Name on the Business Class to Download or Upload",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "false",
+                "true"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "compress",
+            "description": "GZip output",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "k.PurchaseOrderImportLineDistribution",
+            "description": "Key",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.RunGroup",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.Company",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.PurchaseOrderImport",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.POCode",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.LineNumber",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.AddOnCharge",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionSequence",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.AssetTemplate",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.Asset",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.HasError",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionPercent",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionQuantity",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionAmount",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionAccount.Ledger",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionAccount.ToAccountingEntity",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionAccount.AccountingUnit",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionAccount.GeneralLedgerChartAccount",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionAccount.Project",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionAccount.FinanceDimension1",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionAccount.FinanceDimension2",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionAccount.FinanceDimension3",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionAccount.FinanceDimension4",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionAccount.FinanceDimension5",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionAccount.FinanceDimension6",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionAccount.FinanceDimension7",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionAccount.FinanceDimension8",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionAccount.FinanceDimension9",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionAccount.FinanceDimension10",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.DistributionAccount",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.TransientExchangeDate",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.TransientPostingDate",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.TransientFromCurrency",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.ContextPurchaseOrderImport",
+            "description": "Field",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Attachments"
+        ]
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Public API Documentation",
+    "url": "https://gen-vwf68lhjup5d6nub-pp1.inforcloudsuite.com/fsm/soap/doco/html/api"
+  },
+  "info": {
+    "license": {
+      "name": "Infor Global Solutions",
+      "url": "http://www.infor.com"
+    },
+    "contact": {
+      "name": "Infor Extreme",
+      "email": "support@infor.com",
+      "url": "https://www.inforxtreme.com/allogin/allogin.aspx"
+    },
+    "description": "Webservice APIs for PurchaseOrderImportLineDistribution UsingSpecsToGenerateFeed: true",
+    "termsOfService": "http://www.infor.com",
+    "title": "Webservice APIs for PurchaseOrderImportLineDistribution",
+    "version": "2026.03.01..19"
+  },
+  "tags": [
+    {
+      "name": "Lists",
+      "description": "PurchaseOrderImportLineDistribution business class lists"
+    },
+    {
+      "name": "Actions",
+      "description": "PurchaseOrderImportLineDistribution business class named actions"
+    },
+    {
+      "name": "Batch Action",
+      "description": "accepts json action requests for one or more records on PurchaseOrderImportLineDistribution business class"
+    },
+    {
+      "name": "Attachments",
+      "description": "PurchaseOrderImportLineDistribution attachment upload and download"
+    },
+    {
+      "name": "Form And List REST",
+      "description": "PurchaseOrderImportLineDistribution legacy format form and list REST operations"
+    }
+  ]
+}

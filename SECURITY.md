@@ -41,7 +41,9 @@ The following are safe to commit:
 ### 3. Sample Data
 - Demo files (`*_DEMO.csv`)
 - Sample files (`*_SAMPLE.csv`)
-- Swagger files (`FSM_Swagger/*.json`)
+- Swagger files organized by purpose:
+  - `FSM_Swagger/Setup/*.json` - Reference data classes
+  - `FSM_Swagger/Conversion/*.json` - Conversion target classes
 
 ### 4. Configuration Templates
 - `backend/.env.example` - Template without actual secrets

@@ -148,7 +148,7 @@ Use local swagger files as primary source for schema definitions, with FSM API a
 # CORRECT: Local-first schema loading
 swagger_json = SchemaService._load_local_swagger(business_class)
 if swagger_json:
-    # Parse local swagger file (FSM_Swagger/GLTransactionInterface.json)
+    # Parse local swagger file (FSM_Swagger/Conversion/GLTransactionInterface.json or FSM_Swagger/Setup/Account.json)
     parsed_schema = SchemaService._parse_local_swagger(swagger_json, business_class)
 else:
     # Fallback to FSM API
@@ -161,17 +161,57 @@ openapi_json = await fsm_client.get_openapi_schema(business_class)  # May fail o
 
 ### 9. Setup Business Classes Configuration (EXTENSIBILITY)
 
-Store FSM setup class configurations in database, not hardcoded.
+Store FSM setup class configurations in database with standardized endpoint format.
 
 ```python
-# CORRECT: Database-driven configuration
+# CORRECT: Database-driven configuration with _fields=_all and _limit=100000
 setup_classes = db.query(SetupBusinessClass).filter(SetupBusinessClass.is_active == True).all()
 for setup_class in setup_classes:
+    # All endpoints use _fields=_all to return complete field sets
+    # All endpoints use _limit=100000 to ensure all records are captured
     records = await fsm_client.fetch_setup_data(setup_class.endpoint_url)
+
+# Standard endpoint format:
+# soap/classes/{BusinessClass}/lists/{ListName}?_fields=_all&_limit=100000&_links=false&_pageNav=true&_out=JSON&_flatten=false
 
 # WRONG: Hardcoded configuration
 business_classes = ["Currency", "Vendor", "Customer"]  # Not extensible
 ```
+
+**Key Requirements**:
+- Always use `_fields=_all` to return all available fields (future-proof)
+- Always use `_limit=100000` to ensure all records are captured
+- List names vary by business class (DetailAccountList, Currencies, FlatList, etc.)
+- User must specify correct list name when adding new setup classes
+
+**Complete List of 12 Setup Classes**:
+
+| Business Class | List Name | Key Field |
+|----------------|-----------|-----------|
+| Account | DetailAccountList | Account |
+| AccountingEntity | PrimaryAccountingEntityList | AccountingEntity |
+| Currency | Currencies | Currency |
+| FinanceDimension1 | FinanceDimension1FlatList | FinanceDimension1 |
+| FinanceDimension2 | FinanceDimension2FlatList | FinanceDimension2 |
+| FinanceDimension3 | FinanceDimension3FlatList | FinanceDimension3 |
+| FinanceDimension4 | FinanceDimension4FlatList | FinanceDimension4 |
+| FinanceDimension5 | FinanceDimension5FlatList | FinanceDimension5 |
+| FinanceEnterpriseGroup | FinanceEnterpriseGroupList | FinanceEnterpriseGroup |
+| GeneralLedgerChartAccount | DetailAccountList | DisplayAccount |
+| Ledger | PrimaryCloseLedgerList | Ledger |
+| Project | ProjectFlatList | Project |
+
+**JSON Schema Folder Format**:
+- All setup classes use folder format (not single .json files)
+- Each folder contains: `FSM_{BusinessClass}.schema.json` and `FSM_{BusinessClass}.properties.json`
+- Key field extracted from `IdentifierPaths` in properties.json (uses last identifier)
+- FinanceDimension classes auto-generate FlatList endpoint format
+- Response format: List where index 0 is metadata, index 1+ are records with `_fields` wrapper
+
+**Why _fields=_all and _limit=100000?**:
+- `_fields=_all`: Returns all available fields (10-140 fields per class), future-proof against FSM schema changes
+- `_limit=100000`: Ensures all records captured in single request, no pagination issues
+- Benefits: Complete data, guaranteed capture, consistency, maintainability
 
 ### 10. Mapping Format Consistency (CRITICAL)
 
@@ -318,18 +358,25 @@ axios.post('http://localhost:8000/validation/start', data);  // Don't do this
 
 ### Setup Data Sync Workflow
 
-1. **Configure**: 16 FSM setup business classes pre-configured in `setup_business_classes` table
+1. **Configure**: 12 FSM setup business classes configured in `setup_business_classes` table (all using `_fields=_all&_limit=100000`)
 2. **Sync**: User clicks "Sync All Active Classes" → Backend fetches from FSM using account credentials
 3. **Store**: Reference data stored in `snapshot_records` table (account-level isolation)
 4. **Track**: Sync timestamps and record counts stored in `snapshot_registry` table
 5. **Validate**: REFERENCE_EXISTS rules check against synced data (no FSM API calls during validation)
 
+**Setup Classes** (12 total):
+- Account, AccountingEntity, Currency
+- FinanceDimension1-5, FinanceEnterpriseGroup
+- GeneralLedgerChartAccount, Ledger, Project
+
+**Endpoint Standard**: All use `_fields=_all&_limit=100000` for complete data capture
+
 ### Schema Fetching Workflow
 
 1. **Request**: User clicks "Fetch Schema from FSM" for business class
-2. **Local First**: Check `FSM_Swagger/{business_class}.json` for local swagger file
+2. **Local First**: Check `FSM_Swagger/Conversion/{business_class}.json` then `FSM_Swagger/Setup/{business_class}.json`
 3. **Parse**: Extract `components.schemas.createAllFieldsMultipart` with 91+ fields
-4. **Fallback**: If local file not found, call FSM API endpoint
+4. **Fallback**: If local file not found in either folder, call FSM API endpoint
 5. **Store**: Compute SHA256 hash, store in `schemas` table with version number
 6. **Use**: Schema used for auto-mapping and validation
 
@@ -428,7 +475,9 @@ npm run dev  # http://localhost:5173
 
 ### Adding New Business Class Support
 
-1. Add OpenAPI schema to `FSM_Swagger/` folder (e.g., `PayablesInvoice.json`)
+1. Add OpenAPI schema to appropriate folder:
+   - `FSM_Swagger/Conversion/` for classes going through conversion (e.g., `PayablesInvoice.json`, `Item.json`)
+   - `FSM_Swagger/Setup/` for reference data classes (e.g., `Vendor.json`, `Customer.json`)
 2. Schema will auto-parse on fetch from local file
 3. Add to `setup_business_classes` table if it's a reference data class
 4. Update `dependency_config.py` if class has dependencies
@@ -437,11 +486,22 @@ npm run dev  # http://localhost:5173
 ### Managing Setup Business Classes
 
 1. Navigate to "Setup Data" page in UI
-2. View all 16 pre-configured FSM setup classes
+2. View all 12 configured FSM setup classes
 3. Click "Sync All Active Classes" to fetch reference data from FSM
 4. Add custom classes using "Add New Class" button
-5. Edit endpoint URLs, key fields, or active status as needed
+5. Edit endpoint URLs (must use `_fields=_all&_limit=100000`), key fields, or active status
 6. Individual sync available per class
+
+**Standard Endpoint Format**:
+```
+soap/classes/{BusinessClass}/lists/{ListName}?_fields=_all&_limit=100000&_links=false&_pageNav=true&_out=JSON&_flatten=false
+```
+
+**List Name Examples**:
+- Account → DetailAccountList
+- Currency → Currencies
+- FinanceDimension1-5 → FinanceDimensionXFlatList
+- Project → ProjectFlatList
 
 ## Troubleshooting
 
@@ -469,7 +529,7 @@ python -m uvicorn app.main:app --reload
 
 **Authentication fails**: Verify FSM credentials, check OAuth2 token endpoint (use saak directly as username, not tenant_id#saak)
 
-**Schema fetch fails**: Check if local swagger file exists in `FSM_Swagger/` folder, verify file has `createAllFieldsMultipart` schema
+**Schema fetch fails**: Check if local swagger file exists in `FSM_Swagger/Conversion/` or `FSM_Swagger/Setup/` folders, verify file has `createAllFieldsMultipart` schema
 
 **Sync fails**: Verify FSM credentials, check endpoint URLs in `setup_business_classes` table, verify FSM environment is accessible
 
@@ -532,22 +592,25 @@ logging.basicConfig(level=logging.DEBUG)
 - **Result**: All 12 setup classes syncing successfully
 
 ### Schema Fetching Enhancement
-- **Local swagger files**: Primary source for schema definitions (`FSM_Swagger/` folder)
+- **Local swagger files**: Organized by purpose
+  - `FSM_Swagger/Setup/` - Reference data classes (12 files)
+  - `FSM_Swagger/Conversion/` - Conversion target classes (GLTransactionInterface, etc.)
 - **FSM API fallback**: Used when local file not available
 - **GLTransactionInterface**: 91 fields, 6 required fields successfully parsed
 - **Benefits**: Faster, more reliable, offline-capable
 
 ### Setup Data Management
-- **New table**: `setup_business_classes` with 12 FSM classes (corrected from 16)
-  - Excluded GLTransactionInterface (staging table, not reference data)
-  - Only classes with swagger files in FSM_Swagger/ directory
+- **New table**: `setup_business_classes` with 12 FSM classes
+  - All classes standardized with `_fields=_all&_limit=100000`
+  - Account, AccountingEntity, Currency, FinanceDimension1-5, FinanceEnterpriseGroup, GeneralLedgerChartAccount, Ledger, Project
+  - List names vary by class (DetailAccountList, Currencies, FlatList, etc.)
 - **New UI page**: SetupDataManagement.tsx for managing reference data sync
   - Real-time sync progress display
   - Status badges (Syncing, Queued, Completed, Failed)
   - Sync history tracking
 - **Sync functionality**: Fetch reference data from FSM for validation
-  - Successfully synced 5,720 records across 12 classes
-  - GeneralLedgerChartAccount (838), Currency (166), FinanceDimension5 (3,466), etc.
+  - Successfully synced 5,720+ records across 12 classes
+  - Complete field sets returned via `_fields=_all`
 - **Configuration**: Add/edit/delete setup classes, enable/disable, view sync history
 - **Integration**: REFERENCE_EXISTS validation uses synced data (no API calls during validation)
 
@@ -556,7 +619,9 @@ logging.basicConfig(level=logging.DEBUG)
 ### Active Directories
 - `backend/` - FastAPI application
 - `frontend/` - React application
-- `FSM_Swagger/` - Local swagger files (13 files)
+- `FSM_Swagger/` - Local swagger files organized by purpose
+  - `Setup/` - Reference data classes (12 files)
+  - `Conversion/` - Conversion target classes (GLTransactionInterface, etc.)
 - `Import_Files/` - Sample data files
 - `.kiro/steering/` - AI guidance documents
 

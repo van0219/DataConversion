@@ -15,18 +15,34 @@ class SchemaService:
     def _load_local_swagger(business_class: str) -> Optional[Dict]:
         """
         Load OpenAPI schema from local FSM_Swagger folder.
+        Checks both Setup/ and Conversion/ subfolders.
         Returns None if file not found.
         """
         # Look for swagger file in FSM_Swagger folder (relative to project root)
-        swagger_dir = Path(__file__).parent.parent.parent.parent.parent / "FSM_Swagger"
-        swagger_file = swagger_dir / f"{business_class}.json"
+        swagger_base_dir = Path(__file__).parent.parent.parent.parent.parent / "FSM_Swagger"
         
-        if swagger_file.exists():
-            logger.info(f"Loading schema from local file: {swagger_file}")
-            with open(swagger_file, 'r') as f:
+        # Check Conversion folder first (for classes going through conversion workflow)
+        conversion_file = swagger_base_dir / "Conversion" / f"{business_class}.json"
+        if conversion_file.exists():
+            logger.info(f"Loading schema from Conversion folder: {conversion_file}")
+            with open(conversion_file, 'r') as f:
                 return json.load(f)
         
-        logger.warning(f"Local swagger file not found: {swagger_file}")
+        # Check Setup folder (for reference data classes)
+        setup_file = swagger_base_dir / "Setup" / f"{business_class}.json"
+        if setup_file.exists():
+            logger.info(f"Loading schema from Setup folder: {setup_file}")
+            with open(setup_file, 'r') as f:
+                return json.load(f)
+        
+        # Check root folder for backward compatibility
+        root_file = swagger_base_dir / f"{business_class}.json"
+        if root_file.exists():
+            logger.info(f"Loading schema from root folder: {root_file}")
+            with open(root_file, 'r') as f:
+                return json.load(f)
+        
+        logger.warning(f"Local swagger file not found for {business_class} in Conversion/, Setup/, or root folder")
         return None
     
     @staticmethod

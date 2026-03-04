@@ -67,8 +67,8 @@ Complete web application for Infor FSM (Financials and Supply Management) data c
 - ✅ User authentication (JWT-based)
 - ✅ Account management with encrypted FSM credentials
 - ✅ Schema fetching (local swagger files + FSM API fallback)
-- ✅ Setup data management (12 FSM reference data classes)
-- ✅ Reference data sync (5,720+ records synced successfully)
+- ✅ Setup data management (12 FSM reference data classes with `_fields=_all&_limit=100000`)
+- ✅ Reference data sync (5,720+ records synced successfully with complete field sets)
 - ✅ File upload with streaming (handles millions of records)
 - ✅ Auto-mapping with confidence scoring
 - ✅ Real-time validation with progress tracking
@@ -89,13 +89,16 @@ Complete web application for Infor FSM (Financials and Supply Management) data c
 - OAuth2 authentication with FSM
 
 ### 2. Schema Management
-- Local swagger files as primary source (FSM_Swagger/ folder)
+- Local swagger files organized by purpose:
+  - `FSM_Swagger/Setup/` - Reference data classes (12 folders with JSON Schema format)
+  - `FSM_Swagger/Conversion/` - Conversion target classes (GLTransactionInterface, etc.)
 - FSM API as fallback
 - 91 fields for GLTransactionInterface
 - SHA256 versioning for schema changes
+- All setup classes use `_fields=_all&_limit=100000` for complete data capture
 
 ### 3. Setup Data Management
-- 12 pre-configured FSM reference data classes
+- 12 configured FSM reference data classes (all standardized with `_fields=_all&_limit=100000`)
 - One-click sync from FSM
 - Real-time sync progress display
 - 5,720+ reference records synced successfully
@@ -153,9 +156,11 @@ frontend/
 ├── package.json           # Node dependencies
 └── vite.config.ts         # Vite configuration
 
-FSM_Swagger/               # Local swagger files (13 files)
-Import_Files/              # Sample data files
-.kiro/steering/            # AI assistant guidance documents
+FSM_Swagger/                # FSM API schema definitions
+  ├─ Setup/                 # Reference data classes (12 files)
+  └─ Conversion/            # Conversion target classes (GLTransactionInterface, etc.)
+Import_Files/               # Sample data files
+.kiro/steering/             # AI assistant guidance documents
 ```
 
 ## 🔧 Configuration
@@ -259,7 +264,9 @@ When backend is running, visit:
 - Root documentation (README.md, QUICK_START.md, etc.)
 - Backend application (backend/)
 - Frontend application (frontend/)
-- FSM swagger files (FSM_Swagger/)
+- FSM swagger files organized by purpose:
+  - FSM_Swagger/Setup/ - Reference data classes
+  - FSM_Swagger/Conversion/ - Conversion target classes
 - Sample data (Import_Files/)
 - Steering files (.kiro/steering/)
 
@@ -295,7 +302,8 @@ When backend is running, visit:
 - ✅ Fixed base URL for setup data endpoints
 - ✅ Added response format handling (list with _fields wrapper)
 - ✅ Improved transaction handling with batch commits
-- ✅ Successfully synced all 12 setup classes (5,720 records)
+- ✅ Successfully synced all 12 setup classes (5,720+ records with complete field sets)
+- ✅ All endpoints standardized with `_fields=_all&_limit=100000`
 
 ### Schema Fetching Enhancement
 - ✅ Local swagger files as primary source
@@ -305,8 +313,9 @@ When backend is running, visit:
 ### Setup Data Management
 - ✅ New UI page for managing reference data
 - ✅ Real-time sync progress display
-- ✅ CRUD operations for setup classes
+- ✅ CRUD operations for setup classes (with endpoint standardization)
 - ✅ Sync history tracking
+- ✅ All 12 classes use `_fields=_all&_limit=100000` for complete data
 
 ---
 

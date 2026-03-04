@@ -168,7 +168,7 @@ git ls-files | grep -E '\.(py|ts|tsx)$'
 # Check configuration templates
 git ls-files | grep '\.example$'
 
-# Check swagger files
+# Check swagger files (organized in Setup/ and Conversion/ folders)
 git ls-files | grep 'FSM_Swagger/.*\.json$'
 ```
 

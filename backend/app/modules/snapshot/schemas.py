@@ -61,6 +61,9 @@ class SetupBusinessClassUpdate(BaseModel):
 class SetupBusinessClassResponse(SetupBusinessClassBase):
     """Schema for setup business class response"""
     id: int
+    category: str  # 'standard' or 'custom'
+    original_endpoint_url: Optional[str] = None
+    original_key_field: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     

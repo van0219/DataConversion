@@ -1,4 +1,4 @@
-FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,Status,AccountingEntity,OrganizationCode,ToAccountingEntity,AccountCode,PostingDate,TransactionAmount,Description
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,Status,JoseRizal,OrganizationCode,ToAccountingEntity,AccountCode,PostingDate,TransactionAmount,Description
 1,DataConversion_Demo,1,0,10,,10,100008,08/25/2025,457.66,Valid record - all fields correct
 1,DataConversion_Demo,2,0,10,,10,100008,08/25/2025,797.93,Valid record
 1,DataConversion_Demo,3,0,10,,10,100008,08/25/2025,-28.68,Valid record with negative amount

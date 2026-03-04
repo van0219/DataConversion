@@ -219,13 +219,21 @@ class FSMClient:
                 # Handle different response formats
                 if isinstance(data, list):
                     # Response is directly a list of records
-                    # Each record may have _fields wrapper
+                    # First item may be metadata (_count, _links), skip it
+                    # Remaining items have _fields wrapper
                     flattened_records = []
-                    for record in data:
-                        if isinstance(record, dict) and "_fields" in record:
-                            flattened_records.append(record["_fields"])
-                        else:
-                            flattened_records.append(record)
+                    for i, record in enumerate(data):
+                        if isinstance(record, dict):
+                            # Skip metadata item (has _count or _links but no _fields)
+                            if "_count" in record or ("_links" in record and "_fields" not in record):
+                                logger.debug(f"Skipping metadata item at index {i}")
+                                continue
+                            
+                            # Extract _fields if present
+                            if "_fields" in record:
+                                flattened_records.append(record["_fields"])
+                            else:
+                                flattened_records.append(record)
                     
                     logger.info(f"Fetched {len(flattened_records)} records from setup endpoint (direct list)")
                     return flattened_records

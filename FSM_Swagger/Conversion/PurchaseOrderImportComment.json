@@ -1,0 +1,3116 @@
+{
+  "components": {
+    "examples": {},
+    "schemas": {
+      "contextFields": {
+        "type": "object",
+        "properties": {
+          "PurchaseOrderImportComment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportComment"
+        ]
+      },
+      "createAllFieldsMultipart": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/createMinimumFieldsMultipart"
+          }
+        ],
+        "properties": {
+          "POCode": {
+            "default": "",
+            "type": "string"
+          },
+          "Company": {
+            "default": "",
+            "type": "string"
+          },
+          "CommentType": {
+            "default": "",
+            "type": "string",
+            "enum": [
+              "I",
+              "R",
+              "P",
+              "N",
+              "D",
+              "S",
+              "O",
+              "T",
+              "E",
+              "F"
+            ]
+          },
+          "CommentText": {
+            "default": "",
+            "type": "string"
+          },
+          "PurchaseOrderImportComment": {
+            "default": "",
+            "type": "string"
+          },
+          "LineNumber": {
+            "default": "",
+            "type": "string"
+          },
+          "HasError": {
+            "default": "",
+            "type": "string"
+          },
+          "CommentTitle": {
+            "default": "",
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportComment",
+          "Company",
+          "PurchaseOrderImport"
+        ]
+      },
+      "allFields": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/minimumFields"
+          }
+        ],
+        "properties": {
+          "POCode": {
+            "type": "string"
+          },
+          "Company": {
+            "type": "string"
+          },
+          "CommentType": {
+            "type": "string",
+            "enum": [
+              "I",
+              "R",
+              "P",
+              "N",
+              "D",
+              "S",
+              "O",
+              "T",
+              "E",
+              "F"
+            ]
+          },
+          "CommentText": {
+            "type": "string"
+          },
+          "PurchaseOrderImportComment": {
+            "type": "string"
+          },
+          "LineNumber": {
+            "type": "string"
+          },
+          "HasError": {
+            "type": "string"
+          },
+          "CommentTitle": {
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportComment",
+          "Company",
+          "PurchaseOrderImport"
+        ]
+      },
+      "Raw_Fields": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "Raw_JSONBatchRequest": {
+        "type": "object",
+        "properties": {
+          "_records": {
+            "$ref": "#/components/schemas/Raw_RecordArray"
+          }
+        }
+      },
+      "FLR_RecordsArray": {
+        "type": "object",
+        "properties": {
+          "ResponseArray": {
+            "$ref": "#/components/schemas/FLR_RecordArray"
+          }
+        }
+      },
+      "FLR_Fields": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "Update_allFields": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/contextFields"
+          },
+          {
+            "$ref": "#/components/schemas/allFields"
+          }
+        ],
+        "properties": {}
+      },
+      "contextFieldsMultipart": {
+        "type": "object",
+        "properties": {
+          "PurchaseOrderImportComment": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportComment"
+        ]
+      },
+      "Update_allMPFields": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/contextFieldsMultipart"
+          },
+          {
+            "$ref": "#/components/schemas/allFieldsMultipart"
+          }
+        ],
+        "properties": {}
+      },
+      "createContextFields": {
+        "type": "object",
+        "properties": {
+          "PurchaseOrderImportComment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportComment"
+        ]
+      },
+      "createMinimumFieldsMultipart": {
+        "type": "object",
+        "properties": {
+          "Company": {
+            "default": "",
+            "type": "string"
+          },
+          "PurchaseOrderImportComment": {
+            "default": "",
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportComment",
+          "Company",
+          "PurchaseOrderImport"
+        ]
+      },
+      "FLR_Error": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "createMinimumFieldsJSON": {
+        "type": "object",
+        "properties": {
+          "Company": {
+            "type": "string"
+          },
+          "PurchaseOrderImportComment": {
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportComment",
+          "Company",
+          "PurchaseOrderImport"
+        ]
+      },
+      "Raw_RecordArray": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Raw_Record"
+        }
+      },
+      "createContextFieldsJSON": {
+        "type": "object",
+        "properties": {
+          "PurchaseOrderImportComment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportComment"
+        ]
+      },
+      "FLR_Record": {
+        "type": "object",
+        "properties": {
+          "Response": {
+            "$ref": "#/components/schemas/FLR_Fields"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "allFieldsMultipart": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/minimumFieldsMultipart"
+          }
+        ],
+        "properties": {
+          "POCode": {
+            "default": "",
+            "type": "string"
+          },
+          "Company": {
+            "default": "",
+            "type": "string"
+          },
+          "CommentType": {
+            "default": "",
+            "type": "string",
+            "enum": [
+              "I",
+              "R",
+              "P",
+              "N",
+              "D",
+              "S",
+              "O",
+              "T",
+              "E",
+              "F"
+            ]
+          },
+          "CommentText": {
+            "default": "",
+            "type": "string"
+          },
+          "PurchaseOrderImportComment": {
+            "default": "",
+            "type": "string"
+          },
+          "LineNumber": {
+            "default": "",
+            "type": "string"
+          },
+          "HasError": {
+            "default": "",
+            "type": "string"
+          },
+          "CommentTitle": {
+            "default": "",
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportComment",
+          "Company",
+          "PurchaseOrderImport"
+        ]
+      },
+      "FLR_JSONBatchRequest": {
+        "type": "object",
+        "properties": {
+          "_records": {
+            "type": "object",
+            "$ref": "#/components/schemas/FLR_RecordsArray"
+          }
+        },
+        "example": {
+          "value": "{   \"_records\": [       {           \"_fields\": {             \"Company\":\"\",\n             \"PurchaseOrderImport\":\"\",\n             \"POCode\":\"\",\n             \"LineNumber\":\"\",\n             \"HasError\":\"\",\n             \"CommentTitle\":\"\",\n             \"CommentType\":\"\",\n             \"CommentText\":\"\"             }         },       {           \"_fields\": {             \"Company\":\"\",\n             \"PurchaseOrderImport\":\"\",\n             \"POCode\":\"\",\n             \"LineNumber\":\"\",\n             \"HasError\":\"\",\n             \"CommentTitle\":\"\",\n             \"CommentType\":\"\",\n             \"CommentText\":\"\"             }         }     ]}",
+          "summmary": "JSON Batch Example"
+        }
+      },
+      "Error": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "minimumFields": {
+        "type": "object",
+        "properties": {
+          "Company": {
+            "type": "string"
+          },
+          "PurchaseOrderImportComment": {
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportComment",
+          "Company",
+          "PurchaseOrderImport"
+        ]
+      },
+      "FLR_RecordArray": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/FLR_Record"
+        }
+      },
+      "createMinimumFields": {
+        "type": "object",
+        "properties": {
+          "Company": {
+            "type": "string"
+          },
+          "PurchaseOrderImportComment": {
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportComment",
+          "Company",
+          "PurchaseOrderImport"
+        ]
+      },
+      "Raw_Record": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "_fields": {
+            "$ref": "#/components/schemas/Raw_Fields"
+          }
+        }
+      },
+      "createContextFieldsMultipart": {
+        "type": "object",
+        "properties": {
+          "PurchaseOrderImportComment": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportComment"
+        ]
+      },
+      "minimumFieldsJSON": {
+        "type": "object",
+        "properties": {
+          "Company": {
+            "type": "string"
+          },
+          "PurchaseOrderImportComment": {
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportComment",
+          "Company",
+          "PurchaseOrderImport"
+        ]
+      },
+      "minimumFieldsMultipart": {
+        "type": "object",
+        "properties": {
+          "Company": {
+            "default": "",
+            "type": "string"
+          },
+          "PurchaseOrderImportComment": {
+            "default": "",
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportComment",
+          "Company",
+          "PurchaseOrderImport"
+        ]
+      },
+      "contextFieldsJSON": {
+        "type": "object",
+        "properties": {
+          "PurchaseOrderImportComment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportComment"
+        ]
+      },
+      "createAllFields": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/createMinimumFields"
+          }
+        ],
+        "properties": {
+          "POCode": {
+            "type": "string"
+          },
+          "Company": {
+            "type": "string"
+          },
+          "CommentType": {
+            "type": "string",
+            "enum": [
+              "I",
+              "R",
+              "P",
+              "N",
+              "D",
+              "S",
+              "O",
+              "T",
+              "E",
+              "F"
+            ]
+          },
+          "CommentText": {
+            "type": "string"
+          },
+          "PurchaseOrderImportComment": {
+            "type": "string"
+          },
+          "LineNumber": {
+            "type": "string"
+          },
+          "HasError": {
+            "type": "string"
+          },
+          "CommentTitle": {
+            "type": "string"
+          },
+          "PurchaseOrderImport": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "PurchaseOrderImportComment",
+          "Company",
+          "PurchaseOrderImport"
+        ]
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://mingle-stage01-ionapi.inforcloudsuite.com/VWF68LHJUP5D6NUB_PP1/FSM/fsm/soap"
+    }
+  ],
+  "openapi": "3.0.0",
+  "paths": {
+    "/classes/PurchaseOrderImportComment/actions/FastDelete": {
+      "delete": {
+        "summary": "FastDelete",
+        "deprecated": false,
+        "description": "FastDelete Delete Action",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Raw_Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImportComment",
+            "description": "PurchaseOrderImportComment",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Company",
+            "description": "Company",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImport",
+            "description": "PurchaseOrderImport",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "POCode",
+            "description": "POCode",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "LineNumber",
+            "description": "LineNumber",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "HasError",
+            "description": "HasError",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentTitle",
+            "description": "CommentTitle",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "I",
+                "R",
+                "P",
+                "N",
+                "D",
+                "S",
+                "O",
+                "T",
+                "E",
+                "F"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentType",
+            "description": "CommentType",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentText",
+            "description": "CommentText",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/ldrest/PurchaseOrderImportComment/Find_PurchaseOrderImportComment_FormOperation": {
+      "get": {
+        "summary": "Find_PurchaseOrderImportComment_FormOperation",
+        "deprecated": false,
+        "description": "Find_PurchaseOrderImportComment_FormOperation",
+        "operationId": "Find_PurchaseOrderImportComment_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "POCode",
+            "description": "POCode",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Company",
+            "description": "Company",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "I",
+                "R",
+                "P",
+                "N",
+                "D",
+                "S",
+                "O",
+                "T",
+                "E",
+                "F"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentType",
+            "description": "CommentType",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentText",
+            "description": "CommentText",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImportComment",
+            "description": "PurchaseOrderImportComment",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "LineNumber",
+            "description": "LineNumber",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentTitle",
+            "description": "CommentTitle",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImport",
+            "description": "PurchaseOrderImport",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/ldrest/PurchaseOrderImportComment/LineComments_ListOperation": {
+      "get": {
+        "summary": "LineComments_ListOperation",
+        "deprecated": false,
+        "description": "LineComments_ListOperation",
+        "operationId": "LineComments_ListOperation",
+        "responses": {
+          "200": {
+            "description": "List Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "LineNumber",
+            "description": "LineNumber",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentTitle",
+            "description": "CommentTitle",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "I",
+                "R",
+                "P",
+                "N",
+                "D",
+                "S",
+                "O",
+                "T",
+                "E",
+                "F"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentType",
+            "description": "CommentType",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImportComment",
+            "description": "PurchaseOrderImportComment",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 5,
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_limit",
+            "description": "How many records to return",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "FIRST",
+                "LAST",
+                "NEXT",
+                "PREVIOUS"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_paging",
+            "description": "Name of paging operation",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_returnFieldState",
+            "description": "Return the Field state label instead of the value",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/classes/PurchaseOrderImportComment/actions/Create": {
+      "post": {
+        "summary": "Create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/createMinimumFieldsJSON"
+                  },
+                  {
+                    "$ref": "#/components/schemas/allFields"
+                  }
+                ]
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/createAllFieldsMultipart"
+              }
+            }
+          },
+          "required": false
+        },
+        "deprecated": false,
+        "description": "Create Create Action",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Raw_Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/classes/PurchaseOrderImportComment/lists/_generic": {
+      "get": {
+        "summary": "Generic List Service",
+        "deprecated": false,
+        "operationId": "Generic List Service",
+        "responses": {
+          "200": {
+            "description": "Generic List Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "CommentText",
+                  "CommentTitle",
+                  "CommentType",
+                  "Company",
+                  "HasError",
+                  "LineNumber",
+                  "POCode",
+                  "PurchaseOrderImport",
+                  "PurchaseOrderImportComment",
+                  "_all"
+                ]
+              }
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_fields",
+            "description": "Fields To Return",
+            "required": true
+          },
+          {
+            "schema": {
+              "default": 5,
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_limit",
+            "description": "How many records to return",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NEXT",
+                "PREVIOUS"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_paging",
+            "description": "Name of paging operation",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_fts",
+            "description": "Replicate Dataset - FROM Time Stamp - YYYYMMDDHHMMSSFF",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_tts",
+            "description": "Replicate Dataset - TO Time Stamp - YYYYMMDDHHMMSSFF",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_recordCountOnly",
+            "description": "Display only the number of records returned in a list action.",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_nonHistReplOptimization",
+            "description": "Enable replication read oprimization when no historical changes have been done since _fts.",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_rrs",
+            "description": "Replicate Dataset - Related Replicates: Fill in with comma separated list of values e.g. Item,ItemGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_syncWait",
+            "description": "Replicate Dataset - Replication sync wait time in seconds",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_filter",
+            "description": "Simple Filter - name::value|name2::value2|name3::value3",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_lplFilter",
+            "description": "Complex Filter - LPL Filter String Example: (AirportCode like \"MSP*\")",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_returnFieldState",
+            "description": "Return the Field state label instead of the value",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Set1"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_setName",
+            "description": "Order results by this set/index",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_links",
+            "description": "Show hypertext",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": true,
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_pageNav",
+            "description": "Include Paging Header",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_flatten",
+            "description": "Display all Group Field members as individual Fields in list output.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Lists"
+        ]
+      },
+      "description": "Generic List Service"
+    },
+    "/classes/PurchaseOrderImportComment/lists/{list}": {
+      "get": {
+        "summary": "List Service",
+        "deprecated": false,
+        "operationId": "List Service",
+        "responses": {
+          "200": {
+            "description": "List Service Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "HeaderComments",
+                "LineComments",
+                "PurchaseOrderImportCommentList"
+              ]
+            },
+            "in": "path",
+            "explode": false,
+            "name": "list",
+            "description": "List",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "_all"
+                ]
+              }
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_fields",
+            "description": "Return All Fields",
+            "style": "form",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 5,
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_limit",
+            "description": "How many records to return",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NEXT",
+                "PREVIOUS"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_paging",
+            "description": "Name of paging operation",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_fts",
+            "description": "Replicate Dataset - FROM Time Stamp - YYYYMMDDHHMMSSFF",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_tts",
+            "description": "Replicate Dataset - TO Time Stamp - YYYYMMDDHHMMSSFF",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_recordCountOnly",
+            "description": "Display only the number of records returned in a list action.",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_nonHistReplOptimization",
+            "description": "Enable replication read oprimization when no historical changes have been done since _fts.",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_rrs",
+            "description": "Replicate Dataset - Related Replicates: Fill in with comma separated list of values e.g. Item,ItemGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_syncWait",
+            "description": "Replicate Dataset - Replication sync wait time in seconds",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_filter",
+            "description": "Simple Filter - name::value|name2::value2|name3::value3",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_lplFilter",
+            "description": "Complex Filter - LPL Filter String Example: (AirportCode like \"MSP*\")",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_returnFieldState",
+            "description": "Return the Field state label instead of the value",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Set1"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_setName",
+            "description": "Order results by this set/index",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_groupBy",
+            "description": "Group By Field Names - Name,Age,City",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "count",
+                "sum",
+                "avg",
+                "min",
+                "max"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_aggregateOperation",
+            "description": "Aggregate Operation Name",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_aggregateColumn",
+            "description": "Aggregate Column Name",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_links",
+            "description": "Show hypertext",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": true,
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_pageNav",
+            "description": "Include Paging Header",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_flatten",
+            "description": "Display all Group Field members as individual Fields in list output.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Lists"
+        ]
+      },
+      "description": "List Service"
+    },
+    "/ldrest/PurchaseOrderImportComment/Create_PurchaseOrderImportComment_FormOperation": {
+      "post": {
+        "summary": "Create_PurchaseOrderImportComment_FormOperation",
+        "requestBody": {
+          "description": "Create_PurchaseOrderImportComment_FormOperation Request",
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "POCode": {},
+                  "Company": {},
+                  "CommentType": {
+                    "type": "string",
+                    "enum": [
+                      " ",
+                      "I",
+                      "R",
+                      "P",
+                      "N",
+                      "D",
+                      "S",
+                      "O",
+                      "T",
+                      "E",
+                      "F"
+                    ]
+                  },
+                  "CommentText": {},
+                  "PurchaseOrderImportComment": {},
+                  "LineNumber": {},
+                  "CommentTitle": {},
+                  "PurchaseOrderImport": {}
+                },
+                "required": [
+                  "Company",
+                  "PurchaseOrderImport",
+                  "PurchaseOrderImportComment"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "deprecated": false,
+        "description": "Create_PurchaseOrderImportComment_FormOperation",
+        "operationId": "Create_PurchaseOrderImportComment_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/ldrest/PurchaseOrderImportComment/Update_PurchaseOrderImportComment_FormOperation": {
+      "put": {
+        "summary": "Update_PurchaseOrderImportComment_FormOperation",
+        "requestBody": {
+          "description": "Update_PurchaseOrderImportComment_FormOperation Request",
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "POCode": {},
+                  "Company": {},
+                  "CommentType": {
+                    "type": "string",
+                    "enum": [
+                      " ",
+                      "I",
+                      "R",
+                      "P",
+                      "N",
+                      "D",
+                      "S",
+                      "O",
+                      "T",
+                      "E",
+                      "F"
+                    ]
+                  },
+                  "CommentText": {},
+                  "PurchaseOrderImportComment": {},
+                  "LineNumber": {},
+                  "CommentTitle": {},
+                  "PurchaseOrderImport": {}
+                },
+                "required": [
+                  "Company",
+                  "PurchaseOrderImport",
+                  "PurchaseOrderImportComment"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "deprecated": false,
+        "description": "Update_PurchaseOrderImportComment_FormOperation",
+        "operationId": "Update_PurchaseOrderImportComment_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/classes/PurchaseOrderImportComment/actions/{action}/batch": {
+      "post": {
+        "summary": "Action Batch Service",
+        "requestBody": {
+          "description": "JSON Payload",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Raw_JSONBatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "deprecated": false,
+        "description": "Action Batch Service",
+        "operationId": "Action Batch Service",
+        "responses": {
+          "200": {
+            "description": "Action Batch Service Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Create",
+                "Delete",
+                "FastDelete",
+                "Find",
+                "Update"
+              ]
+            },
+            "in": "path",
+            "explode": false,
+            "name": "action",
+            "description": "Action",
+            "required": true
+          },
+          {
+            "schema": {
+              "default": -1,
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_maxFailures",
+            "description": "maximum allowed batch entry failures before the batch will terminate",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Batch Action"
+        ]
+      }
+    },
+    "/ldrest/PurchaseOrderImportComment/HeaderComments_ListOperation": {
+      "get": {
+        "summary": "HeaderComments_ListOperation",
+        "deprecated": false,
+        "description": "HeaderComments_ListOperation",
+        "operationId": "HeaderComments_ListOperation",
+        "responses": {
+          "200": {
+            "description": "List Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentTitle",
+            "description": "CommentTitle",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "I",
+                "R",
+                "P",
+                "N",
+                "D",
+                "S",
+                "O",
+                "T",
+                "E",
+                "F"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentType",
+            "description": "CommentType",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImportComment",
+            "description": "PurchaseOrderImportComment",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 5,
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_limit",
+            "description": "How many records to return",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "FIRST",
+                "LAST",
+                "NEXT",
+                "PREVIOUS"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_paging",
+            "description": "Name of paging operation",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_returnFieldState",
+            "description": "Return the Field state label instead of the value",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/classes/PurchaseOrderImportComment/attachment/download": {
+      "get": {
+        "summary": "Download Attachment",
+        "deprecated": false,
+        "operationId": "Download Attachment",
+        "responses": {
+          "200": {
+            "description": "Download Attachment Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "fieldName",
+            "description": "Field Name on the Business Class to Download or Upload",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "false",
+                "true"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "compress",
+            "description": "GZip output",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "k.PurchaseOrderImportComment",
+            "description": "Key",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.Company",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.PurchaseOrderImport",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.POCode",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.LineNumber",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.HasError",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.CommentTitle",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.CommentType",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.CommentText",
+            "description": "Field",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Attachments"
+        ]
+      }
+    },
+    "/classes/PurchaseOrderImportComment/attachment/upload": {
+      "post": {
+        "summary": "Upload Attachment",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "f.CommentTitle": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "fieldName": {
+                    "description": "Field Name on the Business Class to Upload",
+                    "type": "string"
+                  },
+                  "f.POCode": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.PurchaseOrderImport": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.HasError": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "findFirst": {
+                    "description": "Perform pre-emptive Find",
+                    "type": "boolean"
+                  },
+                  "f.Company": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.CommentText": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "k.PurchaseOrderImportComment": {
+                    "description": "Key",
+                    "type": "string"
+                  },
+                  "file": {
+                    "format": "binary",
+                    "description": "File To Upload",
+                    "type": "string"
+                  },
+                  "f.LineNumber": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "formName": {
+                    "description": "Form Name",
+                    "type": "string"
+                  },
+                  "f.CommentType": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "listName": {
+                    "description": "List Name",
+                    "type": "string"
+                  },
+                  "actionName": {
+                    "description": "Action Name",
+                    "type": "string",
+                    "enum": [
+                      "Create",
+                      "Update",
+                      "Delete",
+                      "FastDelete"
+                    ]
+                  }
+                },
+                "required": [
+                  "actionName",
+                  "fieldName",
+                  "file",
+                  "k.PurchaseOrderImportComment"
+                ]
+              }
+            }
+          },
+          "required": false
+        },
+        "deprecated": false,
+        "operationId": "Upload Attachment",
+        "responses": {
+          "200": {
+            "description": "Upload Attachment Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Attachments"
+        ]
+      }
+    },
+    "/classes/PurchaseOrderImportComment/actions/Find": {
+      "get": {
+        "summary": "Find A Record",
+        "deprecated": false,
+        "description": "Find A Record",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Raw_Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImportComment",
+            "description": "PurchaseOrderImportComment",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/classes/PurchaseOrderImportComment/actions/Delete": {
+      "delete": {
+        "summary": "Delete",
+        "deprecated": false,
+        "description": "Delete Delete Action",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Raw_Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImportComment",
+            "description": "PurchaseOrderImportComment",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Company",
+            "description": "Company",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImport",
+            "description": "PurchaseOrderImport",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "POCode",
+            "description": "POCode",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "LineNumber",
+            "description": "LineNumber",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "HasError",
+            "description": "HasError",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentTitle",
+            "description": "CommentTitle",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "I",
+                "R",
+                "P",
+                "N",
+                "D",
+                "S",
+                "O",
+                "T",
+                "E",
+                "F"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentType",
+            "description": "CommentType",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentText",
+            "description": "CommentText",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/ldrest/PurchaseOrderImportComment/FastDelete_PurchaseOrderImportComment_FormOperation": {
+      "delete": {
+        "summary": "FastDelete_PurchaseOrderImportComment_FormOperation",
+        "deprecated": false,
+        "description": "FastDelete_PurchaseOrderImportComment_FormOperation",
+        "operationId": "FastDelete_PurchaseOrderImportComment_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "POCode",
+            "description": "POCode",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Company",
+            "description": "Company",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "I",
+                "R",
+                "P",
+                "N",
+                "D",
+                "S",
+                "O",
+                "T",
+                "E",
+                "F"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentType",
+            "description": "CommentType",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentText",
+            "description": "CommentText",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImportComment",
+            "description": "PurchaseOrderImportComment",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "LineNumber",
+            "description": "LineNumber",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentTitle",
+            "description": "CommentTitle",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImport",
+            "description": "PurchaseOrderImport",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/ldrest/PurchaseOrderImportComment/PurchaseOrderImportCommentList_ListOperation": {
+      "get": {
+        "summary": "PurchaseOrderImportCommentList_ListOperation",
+        "deprecated": false,
+        "description": "PurchaseOrderImportCommentList_ListOperation",
+        "operationId": "PurchaseOrderImportCommentList_ListOperation",
+        "responses": {
+          "200": {
+            "description": "List Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Company",
+            "description": "Company",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImport",
+            "description": "PurchaseOrderImport",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "POCode",
+            "description": "POCode",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "LineNumber",
+            "description": "LineNumber",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentTitle",
+            "description": "CommentTitle",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentText",
+            "description": "CommentText",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "I",
+                "R",
+                "P",
+                "N",
+                "D",
+                "S",
+                "O",
+                "T",
+                "E",
+                "F"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentType",
+            "description": "CommentType",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImportComment",
+            "description": "PurchaseOrderImportComment",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 5,
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_limit",
+            "description": "How many records to return",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "FIRST",
+                "LAST",
+                "NEXT",
+                "PREVIOUS"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_paging",
+            "description": "Name of paging operation",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_returnFieldState",
+            "description": "Return the Field state label instead of the value",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/classes/PurchaseOrderImportComment/actions/Update": {
+      "put": {
+        "summary": "Update",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/contextFieldsJSON"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Update_allFields"
+                  }
+                ]
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Update_allMPFields"
+              }
+            }
+          },
+          "required": false
+        },
+        "deprecated": false,
+        "description": "Update Update Action",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Raw_Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/ldrest/PurchaseOrderImportComment/Delete_PurchaseOrderImportComment_FormOperation": {
+      "delete": {
+        "summary": "Delete_PurchaseOrderImportComment_FormOperation",
+        "deprecated": false,
+        "description": "Delete_PurchaseOrderImportComment_FormOperation",
+        "operationId": "Delete_PurchaseOrderImportComment_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "POCode",
+            "description": "POCode",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Company",
+            "description": "Company",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "I",
+                "R",
+                "P",
+                "N",
+                "D",
+                "S",
+                "O",
+                "T",
+                "E",
+                "F"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentType",
+            "description": "CommentType",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentText",
+            "description": "CommentText",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImportComment",
+            "description": "PurchaseOrderImportComment",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "LineNumber",
+            "description": "LineNumber",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CommentTitle",
+            "description": "CommentTitle",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "PurchaseOrderImport",
+            "description": "PurchaseOrderImport",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Public API Documentation",
+    "url": "https://gen-vwf68lhjup5d6nub-pp1.inforcloudsuite.com/fsm/soap/doco/html/api"
+  },
+  "info": {
+    "license": {
+      "name": "Infor Global Solutions",
+      "url": "http://www.infor.com"
+    },
+    "contact": {
+      "name": "Infor Extreme",
+      "email": "support@infor.com",
+      "url": "https://www.inforxtreme.com/allogin/allogin.aspx"
+    },
+    "description": "Webservice APIs for PurchaseOrderImportComment UsingSpecsToGenerateFeed: true",
+    "termsOfService": "http://www.infor.com",
+    "title": "Webservice APIs for PurchaseOrderImportComment",
+    "version": "2026.03.01..19"
+  },
+  "tags": [
+    {
+      "name": "Lists",
+      "description": "PurchaseOrderImportComment business class lists"
+    },
+    {
+      "name": "Actions",
+      "description": "PurchaseOrderImportComment business class named actions"
+    },
+    {
+      "name": "Batch Action",
+      "description": "accepts json action requests for one or more records on PurchaseOrderImportComment business class"
+    },
+    {
+      "name": "Attachments",
+      "description": "PurchaseOrderImportComment attachment upload and download"
+    },
+    {
+      "name": "Form And List REST",
+      "description": "PurchaseOrderImportComment legacy format form and list REST operations"
+    }
+  ]
+}

@@ -27,7 +27,8 @@ This workspace contains the **FSM Conversion Workbench** - a complete web applic
 - Multi-account support
 - Streaming architecture for millions of records
 - Premium enterprise UI (black/red/white theme)
-- Setup Data Management for reference data sync (12 FSM classes, 5,720 records)
+- Setup Data Management for reference data sync (12 FSM classes, 5,720+ records with complete field sets)
+- All setup classes standardized with `_fields=_all&_limit=100000`
 - Local swagger files for reliable schema fetching
 - Workspace organized and GitHub-ready
 
@@ -53,7 +54,8 @@ When working in this workspace:
 ### Key Features
 - Account management with encrypted FSM credentials
 - Dynamic schema fetching from local swagger files (with FSM API fallback)
-- Reference data snapshot sync (12 FSM setup classes, 5,720 records synced)
+- Reference data snapshot sync (12 FSM setup classes, 5,720+ records synced with complete field sets)
+- All setup classes use `_fields=_all&_limit=100000` for complete data capture
 - Setup Data Management UI for configuring and syncing reference data
 - Streaming file upload (handles millions of records)
 - Intelligent auto-mapping with confidence scoring
@@ -262,8 +264,17 @@ Import_Files/               - Source data files
   ├─ GLTransactionInterface_20251128.csv
   └─ GLTransactionInterface_DEMO.csv (with errors)
 
-FSM_Swagger/                - FSM API schema definitions (13 files)
-  └─ GLTransactionInterface.json
+FSM_Swagger/                - FSM API schema definitions
+  ├─ Setup/                 - Reference data classes (12 folders with JSON Schema format)
+  │   ├─ Account/
+  │   │   ├─ FSM_Account.schema.json
+  │   │   └─ FSM_Account.properties.json
+  │   ├─ Currency/
+  │   ├─ FinanceDimension1-6/
+  │   └─ ... (12 total classes)
+  │
+  └─ Conversion/            - Conversion target classes
+      └─ GLTransactionInterface/
 
 temp/                       - Temporary files (can be deleted)
   ├─ README.md             - Explains temp files
@@ -533,20 +544,22 @@ python -m uvicorn app.main:app --reload
 - **Sync Functionality Fix**:
   - Fixed OAuth URL construction (missing slash)
   - Fixed base URL for setup data endpoints
-  - Added response format handling (list with _fields wrapper)
+  - Added response format handling (list with _fields wrapper, skip metadata)
   - Improved transaction handling with batch commits
-  - Successfully synced 5,720 records across 12 classes
+  - Successfully synced 5,720+ records across 12 classes with complete field sets
+  - All endpoints standardized with `_fields=_all&_limit=100000`
 - **Status**: 87% complete (20/23 tasks), demo-ready, GitHub-ready
 
 ### March 1, 2026 - Setup Data Management & Schema Enhancements ⭐
 
 - **Added**: Setup Data Management feature
-  - New table: `setup_business_classes` with 12 FSM classes (corrected from 16)
+  - New table: `setup_business_classes` with 12 FSM classes
+  - All classes standardized with `_fields=_all&_limit=100000`
   - New UI page: SetupDataManagement.tsx with real-time sync progress
-  - Sync functionality for reference data (5,720 records synced)
-  - CRUD operations for setup classes
+  - Sync functionality for reference data (5,720+ records synced with complete field sets)
+  - CRUD operations for setup classes with endpoint standardization
 - **Enhanced**: Schema fetching
-  - Local swagger files as primary source (`FSM_Swagger/` folder, 13 files)
+  - Local swagger files as primary source (`FSM_Swagger/Setup/` and `FSM_Swagger/Conversion/` folders)
   - FSM API as fallback
   - GLTransactionInterface: 91 fields successfully parsed
 - **Updated**: FSM_Conversion_Workbench_Architecture.md with new patterns
@@ -598,7 +611,8 @@ Architecture, implementation, testing, documentation
 - ✅ Token refresh implementation (8-hour access, 30-day refresh)
 - ✅ Upload endpoint fixes (FormData handling, Content-Type)
 - ✅ Searchable dropdown for manual field mapping
-- ✅ Setup Data Management UI (12 FSM classes, 5,720 records synced)
+- ✅ Setup Data Management UI (12 FSM classes, 5,720+ records synced with complete field sets)
+- ✅ All setup classes standardized with `_fields=_all&_limit=100000`
 - ✅ Local swagger file support for schema fetching (13 files)
 - ✅ Sync functionality with real-time progress display
 - ✅ Account-level credential management with encryption
