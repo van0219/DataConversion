@@ -8,6 +8,7 @@ class ValidationRuleTemplate(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(255), nullable=False)
     business_class = Column(String(255), index=True)  # NULL for GLOBAL rules
+    rule_set_id = Column(Integer, ForeignKey("validation_rule_sets.id", ondelete="CASCADE"), nullable=True, index=True)  # NULL for unassigned
     rule_type = Column(String(100), nullable=False, index=True)  # REFERENCE_EXISTS, REQUIRED_OVERRIDE, etc.
     field_name = Column(String(255), nullable=False)
     reference_business_class = Column(String(255))  # For REFERENCE_EXISTS rules

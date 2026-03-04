@@ -43,6 +43,7 @@ class SnapshotRegistryItem(BaseModel):
 class SetupBusinessClassBase(BaseModel):
     """Base schema for setup business class"""
     name: str
+    list_name: Optional[str] = None  # Selected list name
     endpoint_url: str
     key_field: str
     is_active: bool = True
@@ -54,6 +55,7 @@ class SetupBusinessClassCreate(SetupBusinessClassBase):
 class SetupBusinessClassUpdate(BaseModel):
     """Schema for updating setup business class"""
     name: Optional[str] = None
+    list_name: Optional[str] = None
     endpoint_url: Optional[str] = None
     key_field: Optional[str] = None
     is_active: Optional[bool] = None
@@ -69,3 +71,10 @@ class SetupBusinessClassResponse(SetupBusinessClassBase):
     
     class Config:
         from_attributes = True
+
+class AvailableSwaggerFile(BaseModel):
+    """Schema for available swagger file with list options"""
+    name: str
+    key_field: str
+    available_lists: List[str]
+    folder: str

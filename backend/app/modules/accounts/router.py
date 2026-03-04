@@ -65,6 +65,36 @@ def login(login_data: AccountLogin, db: Session = Depends(get_db)):
         account=AccountResponse.from_orm(account)
     )
 
+@router.post("/mcp-login/{account_id}", response_model=LoginResponse)
+def mcp_login(account_id: int, db: Session = Depends(get_db)):
+    """
+    MCP-only login endpoint: Generate tokens directly from account ID.
+    This bypasses password verification for MCP server use.
+    WARNING: Should only be accessible from localhost!
+    """
+    account = AccountService.get_account_by_id(db, account_id)
+    
+    if not account:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Account not found"
+        )
+    
+    # Create tokens directly
+    token_data = {
+        "sub": str(account.id),
+        "account_name": account.account_name,
+        "account_id": account.id
+    }
+    access_token = create_access_token(token_data)
+    refresh_token = create_refresh_token(token_data)
+    
+    return LoginResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        account=AccountResponse.from_orm(account)
+    )
+
 @router.post("/refresh", response_model=RefreshTokenResponse)
 def refresh_token(request: RefreshTokenRequest, db: Session = Depends(get_db)):
     """Refresh access token using refresh token"""

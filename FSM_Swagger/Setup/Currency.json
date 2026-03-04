@@ -1,0 +1,3952 @@
+{
+  "components": {
+    "examples": {},
+    "schemas": {
+      "contextFields": {
+        "type": "object",
+        "properties": {
+          "Currency": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "Currency"
+        ]
+      },
+      "createAllFieldsMultipart": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/createMinimumFieldsMultipart"
+          }
+        ],
+        "properties": {
+          "ISOCode": {
+            "default": "",
+            "type": "string"
+          },
+          "UniqueID": {
+            "default": "",
+            "type": "string"
+          },
+          "Description": {
+            "default": "",
+            "type": "string"
+          },
+          "Currency": {
+            "default": "",
+            "type": "string"
+          },
+          "FormsExpression": {
+            "default": "",
+            "type": "string"
+          },
+          "ISOCodeNumber": {
+            "default": "",
+            "type": "string"
+          },
+          "NumberOfDecimals": {
+            "default": "",
+            "type": "string",
+            "enum": [
+              "0",
+              "2",
+              "3"
+            ]
+          }
+        },
+        "required": [
+          "Currency",
+          "Description"
+        ]
+      },
+      "allFields": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/minimumFields"
+          }
+        ],
+        "properties": {
+          "ISOCode": {
+            "type": "string"
+          },
+          "UniqueID": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Currency": {
+            "type": "string"
+          },
+          "FormsExpression": {
+            "type": "string"
+          },
+          "ISOCodeNumber": {
+            "type": "string"
+          },
+          "NumberOfDecimals": {
+            "type": "string",
+            "enum": [
+              "0",
+              "2",
+              "3"
+            ]
+          }
+        },
+        "required": [
+          "Currency",
+          "Description"
+        ]
+      },
+      "ViewAuditLog_fieldsMultipart": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/contextFieldsMultipart"
+          }
+        ],
+        "properties": {}
+      },
+      "_PurgeHistory_fieldsMultipart": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/contextFieldsMultipart"
+          }
+        ],
+        "properties": {}
+      },
+      "Translation_Changed_for__Currency__fieldsMultipart": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/contextFieldsMultipart"
+          }
+        ],
+        "properties": {}
+      },
+      "Raw_Fields": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "Raw_JSONBatchRequest": {
+        "type": "object",
+        "properties": {
+          "_records": {
+            "$ref": "#/components/schemas/Raw_RecordArray"
+          }
+        }
+      },
+      "FLR_RecordsArray": {
+        "type": "object",
+        "properties": {
+          "ResponseArray": {
+            "$ref": "#/components/schemas/FLR_RecordArray"
+          }
+        }
+      },
+      "FLR_Fields": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "Update_allFields": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/contextFields"
+          },
+          {
+            "$ref": "#/components/schemas/allFields"
+          }
+        ],
+        "properties": {}
+      },
+      "contextFieldsMultipart": {
+        "type": "object",
+        "properties": {
+          "Currency": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "Currency"
+        ]
+      },
+      "Update_allMPFields": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/contextFieldsMultipart"
+          },
+          {
+            "$ref": "#/components/schemas/allFieldsMultipart"
+          }
+        ],
+        "properties": {}
+      },
+      "_PurgeHistory_fields": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/contextFields"
+          }
+        ],
+        "properties": {}
+      },
+      "createContextFields": {
+        "type": "object",
+        "properties": {
+          "Currency": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "Currency"
+        ]
+      },
+      "_PurgeHistory_fieldsJSON": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/contextFieldsJSON"
+          }
+        ],
+        "properties": {}
+      },
+      "createMinimumFieldsMultipart": {
+        "type": "object",
+        "properties": {
+          "Description": {
+            "default": "",
+            "type": "string"
+          },
+          "Currency": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "Currency",
+          "Description"
+        ]
+      },
+      "FLR_Error": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "createMinimumFieldsJSON": {
+        "type": "object",
+        "properties": {
+          "Description": {
+            "type": "string"
+          },
+          "Currency": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "Currency",
+          "Description"
+        ]
+      },
+      "Raw_RecordArray": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Raw_Record"
+        }
+      },
+      "createContextFieldsJSON": {
+        "type": "object",
+        "properties": {
+          "Currency": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "Currency"
+        ]
+      },
+      "FLR_Record": {
+        "type": "object",
+        "properties": {
+          "Response": {
+            "$ref": "#/components/schemas/FLR_Fields"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "allFieldsMultipart": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/minimumFieldsMultipart"
+          }
+        ],
+        "properties": {
+          "ISOCode": {
+            "default": "",
+            "type": "string"
+          },
+          "UniqueID": {
+            "default": "",
+            "type": "string"
+          },
+          "Description": {
+            "default": "",
+            "type": "string"
+          },
+          "Currency": {
+            "default": "",
+            "type": "string"
+          },
+          "FormsExpression": {
+            "default": "",
+            "type": "string"
+          },
+          "ISOCodeNumber": {
+            "default": "",
+            "type": "string"
+          },
+          "NumberOfDecimals": {
+            "default": "",
+            "type": "string",
+            "enum": [
+              "0",
+              "2",
+              "3"
+            ]
+          }
+        },
+        "required": [
+          "Currency",
+          "Description"
+        ]
+      },
+      "ViewAuditLog_fields": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/contextFields"
+          }
+        ],
+        "properties": {}
+      },
+      "FLR_JSONBatchRequest": {
+        "type": "object",
+        "properties": {
+          "_records": {
+            "type": "object",
+            "$ref": "#/components/schemas/FLR_RecordsArray"
+          }
+        },
+        "example": {
+          "value": "{   \"_records\": [       {           \"_fields\": {             \"Currency\":\"\",\n             \"Description\":\"\",\n             \"FormsExpression\":\"\",\n             \"NumberOfDecimals\":\"\",\n             \"ISOCode\":\"\",\n             \"ISOCodeNumber\":\"\",\n             \"FinanceEnterpriseGroup\":\"\",\n             \"CurrencyDescriptionID\":\"\",\n             \"DataXlt_Locale.IsoLanguage\":\"\",\n             \"DataXlt_Locale.IsoCountry\":\"\",\n             \"DataXlt_Locale.Variant\":\"\"             }         },       {           \"_fields\": {             \"Currency\":\"\",\n             \"Description\":\"\",\n             \"FormsExpression\":\"\",\n             \"NumberOfDecimals\":\"\",\n             \"ISOCode\":\"\",\n             \"ISOCodeNumber\":\"\",\n             \"FinanceEnterpriseGroup\":\"\",\n             \"CurrencyDescriptionID\":\"\",\n             \"DataXlt_Locale.IsoLanguage\":\"\",\n             \"DataXlt_Locale.IsoCountry\":\"\",\n             \"DataXlt_Locale.Variant\":\"\"             }         }     ]}",
+          "summmary": "JSON Batch Example"
+        }
+      },
+      "Error": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "minimumFields": {
+        "type": "object",
+        "properties": {
+          "Description": {
+            "type": "string"
+          },
+          "Currency": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "Currency",
+          "Description"
+        ]
+      },
+      "ViewFullAuditLog_fields": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/contextFields"
+          }
+        ],
+        "properties": {}
+      },
+      "Translation_Changed_for__Currency__fields": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/contextFields"
+          }
+        ],
+        "properties": {}
+      },
+      "FLR_RecordArray": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/FLR_Record"
+        }
+      },
+      "Translation_Changed_for__Currency__fieldsJSON": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/contextFieldsJSON"
+          }
+        ],
+        "properties": {}
+      },
+      "createMinimumFields": {
+        "type": "object",
+        "properties": {
+          "Description": {
+            "type": "string"
+          },
+          "Currency": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "Currency",
+          "Description"
+        ]
+      },
+      "Raw_Record": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "_fields": {
+            "$ref": "#/components/schemas/Raw_Fields"
+          }
+        }
+      },
+      "createContextFieldsMultipart": {
+        "type": "object",
+        "properties": {
+          "Currency": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "Currency"
+        ]
+      },
+      "minimumFieldsJSON": {
+        "type": "object",
+        "properties": {
+          "Description": {
+            "type": "string"
+          },
+          "Currency": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "Currency",
+          "Description"
+        ]
+      },
+      "minimumFieldsMultipart": {
+        "type": "object",
+        "properties": {
+          "Description": {
+            "default": "",
+            "type": "string"
+          },
+          "Currency": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "Currency",
+          "Description"
+        ]
+      },
+      "ViewFullAuditLog_fieldsJSON": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/contextFieldsJSON"
+          }
+        ],
+        "properties": {}
+      },
+      "contextFieldsJSON": {
+        "type": "object",
+        "properties": {
+          "Currency": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "Currency"
+        ]
+      },
+      "createAllFields": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/createMinimumFields"
+          }
+        ],
+        "properties": {
+          "ISOCode": {
+            "type": "string"
+          },
+          "UniqueID": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Currency": {
+            "type": "string"
+          },
+          "FormsExpression": {
+            "type": "string"
+          },
+          "ISOCodeNumber": {
+            "type": "string"
+          },
+          "NumberOfDecimals": {
+            "type": "string",
+            "enum": [
+              "0",
+              "2",
+              "3"
+            ]
+          }
+        },
+        "required": [
+          "Currency",
+          "Description"
+        ]
+      },
+      "ViewAuditLog_fieldsJSON": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/contextFieldsJSON"
+          }
+        ],
+        "properties": {}
+      },
+      "ViewFullAuditLog_fieldsMultipart": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/contextFieldsMultipart"
+          }
+        ],
+        "properties": {}
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://mingle-stage01-ionapi.inforcloudsuite.com/CV6W2RCMM3EZ2355_PP1/FSM/fsm/soap"
+    }
+  ],
+  "openapi": "3.0.0",
+  "paths": {
+    "/classes/Currency/lists/_generic": {
+      "get": {
+        "summary": "Generic List Service",
+        "deprecated": false,
+        "operationId": "Generic List Service",
+        "responses": {
+          "200": {
+            "description": "Generic List Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "Currency",
+                  "CurrencyDescriptionID",
+                  "Description",
+                  "FinanceEnterpriseGroup",
+                  "FormsExpression",
+                  "ISOCode",
+                  "ISOCodeNumber",
+                  "NumberOfDecimals",
+                  "UniqueID",
+                  "_all"
+                ]
+              }
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_fields",
+            "description": "Fields To Return",
+            "required": true
+          },
+          {
+            "schema": {
+              "default": 5,
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_limit",
+            "description": "How many records to return",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NEXT",
+                "PREVIOUS"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_paging",
+            "description": "Name of paging operation",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_fts",
+            "description": "Replicate Dataset - FROM Time Stamp - YYYYMMDDHHMMSSFF",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_tts",
+            "description": "Replicate Dataset - TO Time Stamp - YYYYMMDDHHMMSSFF",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_recordCountOnly",
+            "description": "Display only the number of records returned in a list action.",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_nonHistReplOptimization",
+            "description": "Enable replication read oprimization when no historical changes have been done since _fts.",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_rrs",
+            "description": "Replicate Dataset - Related Replicates: Fill in with comma separated list of values e.g. Item,ItemGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_syncWait",
+            "description": "Replicate Dataset - Replication sync wait time in seconds",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_filter",
+            "description": "Simple Filter - name::value|name2::value2|name3::value3",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_lplFilter",
+            "description": "Complex Filter - LPL Filter String Example: (AirportCode like \"MSP*\")",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_returnFieldState",
+            "description": "Return the Field state label instead of the value",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ByISONumber"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_setName",
+            "description": "Order results by this set/index",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_links",
+            "description": "Show hypertext",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": true,
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_pageNav",
+            "description": "Include Paging Header",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_flatten",
+            "description": "Display all Group Field members as individual Fields in list output.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Lists"
+        ]
+      },
+      "description": "Generic List Service"
+    },
+    "/ldrest/Currency/Create_Currency_FormOperation": {
+      "post": {
+        "summary": "Create_Currency_FormOperation",
+        "requestBody": {
+          "description": "Create_Currency_FormOperation Request",
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ISOCode": {},
+                  "Description": {},
+                  "Currency": {},
+                  "DataXlt_IsoLocale": {},
+                  "FormsExpression": {},
+                  "ISOCodeNumber": {},
+                  "NumberOfDecimals": {
+                    "type": "string",
+                    "enum": [
+                      " ",
+                      "0",
+                      "2",
+                      "3"
+                    ]
+                  },
+                  "FinanceEnterpriseGroup": {}
+                },
+                "required": [
+                  "Currency",
+                  "Description"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "deprecated": false,
+        "description": "Create_Currency_FormOperation",
+        "operationId": "Create_Currency_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/classes/Currency/attachment/download": {
+      "get": {
+        "summary": "Download Attachment",
+        "deprecated": false,
+        "operationId": "Download Attachment",
+        "responses": {
+          "200": {
+            "description": "Download Attachment Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "fieldName",
+            "description": "Field Name on the Business Class to Download or Upload",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "false",
+                "true"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "compress",
+            "description": "GZip output",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.UniqueID",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "k.Currency",
+            "description": "Key",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.Description",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.FormsExpression",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.NumberOfDecimals",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.ISOCode",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.ISOCodeNumber",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.FinanceEnterpriseGroup",
+            "description": "Field",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "f.CurrencyDescriptionID",
+            "description": "Field",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Attachments"
+        ]
+      }
+    },
+    "/classes/Currency/attachment/upload": {
+      "post": {
+        "summary": "Upload Attachment",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fieldName": {
+                    "description": "Field Name on the Business Class to Upload",
+                    "type": "string"
+                  },
+                  "f.UniqueID": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.NumberOfDecimals": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "findFirst": {
+                    "description": "Perform pre-emptive Find",
+                    "type": "boolean"
+                  },
+                  "f.Description": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.FormsExpression": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "f.ISOCodeNumber": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "k.Currency": {
+                    "description": "Key",
+                    "type": "string"
+                  },
+                  "file": {
+                    "format": "binary",
+                    "description": "File To Upload",
+                    "type": "string"
+                  },
+                  "f.ISOCode": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "formName": {
+                    "description": "Form Name",
+                    "type": "string"
+                  },
+                  "f.CurrencyDescriptionID": {
+                    "description": "Field",
+                    "type": "string"
+                  },
+                  "listName": {
+                    "description": "List Name",
+                    "type": "string"
+                  },
+                  "actionName": {
+                    "description": "Action Name",
+                    "type": "string",
+                    "enum": [
+                      "Create",
+                      "Update",
+                      "Delete",
+                      "ChangeEffectiveDate",
+                      "AuditDelete",
+                      "_PurgeHistory",
+                      "ViewAuditLog",
+                      "ViewFullAuditLog",
+                      "Translation_Changed_for__Currency_"
+                    ]
+                  },
+                  "f.FinanceEnterpriseGroup": {
+                    "description": "Field",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "actionName",
+                  "fieldName",
+                  "file",
+                  "k.Currency"
+                ]
+              }
+            }
+          },
+          "required": false
+        },
+        "deprecated": false,
+        "operationId": "Upload Attachment",
+        "responses": {
+          "200": {
+            "description": "Upload Attachment Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Attachments"
+        ]
+      }
+    },
+    "/ldrest/Currency/Translation_Changed_for__Currency__Currency_FormOperation": {
+      "put": {
+        "summary": "Translation_Changed_for__Currency__Currency_FormOperation",
+        "requestBody": {
+          "description": "Translation_Changed_for__Currency__Currency_FormOperation Request",
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ISOCode": {},
+                  "Description": {},
+                  "Currency": {},
+                  "DataXlt_IsoLocale": {},
+                  "FormsExpression": {},
+                  "ISOCodeNumber": {},
+                  "NumberOfDecimals": {
+                    "type": "string",
+                    "enum": [
+                      " ",
+                      "0",
+                      "2",
+                      "3"
+                    ]
+                  },
+                  "FinanceEnterpriseGroup": {}
+                },
+                "required": [
+                  "Currency",
+                  "Description"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "deprecated": false,
+        "description": "Translation_Changed_for__Currency__Currency_FormOperation",
+        "operationId": "Translation_Changed_for__Currency__Currency_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/classes/Currency/actions/Translation_Changed_for__Currency_": {
+      "put": {
+        "summary": "Translation_Changed_for__Currency_",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Translation_Changed_for__Currency__fieldsJSON"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Translation_Changed_for__Currency__fieldsMultipart"
+              }
+            }
+          },
+          "required": false
+        },
+        "deprecated": false,
+        "description": "Translation_Changed_for__Currency_ Instance Action",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Raw_Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/classes/Currency/actions/Create": {
+      "post": {
+        "summary": "Create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/createMinimumFieldsJSON"
+                  },
+                  {
+                    "$ref": "#/components/schemas/allFields"
+                  }
+                ]
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/createAllFieldsMultipart"
+              }
+            }
+          },
+          "required": false
+        },
+        "deprecated": false,
+        "description": "Create Create Action",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Raw_Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/classes/Currency/actions/Update": {
+      "put": {
+        "summary": "Update",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/contextFieldsJSON"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Update_allFields"
+                  }
+                ]
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Update_allMPFields"
+              }
+            }
+          },
+          "required": false
+        },
+        "deprecated": false,
+        "description": "Update Update Action",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Raw_Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/classes/Currency/actions/ViewAuditLog": {
+      "put": {
+        "summary": "ViewAuditLog",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ViewAuditLog_fieldsJSON"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ViewAuditLog_fieldsMultipart"
+              }
+            }
+          },
+          "required": false
+        },
+        "deprecated": false,
+        "description": "ViewAuditLog Instance Action",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Raw_Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/ldrest/Currency/Update_Currency_FormOperation": {
+      "put": {
+        "summary": "Update_Currency_FormOperation",
+        "requestBody": {
+          "description": "Update_Currency_FormOperation Request",
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ISOCode": {},
+                  "Description": {},
+                  "Currency": {},
+                  "DataXlt_IsoLocale": {},
+                  "FormsExpression": {},
+                  "ISOCodeNumber": {},
+                  "NumberOfDecimals": {
+                    "type": "string",
+                    "enum": [
+                      " ",
+                      "0",
+                      "2",
+                      "3"
+                    ]
+                  },
+                  "FinanceEnterpriseGroup": {}
+                },
+                "required": [
+                  "Currency",
+                  "Description"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "deprecated": false,
+        "description": "Update_Currency_FormOperation",
+        "operationId": "Update_Currency_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/ldrest/Currency/ProjectCurrencies_ListOperation": {
+      "get": {
+        "summary": "ProjectCurrencies_ListOperation",
+        "deprecated": false,
+        "description": "ProjectCurrencies_ListOperation",
+        "operationId": "ProjectCurrencies_ListOperation",
+        "responses": {
+          "200": {
+            "description": "List Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency",
+            "description": "Currency",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__Description_translation___",
+            "description": "__Description_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "FormsExpression",
+            "description": "FormsExpression",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "0",
+                "2",
+                "3"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "NumberOfDecimals",
+            "description": "NumberOfDecimals",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ISOCode",
+            "description": "ISOCode",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ISOCodeNumber",
+            "description": "ISOCodeNumber",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 5,
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_limit",
+            "description": "How many records to return",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "FIRST",
+                "LAST",
+                "NEXT",
+                "PREVIOUS"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_paging",
+            "description": "Name of paging operation",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_returnFieldState",
+            "description": "Return the Field state label instead of the value",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/ldrest/Currency/ChangeEffectiveDate_ChangeEffectiveDate_implicit_action_form_FormOperation": {
+      "get": {
+        "summary": "ChangeEffectiveDate_ChangeEffectiveDate_implicit_action_form_FormOperation",
+        "deprecated": false,
+        "description": "ChangeEffectiveDate_ChangeEffectiveDate_implicit_action_form_FormOperation",
+        "operationId": "ChangeEffectiveDate_ChangeEffectiveDate_implicit_action_form_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency",
+            "description": "Currency",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency_effective_date",
+            "description": "Currency_effective_date",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "FinanceEnterpriseGroup",
+            "description": "FinanceEnterpriseGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DataXlt_IsoLocale",
+            "description": "DataXlt_IsoLocale",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/classes/Currency/actions/_PurgeHistory": {
+      "put": {
+        "summary": "_PurgeHistory",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/_PurgeHistory_fieldsJSON"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/_PurgeHistory_fieldsMultipart"
+              }
+            }
+          },
+          "required": false
+        },
+        "deprecated": false,
+        "description": "_PurgeHistory Instance Action",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Raw_Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/classes/Currency/actions/Delete": {
+      "delete": {
+        "summary": "Delete",
+        "deprecated": false,
+        "description": "Delete Delete Action",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Raw_Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "UniqueID",
+            "description": "UniqueID",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency",
+            "description": "Currency",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Description",
+            "description": "Description",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "FormsExpression",
+            "description": "FormsExpression",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "0",
+                "2",
+                "3"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "NumberOfDecimals",
+            "description": "NumberOfDecimals",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ISOCode",
+            "description": "ISOCode",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ISOCodeNumber",
+            "description": "ISOCodeNumber",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "FinanceEnterpriseGroup",
+            "description": "FinanceEnterpriseGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "CurrencyDescriptionID",
+            "description": "CurrencyDescriptionID",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/classes/Currency/lists/{list}": {
+      "get": {
+        "summary": "List Service",
+        "deprecated": false,
+        "operationId": "List Service",
+        "responses": {
+          "200": {
+            "description": "List Service Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Change_List",
+                "Currencies",
+                "MCurrencies",
+                "MobileCurrencySelect",
+                "ProjectCurrencies"
+              ]
+            },
+            "in": "path",
+            "explode": false,
+            "name": "list",
+            "description": "List",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "_all"
+                ]
+              }
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_fields",
+            "description": "Return All Fields",
+            "style": "form",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 5,
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_limit",
+            "description": "How many records to return",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NEXT",
+                "PREVIOUS"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_paging",
+            "description": "Name of paging operation",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_fts",
+            "description": "Replicate Dataset - FROM Time Stamp - YYYYMMDDHHMMSSFF",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_tts",
+            "description": "Replicate Dataset - TO Time Stamp - YYYYMMDDHHMMSSFF",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_recordCountOnly",
+            "description": "Display only the number of records returned in a list action.",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_nonHistReplOptimization",
+            "description": "Enable replication read oprimization when no historical changes have been done since _fts.",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_rrs",
+            "description": "Replicate Dataset - Related Replicates: Fill in with comma separated list of values e.g. Item,ItemGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_syncWait",
+            "description": "Replicate Dataset - Replication sync wait time in seconds",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_filter",
+            "description": "Simple Filter - name::value|name2::value2|name3::value3",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_lplFilter",
+            "description": "Complex Filter - LPL Filter String Example: (AirportCode like \"MSP*\")",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_returnFieldState",
+            "description": "Return the Field state label instead of the value",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ByISONumber"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_setName",
+            "description": "Order results by this set/index",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_groupBy",
+            "description": "Group By Field Names - Name,Age,City",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "count",
+                "sum",
+                "avg",
+                "min",
+                "max"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_aggregateOperation",
+            "description": "Aggregate Operation Name",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_aggregateColumn",
+            "description": "Aggregate Column Name",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_links",
+            "description": "Show hypertext",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": true,
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_pageNav",
+            "description": "Include Paging Header",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_flatten",
+            "description": "Display all Group Field members as individual Fields in list output.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Lists"
+        ]
+      },
+      "description": "List Service"
+    },
+    "/ldrest/Currency/Delete_Currency_FormOperation": {
+      "delete": {
+        "summary": "Delete_Currency_FormOperation",
+        "deprecated": false,
+        "description": "Delete_Currency_FormOperation",
+        "operationId": "Delete_Currency_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ISOCode",
+            "description": "ISOCode",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Description",
+            "description": "Description",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency",
+            "description": "Currency",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "FormsExpression",
+            "description": "FormsExpression",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ISOCodeNumber",
+            "description": "ISOCodeNumber",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "0",
+                "2",
+                "3"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "NumberOfDecimals",
+            "description": "NumberOfDecimals",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "FinanceEnterpriseGroup",
+            "description": "FinanceEnterpriseGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DataXlt_IsoLocale",
+            "description": "DataXlt_IsoLocale",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/ldrest/Currency/ViewFullAuditLog_Currency_FormOperation": {
+      "put": {
+        "summary": "ViewFullAuditLog_Currency_FormOperation",
+        "requestBody": {
+          "description": "ViewFullAuditLog_Currency_FormOperation Request",
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ISOCode": {},
+                  "Description": {},
+                  "Currency": {},
+                  "DataXlt_IsoLocale": {},
+                  "FormsExpression": {},
+                  "ISOCodeNumber": {},
+                  "NumberOfDecimals": {
+                    "type": "string",
+                    "enum": [
+                      " ",
+                      "0",
+                      "2",
+                      "3"
+                    ]
+                  },
+                  "FinanceEnterpriseGroup": {}
+                },
+                "required": [
+                  "Currency",
+                  "Description"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "deprecated": false,
+        "description": "ViewFullAuditLog_Currency_FormOperation",
+        "operationId": "ViewFullAuditLog_Currency_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/ldrest/Currency/_PurgeHistory_Currency_FormOperation": {
+      "put": {
+        "summary": "_PurgeHistory_Currency_FormOperation",
+        "requestBody": {
+          "description": "_PurgeHistory_Currency_FormOperation Request",
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ISOCode": {},
+                  "Description": {},
+                  "Currency": {},
+                  "DataXlt_IsoLocale": {},
+                  "FormsExpression": {},
+                  "ISOCodeNumber": {},
+                  "NumberOfDecimals": {
+                    "type": "string",
+                    "enum": [
+                      " ",
+                      "0",
+                      "2",
+                      "3"
+                    ]
+                  },
+                  "FinanceEnterpriseGroup": {}
+                },
+                "required": [
+                  "Currency",
+                  "Description"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "deprecated": false,
+        "description": "_PurgeHistory_Currency_FormOperation",
+        "operationId": "_PurgeHistory_Currency_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/classes/Currency/actions/{action}/batch": {
+      "post": {
+        "summary": "Action Batch Service",
+        "requestBody": {
+          "description": "JSON Payload",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Raw_JSONBatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "deprecated": false,
+        "description": "Action Batch Service",
+        "operationId": "Action Batch Service",
+        "responses": {
+          "200": {
+            "description": "Action Batch Service Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "AuditDelete",
+                "ChangeEffectiveDate",
+                "Create",
+                "Delete",
+                "Find",
+                "Translation_Changed_for__Currency_",
+                "Update",
+                "ViewAuditLog",
+                "ViewFullAuditLog",
+                "_PurgeHistory"
+              ]
+            },
+            "in": "path",
+            "explode": false,
+            "name": "action",
+            "description": "Action",
+            "required": true
+          },
+          {
+            "schema": {
+              "default": -1,
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_maxFailures",
+            "description": "maximum allowed batch entry failures before the batch will terminate",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Batch Action"
+        ]
+      }
+    },
+    "/ldrest/Currency/ViewAuditLog_Currency_FormOperation": {
+      "put": {
+        "summary": "ViewAuditLog_Currency_FormOperation",
+        "requestBody": {
+          "description": "ViewAuditLog_Currency_FormOperation Request",
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ISOCode": {},
+                  "Description": {},
+                  "Currency": {},
+                  "DataXlt_IsoLocale": {},
+                  "FormsExpression": {},
+                  "ISOCodeNumber": {},
+                  "NumberOfDecimals": {
+                    "type": "string",
+                    "enum": [
+                      " ",
+                      "0",
+                      "2",
+                      "3"
+                    ]
+                  },
+                  "FinanceEnterpriseGroup": {}
+                },
+                "required": [
+                  "Currency",
+                  "Description"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "deprecated": false,
+        "description": "ViewAuditLog_Currency_FormOperation",
+        "operationId": "ViewAuditLog_Currency_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/classes/Currency/actions/ViewFullAuditLog": {
+      "put": {
+        "summary": "ViewFullAuditLog",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ViewFullAuditLog_fieldsJSON"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ViewFullAuditLog_fieldsMultipart"
+              }
+            }
+          },
+          "required": false
+        },
+        "deprecated": false,
+        "description": "ViewFullAuditLog Instance Action",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Raw_Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/ldrest/Currency/AuditDelete_Currency_FormOperation": {
+      "get": {
+        "summary": "AuditDelete_Currency_FormOperation",
+        "deprecated": false,
+        "description": "AuditDelete_Currency_FormOperation",
+        "operationId": "AuditDelete_Currency_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ISOCode",
+            "description": "ISOCode",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Description",
+            "description": "Description",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency",
+            "description": "Currency",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "FormsExpression",
+            "description": "FormsExpression",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ISOCodeNumber",
+            "description": "ISOCodeNumber",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "0",
+                "2",
+                "3"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "NumberOfDecimals",
+            "description": "NumberOfDecimals",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "FinanceEnterpriseGroup",
+            "description": "FinanceEnterpriseGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DataXlt_IsoLocale",
+            "description": "DataXlt_IsoLocale",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/ldrest/Currency/MCurrencies_ListOperation": {
+      "get": {
+        "summary": "MCurrencies_ListOperation",
+        "deprecated": false,
+        "description": "MCurrencies_ListOperation",
+        "operationId": "MCurrencies_ListOperation",
+        "responses": {
+          "200": {
+            "description": "List Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency",
+            "description": "Currency",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__Description_translation___",
+            "description": "__Description_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "FormsExpression",
+            "description": "FormsExpression",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "0",
+                "2",
+                "3"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "NumberOfDecimals",
+            "description": "NumberOfDecimals",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ISOCode",
+            "description": "ISOCode",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ISOCodeNumber",
+            "description": "ISOCodeNumber",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 5,
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_limit",
+            "description": "How many records to return",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "FIRST",
+                "LAST",
+                "NEXT",
+                "PREVIOUS"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_paging",
+            "description": "Name of paging operation",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_returnFieldState",
+            "description": "Return the Field state label instead of the value",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/ldrest/Currency/MobileCurrencySelect_ListOperation": {
+      "get": {
+        "summary": "MobileCurrencySelect_ListOperation",
+        "deprecated": false,
+        "description": "MobileCurrencySelect_ListOperation",
+        "operationId": "MobileCurrencySelect_ListOperation",
+        "responses": {
+          "200": {
+            "description": "List Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency",
+            "description": "Currency",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__Description_translation___",
+            "description": "__Description_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 5,
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_limit",
+            "description": "How many records to return",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "FIRST",
+                "LAST",
+                "NEXT",
+                "PREVIOUS"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_paging",
+            "description": "Name of paging operation",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_returnFieldState",
+            "description": "Return the Field state label instead of the value",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/ldrest/Currency/Change_List_ListOperation": {
+      "get": {
+        "summary": "Change_List_ListOperation",
+        "deprecated": false,
+        "description": "Change_List_ListOperation",
+        "operationId": "Change_List_ListOperation",
+        "responses": {
+          "200": {
+            "description": "List Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency_auditperiod",
+            "description": "Currency_auditperiod",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency_effective_date",
+            "description": "Currency_effective_date",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency_actor",
+            "description": "Currency_actor",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency_authenticated_actor",
+            "description": "Currency_authenticated_actor",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency_action",
+            "description": "Currency_action",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency_reason_code",
+            "description": "Currency_reason_code",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency_effective_timezone",
+            "description": "Currency_effective_timezone",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency_action_comment",
+            "description": "Currency_action_comment",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 5,
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_limit",
+            "description": "How many records to return",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "FIRST",
+                "LAST",
+                "NEXT",
+                "PREVIOUS"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_paging",
+            "description": "Name of paging operation",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_returnFieldState",
+            "description": "Return the Field state label instead of the value",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/ldrest/Currency/Currencies_ListOperation": {
+      "get": {
+        "summary": "Currencies_ListOperation",
+        "deprecated": false,
+        "description": "Currencies_ListOperation",
+        "operationId": "Currencies_ListOperation",
+        "responses": {
+          "200": {
+            "description": "List Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency",
+            "description": "Currency",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "__Description_translation___",
+            "description": "__Description_translation___",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "FormsExpression",
+            "description": "FormsExpression",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "0",
+                "2",
+                "3"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "NumberOfDecimals",
+            "description": "NumberOfDecimals",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ISOCode",
+            "description": "ISOCode",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ISOCodeNumber",
+            "description": "ISOCodeNumber",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 5,
+              "type": "integer"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_limit",
+            "description": "How many records to return",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "FIRST",
+                "LAST",
+                "NEXT",
+                "PREVIOUS"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_paging",
+            "description": "Name of paging operation",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_returnFieldState",
+            "description": "Return the Field state label instead of the value",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    },
+    "/classes/Currency/actions/Find": {
+      "get": {
+        "summary": "Find A Record",
+        "deprecated": false,
+        "description": "Find A Record",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Raw_Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency",
+            "description": "Currency",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": "JSON",
+              "type": "string",
+              "enum": [
+                "XML",
+                "JSON",
+                "CSV"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_out",
+            "description": "Output Format",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/ldrest/Currency/Find_Currency_FormOperation": {
+      "get": {
+        "summary": "Find_Currency_FormOperation",
+        "deprecated": false,
+        "description": "Find_Currency_FormOperation",
+        "operationId": "Find_Currency_FormOperation",
+        "responses": {
+          "200": {
+            "description": "Form Based Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Raw_Record"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ISOCode",
+            "description": "ISOCode",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Description",
+            "description": "Description",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "Currency",
+            "description": "Currency",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "FormsExpression",
+            "description": "FormsExpression",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "ISOCodeNumber",
+            "description": "ISOCodeNumber",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                " ",
+                "0",
+                "2",
+                "3"
+              ]
+            },
+            "in": "query",
+            "explode": false,
+            "name": "NumberOfDecimals",
+            "description": "NumberOfDecimals",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "FinanceEnterpriseGroup",
+            "description": "FinanceEnterpriseGroup",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "DataXlt_IsoLocale",
+            "description": "DataXlt_IsoLocale",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cm.<index>",
+            "description": "Confirmation Message(s) - Example:\n_cm.0=Pay rate is outside salary structure pay range; is this ok?\n_cm.1=Payout Service Code is not attached to a Pay Code. Continue?",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "explode": false,
+            "name": "_cmAll",
+            "description": "Confirm All Confirmation messages.",
+            "required": false
+          }
+        ],
+        "tags": [
+          "Form And List REST"
+        ]
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Public API Documentation",
+    "url": "https://gen-cv6w2rcmm3ez2355-pp1.inforcloudsuite.com/fsm/soap/doco/html/api"
+  },
+  "info": {
+    "license": {
+      "name": "Infor Global Solutions",
+      "url": "http://www.infor.com"
+    },
+    "contact": {
+      "name": "Infor Extreme",
+      "email": "support@infor.com",
+      "url": "https://www.inforxtreme.com/allogin/allogin.aspx"
+    },
+    "description": "Webservice APIs for Currency UsingSpecsToGenerateFeed: true",
+    "termsOfService": "http://www.infor.com",
+    "title": "Webservice APIs for Currency",
+    "version": "2026.03.00..17"
+  },
+  "tags": [
+    {
+      "name": "Lists",
+      "description": "Currency business class lists"
+    },
+    {
+      "name": "Actions",
+      "description": "Currency business class named actions"
+    },
+    {
+      "name": "Batch Action",
+      "description": "accepts json action requests for one or more records on Currency business class"
+    },
+    {
+      "name": "Attachments",
+      "description": "Currency attachment upload and download"
+    },
+    {
+      "name": "Form And List REST",
+      "description": "Currency legacy format form and list REST operations"
+    }
+  ]
+}

@@ -21,6 +21,6 @@ FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.Se
 1,DataConversion_Demo,20,0,10,,10,100008,08/25/2025,890.00,Valid record
 1,DataConversion_Demo,21,0,10,,10,100008,2025-08-25,450.00,Valid record with ISO date format
 1,DataConversion_Demo,22,0,35,,35,100008,08/25/2025,1750.00,Valid record
-1,DataConversion_Demo,23,0,35,,35,100008,08/25/2025,2100.00,Valid record
+1,,23,0,35,,35,100008,08/25/2025,2100.00,ERROR: Missing RunGroup (required field)
 1,DataConversion_Demo,24,0,36,,36,100008,08/25/2025,3500.00,Valid record
 1,DataConversion_Demo,25,0,36,,36,100008,08/25/2025,4200.00,Valid record

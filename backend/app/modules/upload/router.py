@@ -60,3 +60,42 @@ def get_file_info(
         )
     
     return FileInfoResponse(**info)
+
+@router.get("/jobs/recent")
+def get_recent_jobs(
+    limit: int = 5,
+    offset: int = 0,
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """Get recent conversion jobs for the account with pagination"""
+    from app.models.job import ConversionJob
+    
+    # Get total count
+    total_count = db.query(ConversionJob).filter(
+        ConversionJob.account_id == account_id
+    ).count()
+    
+    # Get paginated jobs
+    jobs = db.query(ConversionJob).filter(
+        ConversionJob.account_id == account_id
+    ).order_by(
+        ConversionJob.created_at.desc()
+    ).limit(limit).offset(offset).all()
+    
+    return {
+        "jobs": [{
+            "id": job.id,
+            "business_class": job.business_class,
+            "filename": job.filename,
+            "total_records": job.total_records,
+            "valid_records": job.valid_records,
+            "invalid_records": job.invalid_records,
+            "status": job.status,
+            "created_at": job.created_at.isoformat() if job.created_at else None,
+            "completed_at": job.completed_at.isoformat() if job.completed_at else None
+        } for job in jobs],
+        "total": total_count,
+        "limit": limit,
+        "offset": offset
+    }

@@ -5,6 +5,7 @@ from app.models.snapshot import SnapshotRegistry, SnapshotRecord
 from app.models.setup_business_class import SetupBusinessClass
 from app.models.job import ConversionJob, ValidationError, LoadResult
 from app.models.rule import ValidationRuleTemplate, ValidationRuleAssignment
+from app.models.validation_rule_set import ValidationRuleSet
 from app.models.mapping import MappingTemplate
 
 __all__ = [
@@ -18,5 +19,6 @@ __all__ = [
     "LoadResult",
     "ValidationRuleTemplate",
     "ValidationRuleAssignment",
+    "ValidationRuleSet",
     "MappingTemplate",
 ]

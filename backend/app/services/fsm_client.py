@@ -206,7 +206,8 @@ class FSMClient:
         
         logger.info(f"Fetching setup data from: {full_url}")
         
-        async with httpx.AsyncClient(timeout=120.0) as client:
+        # Use longer timeout for setup data (can be large datasets like GeneralLedgerChartAccount)
+        async with httpx.AsyncClient(timeout=300.0) as client:
             try:
                 response = await client.get(
                     full_url,

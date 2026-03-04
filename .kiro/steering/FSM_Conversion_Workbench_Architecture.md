@@ -202,11 +202,12 @@ business_classes = ["Currency", "Vendor", "Customer"]  # Not extensible
 | Project | ProjectFlatList | Project |
 
 **JSON Schema Folder Format**:
-- All setup classes use folder format (not single .json files)
-- Each folder contains: `FSM_{BusinessClass}.schema.json` and `FSM_{BusinessClass}.properties.json`
-- Key field extracted from `IdentifierPaths` in properties.json (uses last identifier)
+- Setup classes now use single-file OpenAPI/Swagger JSON format (e.g., `FinanceDimension1.json`)
+- Each file contains complete OpenAPI spec with `components.schemas` section
+- Key field extracted from `contextFields.required` array (uses first field matching business class name)
 - FinanceDimension classes auto-generate FlatList endpoint format
 - Response format: List where index 0 is metadata, index 1+ are records with `_fields` wrapper
+- Legacy folder format (schema.json + properties.json) no longer supported for new classes
 
 **Why _fields=_all and _limit=100000?**:
 - `_fields=_all`: Returns all available fields (10-140 fields per class), future-proof against FSM schema changes
@@ -552,6 +553,16 @@ logging.basicConfig(level=logging.DEBUG)
 **Status**: Production-ready core, demo-ready
 
 ## Recent Updates (March 1, 2026)
+
+### Swagger Single-File Format Migration (March 4, 2026)
+- **Change**: Migrated from dual-format support to single-file OpenAPI/Swagger JSON only
+- **Reason**: Simpler, more maintainable, consistent with conversion classes
+- **Implementation**: Updated `get_available_swagger_files()` and `_parse_swagger_file()` methods
+- **Key Field Extraction**: Now uses `contextFields.required` array from OpenAPI spec
+- **Impact**: "Add New Class" feature now only detects single `.json` files in FSM_Swagger/Setup/
+- **Existing Classes**: Unaffected - 12 setup classes in database continue to work normally
+- **Files Changed**: `backend/app/modules/snapshot/service.py`
+- **Documentation**: Created `SWAGGER_SINGLE_FILE_MIGRATION.md` with complete details
 
 ### Validation Mapping Format Fix
 - **Issue**: Validation endpoint returned "string indices must be integers, not 'str'" error

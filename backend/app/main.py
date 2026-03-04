@@ -11,6 +11,7 @@ from app.modules.upload.router import router as upload_router
 from app.modules.mapping.router import router as mapping_router
 from app.modules.validation.router import router as validation_router
 from app.modules.load.router import router as load_router
+from app.modules.rules.router import router as rules_router
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -38,6 +39,7 @@ app.include_router(upload_router, prefix="/api/upload", tags=["upload"])
 app.include_router(mapping_router, prefix="/api/mapping", tags=["mapping"])
 app.include_router(validation_router, prefix="/api/validation", tags=["validation"])
 app.include_router(load_router, prefix="/api/load", tags=["load"])
+app.include_router(rules_router, prefix="/api/rules", tags=["rules"])
 
 @app.get("/")
 async def root():

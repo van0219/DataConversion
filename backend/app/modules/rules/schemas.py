@@ -1,0 +1,58 @@
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+class RuleTemplateBase(BaseModel):
+    name: str
+    business_class: Optional[str] = None  # NULL for GLOBAL
+    rule_set_id: Optional[int] = None  # Rule set assignment
+    rule_type: str  # REFERENCE_EXISTS, REQUIRED_OVERRIDE, etc.
+    field_name: str
+    reference_business_class: Optional[str] = None
+    condition_expression: Optional[str] = None
+    error_message: str
+    is_active: bool = True
+
+class RuleTemplateCreate(RuleTemplateBase):
+    pass
+
+class RuleTemplateUpdate(BaseModel):
+    name: Optional[str] = None
+    rule_set_id: Optional[int] = None
+    is_active: Optional[bool] = None
+    error_message: Optional[str] = None
+    condition_expression: Optional[str] = None
+
+class RuleTemplateResponse(RuleTemplateBase):
+    id: int
+    version: int
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class RuleAssignmentBase(BaseModel):
+    rule_template_id: int
+    account_id: Optional[int] = None  # NULL for GLOBAL
+    is_enabled: bool = True
+    override_error_message: Optional[str] = None
+
+class RuleAssignmentCreate(RuleAssignmentBase):
+    pass
+
+class RuleAssignmentUpdate(BaseModel):
+    is_enabled: Optional[bool] = None
+    override_error_message: Optional[str] = None
+
+class RuleAssignmentResponse(RuleAssignmentBase):
+    id: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class RuleWithAssignment(RuleTemplateResponse):
+    assignment_id: Optional[int] = None
+    is_enabled: Optional[bool] = None
+    override_error_message: Optional[str] = None

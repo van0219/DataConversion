@@ -315,7 +315,11 @@ class ValidationService:
     
     @staticmethod
     def export_errors_csv(db: Session, account_id: int, job_id: int) -> Optional[str]:
-        """Export validation errors as CSV with grouped errors per row"""
+        """
+        Export original CSV file with added 'Error Message' column.
+        Returns the original file with all columns plus error messages for invalid rows.
+        """
+        # Get errors
         errors = db.query(ValidationErrorModel).filter(
             ValidationErrorModel.conversion_job_id == job_id
         ).order_by(ValidationErrorModel.row_number).all()
@@ -331,28 +335,56 @@ class ValidationService:
                 grouped_errors[row_num] = []
             grouped_errors[row_num].append(error)
         
+        # Get original file path
+        file_path = UploadService.get_file_path(job_id)
+        if not file_path.exists():
+            logger.error(f"Original file not found for job {job_id}")
+            return None
+        
+        # Read original CSV and add error messages
         output = io.StringIO()
-        writer = csv.writer(output)
         
-        # Write header
-        writer.writerow(['row_number', 'field_names', 'invalid_values', 'error_types', 'error_messages'])
-        
-        # Write grouped errors
-        for row_num in sorted(grouped_errors.keys()):
-            row_errors = grouped_errors[row_num]
-            
-            # Combine multiple errors with semicolon separator
-            field_names = '; '.join([e.field_name for e in row_errors])
-            invalid_values = '; '.join([e.invalid_value or '(empty)' for e in row_errors])
-            error_types = '; '.join([e.error_type for e in row_errors])
-            error_messages = '; '.join([e.error_message for e in row_errors])
-            
-            writer.writerow([
-                row_num,
-                field_names,
-                invalid_values,
-                error_types,
-                error_messages
-            ])
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                
+                # Get original headers and add 'Error Message' column
+                original_headers = reader.fieldnames
+                if not original_headers:
+                    return None
+                
+                new_headers = list(original_headers) + ['Error Message']
+                
+                writer = csv.DictWriter(output, fieldnames=new_headers)
+                writer.writeheader()
+                
+                # Process each row
+                row_number = 1  # CSV row numbers start at 1 (after header)
+                for row in reader:
+                    row_number += 1
+                    
+                    # Check if this row has errors
+                    if row_number in grouped_errors:
+                        row_errors = grouped_errors[row_number]
+                        
+                        # Combine all error messages for this row
+                        error_messages = []
+                        for e in row_errors:
+                            # Format: [Field] Error message
+                            error_messages.append(f"[{e.field_name}] {e.error_message}")
+                        
+                        # Join with semicolon separator
+                        row['Error Message'] = '; '.join(error_messages)
+                    else:
+                        # No errors for this row
+                        row['Error Message'] = ''
+                    
+                    writer.writerow(row)
+                
+                logger.info(f"Exported {row_number} rows with error messages for job {job_id}")
+                
+        except Exception as e:
+            logger.error(f"Error exporting CSV with errors: {e}")
+            return None
         
         return output.getvalue()

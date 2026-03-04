@@ -81,6 +81,23 @@ def get_snapshot_registry(
     registry = SnapshotService.get_snapshot_registry(db, account_id)
     return [SnapshotRegistryItem.from_orm(item) for item in registry]
 
+@router.get("/last-sync")
+def get_last_sync_time(
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """Get the timestamp of the last snapshot sync"""
+    from app.models.snapshot import SnapshotRegistry
+    from sqlalchemy import func
+    
+    last_sync = db.query(func.max(SnapshotRegistry.last_sync_timestamp)).filter(
+        SnapshotRegistry.account_id == account_id
+    ).scalar()
+    
+    return {
+        "last_sync_at": last_sync.isoformat() if last_sync else None
+    }
+
 # Setup Business Class Management Endpoints
 
 @router.get("/setup-classes", response_model=List[SetupBusinessClassResponse])
@@ -93,11 +110,15 @@ def get_all_setup_classes(db: Session = Depends(get_db)):
 def get_available_swagger_files(db: Session = Depends(get_db)):
     """
     Get list of available swagger files that haven't been added yet.
-    Returns business class names from FSM_Swagger/Setup/ and FSM_Swagger/Conversion/ folders.
+    Returns business class names with available list options from FSM_Swagger/Setup/ folder.
     """
     try:
+        from app.modules.snapshot.schemas import AvailableSwaggerFile
+        
         available_files = SnapshotService.get_available_swagger_files(db)
-        return {"available_files": available_files}
+        return {
+            "available_files": [AvailableSwaggerFile(**file) for file in available_files]
+        }
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -125,6 +146,7 @@ def create_setup_class(
         setup_class = SnapshotService.create_setup_class(
             db,
             name=request.name,
+            list_name=request.list_name,
             endpoint_url=request.endpoint_url,
             key_field=request.key_field,
             is_active=request.is_active
@@ -153,6 +175,7 @@ def update_setup_class(
             db,
             class_id=class_id,
             name=request.name,
+            list_name=request.list_name,
             endpoint_url=request.endpoint_url,
             key_field=request.key_field,
             is_active=request.is_active
