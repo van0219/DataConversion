@@ -137,6 +137,21 @@ When working in this workspace:
 
 **Note**: For current web app status, see `IMPLEMENTATION_STATUS.md` in root directory.
 
+### Kiro_Agent_Automation_Guide.md ⭐
+**Auto-included when**: hooks, skills, powers, steering, specs, subagents, automation, workflows mentioned
+
+**Use for**:
+- Understanding all Kiro automation systems (7 systems)
+- Creating and managing hooks for event-driven automation
+- Building skills for reusable workflows
+- Installing and using powers for tool integrations
+- Working with specs for structured development
+- Using subagents for task delegation
+- Accessing web tools for current information
+- Comparison matrix and decision trees for choosing the right system
+
+**AI Action**: Primary reference for all automation and workflow tasks
+
 ### Workspace_Learning_Management.md
 **Auto-included when**: Documentation, steering files, knowledge management mentioned
 
@@ -508,6 +523,50 @@ python -m uvicorn app.main:app --reload
 | Navigation/index | README.md (this file) |
 
 ## Version History
+
+### March 10, 2026 - Kiro Agent Automation Guide Added ⭐
+
+- **New Steering File**: Created comprehensive `Kiro_Agent_Automation_Guide.md`
+- **Coverage**: All 7 Kiro automation systems documented in one place
+  - Subagents (task delegation)
+  - Web Tools (internet access)
+  - Steering Files (project context)
+  - Specs (structured development)
+  - Skills (portable workflows)
+  - Powers (tool integrations)
+  - Hooks (event automation)
+- **Features**:
+  - Comparison matrix for choosing the right system
+  - Decision trees and when-to-use guidance
+  - Complete documentation with examples
+  - Best practices and troubleshooting
+  - Integration with workspace (IPA skills, hook tools)
+- **Auto-Inclusion**: Activates on keywords: hooks, skills, powers, steering, specs, subagents, automation, workflows
+- **Documentation**: Updated README.md steering files reference section
+- **Status**: Ready for use, comprehensive automation reference
+
+### March 4, 2026 - Architectural Improvements Complete ⭐⭐⭐
+
+- **Achievement**: All 8 architectural improvement steps completed (100%)
+- **Schema-Driven Platform**:
+  - Swagger Importer Service (parse OpenAPI/Swagger JSON)
+  - Schema Import API (POST /api/schema/import-swagger, GET /api/schema/list)
+  - Schema Management UI (upload, view, manage schemas)
+  - Load Strategy Resolver (dynamic load method selection)
+  - Any FSM business class can be added via Swagger upload
+- **MCP Platform Integration**:
+  - Removed authentication bypass (uses password)
+  - Removed filesystem access (uses platform APIs)
+  - Workflow Orchestrator API (centralized workflow logic)
+  - 13 MCP tools, all platform-integrated
+- **Database Updates**:
+  - Extended schemas table (6 new columns)
+  - Created schema_fields table
+  - Created schema_operations table
+  - Added schema_version to conversion_jobs
+- **Files**: 11 new files, 7 modified files
+- **Documentation**: ARCHITECTURAL_IMPROVEMENTS_COMPLETE.md, STEP_8_COMPLETION_SUMMARY.md, TEST_SCHEMA_MANAGEMENT.md
+- **Status**: 100% complete (24/24 core + 8/8 architectural), production-ready
 
 ### March 1, 2026 - Validation Mapping Format Fix ⭐
 

@@ -39,8 +39,26 @@ class SchemaValidator:
         errors = []
         normalized_record = record.copy()
         
-        # Get schema fields
-        fields = {field["name"]: field for field in schema["fields"]}
+        # Get schema fields from properties (OpenAPI/JSON Schema format)
+        if "properties" not in schema:
+            raise ValueError("Invalid schema structure: missing 'properties'")
+        
+        properties = schema["properties"]
+        required_fields = schema.get("required", [])
+        
+        # Build field definitions
+        fields = {}
+        for field_name, field_props in properties.items():
+            fields[field_name] = {
+                "name": field_name,
+                "type": field_props.get("type", "string"),
+                "required": field_name in required_fields,
+                "enum": field_props.get("enum"),
+                "pattern": field_props.get("pattern"),
+                "maxLength": field_props.get("maxLength"),
+                "format": field_props.get("format"),
+                "description": field_props.get("description")
+            }
         
         # Validate each field in schema
         for field_name, field_def in fields.items():

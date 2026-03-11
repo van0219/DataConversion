@@ -159,7 +159,67 @@ else:
 openapi_json = await fsm_client.get_openapi_schema(business_class)  # May fail or return incomplete data
 ```
 
-### 9. Setup Business Classes Configuration (EXTENSIBILITY)
+### 9. No Data Transformation - Client Responsibility (CRITICAL POLICY)
+
+**POLICY**: The platform does NOT transform, fix, or modify client data. Data quality is the client's responsibility.
+
+**What the platform DOES**:
+- ✅ Trim leading/trailing whitespace from field values (`.strip()`)
+- ✅ Validate data against FSM schema and business rules
+- ✅ Report validation errors with clear messages
+- ✅ Allow field mapping (CSV columns → FSM fields)
+
+**What the platform DOES NOT DO**:
+- ❌ Transform date formats (MM/DD/YYYY → YYYYMMDD)
+- ❌ Convert data types (string → number, etc.)
+- ❌ Fix invalid values or references
+- ❌ Apply business logic transformations
+- ❌ Cleanse or normalize data beyond whitespace trimming
+
+```python
+# CORRECT: Minimal normalization (whitespace only)
+def normalize_value(value: str) -> str:
+    if isinstance(value, str):
+        return value.strip()  # Only trim whitespace
+    return value
+
+# WRONG: Data transformation
+def normalize_value(value: str) -> str:
+    # Don't do date format conversion
+    if is_date(value):
+        return convert_date_format(value)  # NO!
+    
+    # Don't do type conversion
+    if is_numeric_string(value):
+        return float(value)  # NO!
+    
+    return value
+```
+
+**Rationale**:
+- Data transformation hides data quality issues
+- Client must see and fix their source data
+- Platform validates "as-is" to expose real problems
+- Transformations can introduce errors or data loss
+- Client owns data quality, platform validates it
+
+**User Workflow**:
+1. Upload CSV file
+2. Map fields (CSV columns → FSM fields)
+3. Run validation
+4. Review validation errors
+5. **Fix source data** (client responsibility)
+6. Re-upload and validate
+7. Load clean data to FSM
+
+**Example**: Date format validation error
+- CSV has: `08/25/2025` (MM/DD/YYYY)
+- FSM expects: `20250825` (YYYYMMDD)
+- Platform reports: "Invalid date format. Expected: YYYYMMDD"
+- **Client action**: Fix CSV file or source system
+- **Platform does NOT**: Auto-convert date format
+
+### 10. Setup Business Classes Configuration (EXTENSIBILITY)
 
 Store FSM setup class configurations in database with standardized endpoint format.
 
@@ -214,7 +274,7 @@ business_classes = ["Currency", "Vendor", "Customer"]  # Not extensible
 - `_limit=100000`: Ensures all records captured in single request, no pagination issues
 - Benefits: Complete data, guaranteed capture, consistency, maintainability
 
-### 10. Mapping Format Consistency (CRITICAL)
+### 11. Mapping Format Consistency (CRITICAL)
 
 Frontend and backend must use consistent mapping formats. Frontend maintains TWO mapping structures for different purposes.
 
@@ -276,6 +336,330 @@ setMappingData({
   }
 });
 ```
+
+### 12. FSM Batch Load API Format (CRITICAL)
+
+**Correct URL Format**:
+```
+{base_url}/{tenant_id}/FSM/fsm/soap/classes/{business_class}/actions/CreateUnreleased/batch
+```
+
+Example:
+```
+https://mingle-ionapi.inforcloudsuite.com/TAMICS10_AX1/FSM/fsm/soap/classes/GLTransactionInterface/actions/CreateUnreleased/batch
+```
+
+**Correct Payload Format**:
+```json
+{
+  "_records": [
+    {
+      "_fields": {
+        "FinanceEnterpriseGroup": "1",
+        "GLTransactionInterface.RunGroup": "DataConversion_Demo",
+        "GLTransactionInterface.SequenceNumber": "1",
+        "AccountingEntity": "10",
+        "AccountCode": "100008",
+        "PostingDate": "20250825",
+        "TransactionAmount": "457.66",
+        "Description": "Valid record"
+      },
+      "message": "BatchImport"
+    }
+  ]
+}
+```
+
+**Key Requirements**:
+- URL must include `/{tenant_id}/FSM/fsm/soap/` path
+- Each record must have BOTH `_fields` AND `"message": "BatchImport"`
+- Keep empty string fields (FSM expects them)
+
+**Response Parsing**:
+```python
+# Count successes: records with "created" message or no exception
+for record in response:
+    # Skip batch status records
+    if "batchStatus" in record:
+        continue
+    
+    # Check for exceptions (failures)
+    if "exception" in record:
+        failure_count += 1
+    # Check for success messages
+    elif "created" in record.get("message", "").lower():
+        success_count += 1
+```
+
+**Rollback on Failure**:
+If any record fails, delete all successfully imported records for that RunGroup:
+
+```python
+# Rollback URL format
+url = f"{base_url}/{tenant_id}/FSM/fsm/soap/ldrest/{business_class}/DeleteAllTransactionsForRunGroup_DeleteAllTransactionsForRunGroupForm_FormOperation"
+
+params = {
+    "PrmRunGroup": run_group,
+    "_cmAll": "true"
+}
+
+# GET request to delete all transactions
+response = await client.get(url, headers=headers, params=params)
+```
+
+**Why Rollback?**
+- Maintains data integrity
+- Ensures either all records succeed or none do
+- Prevents partial data loads that could cause inconsistencies
+
+### 13. FSM Interface Transactions API Format
+
+**Purpose**: Post/journalize loaded GL transactions to the General Ledger after successful load.
+
+**URL Format**:
+```
+{base_url}/{tenant_id}/FSM/fsm/soap/ldrest/{business_class}/InterfaceTransactions_InterfaceTransactionsForm_FormOperation
+```
+
+**Example**:
+```
+https://mingle-ionapi.inforcloudsuite.com/CV6W2RCMM3EZ2355_TRN/FSM/fsm/soap/ldrest/GLTransactionInterface/InterfaceTransactions_InterfaceTransactionsForm_FormOperation?PrmRunGroup=Empower_GlTransrel_XCEBCC_Van&PrmJournalizeByEntity=true&PrmByPassOrganizationCode=true&PrmByPassAccountCode=true&PrmEnterpriseGroup=FCE&PrmInterfaceInDetail=true&_cmAll=true
+```
+
+**Query Parameters**:
+- `PrmRunGroup`: RunGroup to interface (required)
+- `PrmJournalizeByEntity`: Journalize by entity (true/false, default: true)
+- `PrmByPassOrganizationCode`: Bypass organization code validation (true/false, default: true)
+- `PrmByPassAccountCode`: Bypass account code validation (true/false, default: true)
+- `PrmEnterpriseGroup`: Enterprise group filter (optional, empty for all)
+- `PrmInterfaceInDetail`: Interface in detail mode (true/false, default: true)
+- `_cmAll`: Always "true"
+
+**Method**: GET (FSM uses GET for form operations)
+
+**When to Use**:
+- After successful load to FSM
+- Before interfacing, verify loaded data is correct
+- Interface posts transactions to GL for reporting
+
+**UI Integration**:
+- Available in Load Results screen after successful load
+- Collapsible parameter form with defaults
+- Only shown when load succeeds and RunGroup exists
+
+### 14. FSM Delete RunGroup API Format
+
+**Purpose**: Delete all transactions for a specific RunGroup (useful for testing and cleanup).
+
+**URL Format**:
+```
+{base_url}/{tenant_id}/FSM/fsm/soap/ldrest/{business_class}/DeleteAllTransactionsForRunGroup_DeleteAllTransactionsForRunGroupForm_FormOperation
+```
+
+**Example**:
+```
+https://mingle-ionapi.inforcloudsuite.com/TAMICS10_AX1/FSM/fsm/soap/ldrest/GLTransactionInterface/DeleteAllTransactionsForRunGroup_DeleteAllTransactionsForRunGroupForm_FormOperation?PrmRunGroup=DATACONVERSION_DEMO&_cmAll=true
+```
+
+**Query Parameters**:
+- `PrmRunGroup`: RunGroup to delete (required)
+- `_cmAll`: Always "true"
+
+**Method**: GET (FSM uses GET for form operations)
+
+**When to Use**:
+- Testing: Clean up test data before production load
+- Failed Interface: Delete and retry with corrected data
+- Wrong Data: Remove incorrect loads immediately
+- Demo/Training: Repeatable demonstrations
+
+**Safety Measures**:
+- Two-step confirmation dialog in UI
+- Shows transaction count and RunGroup name
+- Multiple warning messages
+- "Cannot be undone" warning
+- Red danger theme throughout
+
+**UI Integration**:
+- Available in Load Results screen after successful load
+- Collapsible confirmation dialog
+- Only shown when load succeeds and RunGroup exists
+
+**Note**: This is the same endpoint used for automatic rollback during load failures, but exposed to users for manual cleanup.
+
+### 15. UI Consistency Pattern (CRITICAL)
+
+**Principle**: Maintain uniform styling across related UI sections for professional appearance and maintainability.
+
+**Pattern**: When creating multiple sections that serve related purposes (e.g., Load section before load, Interface section after load), use consistent styling patterns.
+
+**Key Elements**:
+
+**Container Styling**:
+```tsx
+// Consistent container across sections
+<div style={{
+  backgroundColor: '#1a1a1a',
+  border: '2px solid #FF9800',  // Theme color
+  borderRadius: '12px',
+  padding: '24px',
+  marginBottom: '24px'
+}}>
+```
+
+**Header Pattern**:
+```tsx
+// Icon + Title + Subtitle
+<div style={{ marginBottom: '20px' }}>
+  <h3 style={{ 
+    fontSize: '18px', 
+    fontWeight: '600', 
+    color: '#FF9800',
+    marginBottom: '8px'
+  }}>
+    ⚡ Section Title
+  </h3>
+  <p style={{ fontSize: '13px', color: '#999' }}>
+    Descriptive subtitle
+  </p>
+</div>
+```
+
+**Form Grid Layout**:
+```tsx
+// 4-column grid for text inputs
+<div style={{
+  display: 'grid',
+  gridTemplateColumns: 'repeat(4, 1fr)',
+  gap: '16px',
+  marginBottom: '20px'
+}}>
+  <input style={{
+    padding: '10px',
+    backgroundColor: '#0a0a0a',
+    border: '1px solid #2a2a2a',
+    borderRadius: '6px',
+    color: '#fff'
+  }} />
+</div>
+```
+
+**Radio Button Group**:
+```tsx
+// Horizontal layout with simple styling
+<div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+  <label style={{
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    cursor: 'pointer',
+    fontSize: '13px',
+    color: '#fff'
+  }}>
+    <input type="radio" style={{ cursor: 'pointer' }} />
+    Option Label
+  </label>
+</div>
+```
+
+**Checkbox Grid**:
+```tsx
+// Auto-fit grid for boolean parameters
+<div style={{
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+  gap: '16px',
+  marginBottom: '24px'
+}}>
+  <label style={{
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '12px',
+    backgroundColor: '#1a1a1a',
+    borderRadius: '6px',
+    border: '1px solid #2a2a2a',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s ease'
+  }}
+  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
+  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+  >
+    <input type="checkbox" style={{ width: '18px', height: '18px' }} />
+    <span style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>
+      Checkbox Label
+    </span>
+  </label>
+</div>
+```
+
+**Why This Matters**:
+- Professional appearance across the application
+- Easier maintenance (single pattern to update)
+- Better user experience (predictable interface)
+- Reduced code duplication
+- Faster development (copy pattern, adjust content)
+
+**Common Mistake**: Creating similar sections with different styling approaches, leading to:
+- Inconsistent user experience
+- Harder maintenance
+- Duplicate code with slight variations
+- JSX syntax errors from incomplete refactoring
+
+**Best Practice**: When adding a new section similar to an existing one:
+1. Copy the entire section structure
+2. Update content (labels, state variables, handlers)
+3. Keep styling identical
+4. Test thoroughly to avoid JSX syntax errors
+
+## Architectural Improvements (March 2026)
+
+### Schema-Driven Platform
+
+The application now supports adding any FSM business class without code changes:
+
+1. **Swagger Importer** (`services/swagger_importer.py`)
+   - Parses OpenAPI/Swagger JSON files
+   - Extracts field metadata and operations
+   - Computes SHA256 hash for version detection
+   - Creates schema versions automatically
+
+2. **Schema Management UI** (`pages/SchemaManagement.tsx`)
+   - Upload Swagger files via drag-and-drop
+   - View all schema versions
+   - Display field counts, operations, source badges
+   - Integrated in main navigation (📐 icon)
+
+3. **Load Strategy Resolver** (`services/load_strategy_resolver.py`)
+   - Dynamically determines load method from operations
+   - Priority: createReleased → createUnreleased → create
+   - Validates user-requested load modes
+
+4. **Workflow Orchestrator** (`services/workflow_orchestrator.py`)
+   - Centralized workflow logic: upload → schema → mapping → validation → load
+   - Endpoint: POST /api/workflows/full-conversion
+   - Used by MCP and UI
+
+### MCP Platform Integration
+
+MCP server now fully integrated with platform APIs:
+
+1. **Authentication**: Uses POST /api/accounts/login with password (no bypass)
+2. **File Access**: Uses GET /api/upload/jobs/recent (no filesystem access)
+3. **Workflows**: Uses POST /api/workflows/full-conversion (centralized logic)
+
+### API Endpoints Added
+
+- POST /api/schema/import-swagger - Import Swagger file
+- GET /api/schema/list - List all schemas for account
+- POST /api/workflows/full-conversion - Run complete conversion workflow
+
+### Database Schema Updates
+
+- Extended `schemas` table: source, created_at, operations_json, required_fields_json, enum_fields_json, date_fields_json
+- New `schema_fields` table: Field metadata storage
+- New `schema_operations` table: Operation tracking
+- Added `schema_version` to `conversion_jobs`: Lock schema version per job
 
 ## Code Conventions
 
@@ -546,13 +930,91 @@ logging.basicConfig(level=logging.DEBUG)
 
 ## Implementation Status
 
-**Completed** (20/23 tasks, 87%): Core functionality, authentication, schema engine (local swagger support), snapshot engine, setup data management UI, file upload, auto-mapping, validation pipeline, load module, complete UI workflow
+**Completed** (24/24 core tasks + 8/8 architectural improvements, 100%): Core functionality, authentication, schema engine (local swagger support), snapshot engine, setup data management UI, file upload, auto-mapping, validation pipeline, load module, complete UI workflow, schema management UI, workflow orchestrator, load strategy resolver, MCP platform integration
 
-**Remaining** (3/23 tasks): Rule management UI (optional), enhanced dashboard (optional), end-to-end testing
+**Architectural Improvements Complete** (8/8):
+1. ✅ Swagger Importer Service - Parse and import OpenAPI/Swagger files
+2. ✅ Database Schema Updates - Versioning, operations, field metadata
+3. ✅ Schema Import API - POST /api/schema/import-swagger, GET /api/schema/list
+4. ✅ Load Strategy Resolver - Dynamic load method selection
+5. ✅ MCP Authentication - Removed bypass, uses password
+6. ✅ MCP Platform Integration - Removed filesystem access
+7. ✅ Workflow Orchestrator API - Centralized workflow logic
+8. ✅ Schema Management UI - Upload, view, manage schemas
 
-**Status**: Production-ready core, demo-ready
+**Optional Enhancements** (3 remaining): Rule management UI, enhanced dashboard, end-to-end testing
 
-## Recent Updates (March 1, 2026)
+**Status**: Production-ready, demo-ready, schema-driven platform
+
+## Recent Updates (March 11, 2026)
+
+### Uniform Interface UI (March 11, 2026) ⭐
+- **Achievement**: Fixed JSX syntax error and unified UI styling across Load and Interface sections
+- **Problem**: Interface Transactions section had malformed JSX and inconsistent styling
+- **Root Cause**: Incomplete code replacement left duplicate radio buttons and unclosed div tags
+- **Solution**: 
+  - Removed malformed "Checkboxes - Compact Grid" section (lines 2135-2197)
+  - Applied uniform styling matching Load section
+  - Clean container with `#1a1a1a` background and orange border
+  - Compact 4-column grid for text inputs
+  - Simple horizontal radio buttons for Edit Mode
+  - Elegant checkbox grid for boolean parameters
+- **Benefits**:
+  - Professional, consistent UI across the application
+  - Clean JSX structure (no syntax errors)
+  - Easier maintenance with single styling pattern
+  - Better user experience
+- **Files Modified**: `frontend/src/pages/ConversionWorkflow.tsx`
+- **Documentation**: 
+  - UNIFORM_INTERFACE_UI_COMPLETE.md
+  - Added Pattern #15 (UI Consistency Pattern)
+- **Status**: Complete, syntax validated, ready for testing
+
+### Load Results UI Enhancement (March 11, 2026) ⭐
+- **Achievement**: Complete Load Results screen with comprehensive metrics and post-load actions
+- **Load Results Display**:
+  - Success card with green gradient theme (all records loaded)
+  - Failure card with red gradient theme (rollback occurred)
+  - Metrics grid: Records Loaded, Business Class, Run Group, Chunks Processed, Timestamp
+  - Next Steps card with 3 action buttons (Start New, View Validation, Dashboard)
+- **Interface Transactions Feature**:
+  - Post/journalize loaded transactions to General Ledger
+  - Collapsible parameter form with FSM interface options
+  - Parameters: RunGroup, Enterprise Group, Journalize by Entity, Bypass codes, Interface in Detail
+  - Orange theme (#FF9800) for interface actions
+  - Success message display after completion
+- **Delete RunGroup Feature**:
+  - Permanently delete all transactions for a RunGroup
+  - Two-step confirmation dialog with warnings
+  - Shows transaction count and RunGroup name
+  - Red danger theme (#dc2626) throughout
+  - Useful for testing and cleanup
+- **Step Indicator Fix**: Added 'completed' to early return condition
+- **Files Modified**: 
+  - `frontend/src/pages/ConversionWorkflow.tsx` (Load Results UI, Interface form, Delete confirmation)
+  - `backend/app/services/fsm_client.py` (interface_transactions method)
+  - `backend/app/modules/load/service.py` (interface_transactions, delete_run_group methods)
+  - `backend/app/modules/load/router.py` (POST /api/load/interface, POST /api/load/delete-rungroup endpoints)
+- **Documentation**: 
+  - LOAD_RESULTS_UI_COMPLETE.md
+  - INTERFACE_TRANSACTIONS_COMPLETE.md
+  - DELETE_RUNGROUP_COMPLETE.md
+  - Added Pattern #13 (Interface Transactions API)
+  - Added Pattern #14 (Delete RunGroup API)
+- **Status**: Complete, tested, production-ready
+
+## Recent Updates (March 4, 2026)
+
+### Architectural Improvements Complete (March 4, 2026)
+- **Achievement**: All 8 architectural improvement steps completed
+- **Schema-Driven Platform**: Any FSM business class can be added via Swagger upload
+- **MCP Platform Integration**: Removed authentication bypass and filesystem access
+- **Workflow Orchestrator**: Centralized workflow logic in backend API
+- **Load Strategy Resolver**: Dynamic load method selection based on available operations
+- **Schema Management UI**: Complete UI for uploading and managing schemas
+- **Files Created**: 11 new files (swagger_importer.py, load_strategy_resolver.py, workflow_orchestrator.py, SchemaManagement.tsx, etc.)
+- **Files Modified**: 7 files (schema/router.py, accounts/router.py, App.tsx, main.py, etc.)
+- **Documentation**: ARCHITECTURAL_IMPROVEMENTS_COMPLETE.md, STEP_8_COMPLETION_SUMMARY.md, TEST_SCHEMA_MANAGEMENT.md
 
 ### Swagger Single-File Format Migration (March 4, 2026)
 - **Change**: Migrated from dual-format support to single-file OpenAPI/Swagger JSON only
@@ -692,4 +1154,6 @@ python verify_github_ready.py
 
 ---
 
-**Version**: 2.3 (March 2026) | **Authors**: Van Anthony Silleza (FSM Consultant), Kiro AI Assistant
+**Version**: 2.5 (March 2026) | **Authors**: Van Anthony Silleza (FSM Consultant), Kiro AI Assistant
+
+**Latest Update**: Load to FSM Complete - Fixed batch API endpoint, payload format, response parsing, and automatic rollback on failures

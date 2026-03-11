@@ -10,6 +10,7 @@ from app.modules.mapping.schemas import (
     MappingTemplateSave,
     MappingTemplateResponse
 )
+from app.models.mapping import MappingTemplate
 
 router = APIRouter()
 
@@ -56,6 +57,7 @@ def save_mapping_template(
             template.business_class,
             template.template_name,
             template.mapping,
+            template.enabled_fields,
             template.schema_version
         )
         return MappingTemplateResponse.from_orm(result)
@@ -74,3 +76,25 @@ def list_mapping_templates(
     """List all mapping templates for business class"""
     templates = MappingService.list_templates(db, account_id, business_class)
     return [MappingTemplateResponse.from_orm(t) for t in templates]
+
+@router.delete("/templates/{template_id}")
+def delete_mapping_template(
+    template_id: int,
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """Delete mapping template"""
+    template = db.query(MappingTemplate).filter(
+        MappingTemplate.id == template_id,
+        MappingTemplate.account_id == account_id
+    ).first()
+    
+    if not template:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Template not found"
+        )
+    
+    db.delete(template)
+    db.commit()
+    return {"message": "Template deleted successfully"}

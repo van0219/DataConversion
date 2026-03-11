@@ -41,8 +41,13 @@ class MappingService:
             raise ValueError(f"No schema found for {business_class}. Please fetch schema first.")
         
         parsed_schema = SchemaService.get_parsed_schema(schema)
-        fsm_fields = [field["name"] for field in parsed_schema["fields"]]
-        required_fields = [field["name"] for field in parsed_schema["fields"] if field["required"]]
+        
+        # Extract fields from schema properties
+        if "properties" not in parsed_schema:
+            raise ValueError(f"Invalid schema structure for {business_class}")
+        
+        fsm_fields = list(parsed_schema["properties"].keys())
+        required_fields = parsed_schema.get("required", [])
         
         # Perform auto-mapping
         mapping = MappingEngine.auto_map_fields(csv_headers, fsm_fields)
@@ -67,6 +72,7 @@ class MappingService:
         business_class: str,
         template_name: str,
         mapping: Dict,
+        enabled_fields: Dict,
         schema_version: int
     ) -> MappingTemplate:
         """Save mapping configuration as reusable template"""
@@ -80,6 +86,7 @@ class MappingService:
         if existing:
             # Update existing
             existing.mapping_json = json.dumps(mapping)
+            existing.enabled_fields_json = json.dumps(enabled_fields)
             existing.schema_version = schema_version
             existing.is_valid = True
             db.commit()
@@ -93,6 +100,7 @@ class MappingService:
                 business_class=business_class,
                 template_name=template_name,
                 mapping_json=json.dumps(mapping),
+                enabled_fields_json=json.dumps(enabled_fields),
                 schema_version=schema_version,
                 is_valid=True
             )

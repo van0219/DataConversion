@@ -15,6 +15,32 @@ class LoadStartRequest(BaseModel):
     chunk_size: int = 100
     trigger_interface: bool = False
 
+class InterfaceTransactionsRequest(BaseModel):
+    job_id: int
+    business_class: str
+    run_group: str
+    enterprise_group: str = ""
+    accounting_entity: str = ""
+    edit_only: bool = False
+    edit_and_interface: bool = False
+    partial_update: bool = False
+    journalize_by_entity: bool = True
+    journal_by_journal_code: bool = False
+    bypass_organization_code: bool = True
+    bypass_account_code: bool = True
+    bypass_structure_relation_edit: bool = False
+    interface_in_detail: bool = True
+    currency_table: str = ""
+    bypass_negative_rate_edit: bool = False
+    primary_ledger: str = ""
+    move_errors_to_new_run_group: bool = False
+    error_run_group_prefix: str = ""
+
+class DeleteRunGroupRequest(BaseModel):
+    job_id: int
+    business_class: str
+    run_group: str
+
 @router.post("/start")
 async def start_load(
     request: LoadStartRequest,
@@ -65,4 +91,132 @@ def get_load_results(
     
     return results
 
+@router.post("/interface")
+async def interface_transactions(
+    request: InterfaceTransactionsRequest,
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """Interface (post/journalize) transactions for a RunGroup"""
+    try:
+        result = await LoadService.interface_transactions(
+            db,
+            account_id,
+            request.job_id,
+            request.business_class,
+            request.run_group,
+            request.enterprise_group,
+            request.accounting_entity,
+            request.edit_only,
+            request.edit_and_interface,
+            request.partial_update,
+            request.journalize_by_entity,
+            request.journal_by_journal_code,
+            request.bypass_organization_code,
+            request.bypass_account_code,
+            request.bypass_structure_relation_edit,
+            request.interface_in_detail,
+            request.currency_table,
+            request.bypass_negative_rate_edit,
+            request.primary_ledger,
+            request.move_errors_to_new_run_group,
+            request.error_run_group_prefix
+        )
+        return {
+            "message": "Interface completed successfully",
+            "run_group": request.run_group,
+            "result": result
+        }
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Interface failed: {str(e)}"
+        )
+
+@router.get("/check-rungroup/{job_id}/{run_group}")
+async def check_run_group(
+    job_id: int,
+    run_group: str,
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """Check if a RunGroup already exists in FSM before loading"""
+    try:
+        result = await LoadService.check_run_group_exists(
+            db,
+            account_id,
+            job_id,
+            run_group
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Check failed: {str(e)}"
+        )
+
+
+@router.post("/delete-rungroup")
+async def delete_run_group(
+    request: DeleteRunGroupRequest,
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """Delete all transactions for a RunGroup (useful for testing/cleanup)"""
+    try:
+        result = await LoadService.delete_run_group(
+            db,
+            account_id,
+            request.job_id,
+            request.business_class,
+            request.run_group
+        )
+        return {
+            "message": "RunGroup deleted successfully",
+            "run_group": request.run_group,
+            "result": result
+        }
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Delete failed: {str(e)}"
+        )
+
 # Placeholder - will implement in Task 6.2
+
+
+@router.get("/interface-results/{job_id}/{run_group}")
+async def get_interface_results(
+    job_id: int,
+    run_group: str,
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """
+    Query GLTransactionInterface records to check interface status.
+    Returns records with error messages if any.
+    """
+    try:
+        service = LoadService(db, account_id)
+        results = await service.get_interface_results(job_id, run_group)
+        return results
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )

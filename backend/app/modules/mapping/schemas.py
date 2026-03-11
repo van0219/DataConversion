@@ -28,12 +28,15 @@ class MappingTemplateSave(BaseModel):
     business_class: str
     template_name: str
     mapping: Dict
+    enabled_fields: Dict  # {"fsm_field": true/false}
     schema_version: int
 
 class MappingTemplateResponse(BaseModel):
     id: int
     business_class: str
     template_name: str
+    mapping_json: str
+    enabled_fields_json: str | None
     schema_version: int
     is_valid: bool
     created_at: datetime

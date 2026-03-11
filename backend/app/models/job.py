@@ -7,12 +7,14 @@ class ConversionJob(Base):
     
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     account_id = Column(Integer, ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False, index=True)
+    batch_upload_id = Column(Integer, nullable=True, index=True)  # Reference to batch_upload_jobs.id (no FK constraint for SQLite compatibility)
     business_class = Column(String(255), nullable=False)
     filename = Column(String(500), nullable=False)
     total_records = Column(Integer)
     valid_records = Column(Integer, default=0)
     invalid_records = Column(Integer, default=0)
     status = Column(String(50), nullable=False, index=True)  # pending, validating, validated, loading, completed, failed
+    schema_version = Column(Integer)  # Locks job to specific schema version
     created_at = Column(TIMESTAMP, server_default=func.now(), index=True)
     completed_at = Column(TIMESTAMP)
 

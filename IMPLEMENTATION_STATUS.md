@@ -1,12 +1,78 @@
 # FSM Conversion Workbench - Implementation Status
 
 **Last Updated**: March 4, 2026  
-**Status**: 24/24 Tasks Complete (100%) + MCP Server  
+**Status**: 24/24 Core Tasks + 8/8 Architectural Improvements (100%)  
 **Demo Ready**: Yes - Production Ready with AI Automation
 
 ---
 
-## ✅ Completed Tasks (24/24)
+## ✅ Completed Tasks (24/24 Core + 8/8 Architectural)
+
+### Core Implementation (24/24) ✅
+
+All core features complete as documented below.
+
+### Architectural Improvements (8/8) ✅
+
+#### Improvement 1: Swagger Importer Service ✅
+- services/swagger_importer.py
+- Parse OpenAPI/Swagger JSON files
+- Extract field metadata (name, type, required, enum, pattern, description)
+- Extract operations from paths (create, createUnreleased, createReleased, update)
+- Compute SHA256 hash for version detection
+- Compare with existing schemas
+- Create new version only if schema changed
+
+#### Improvement 2: Database Schema Updates ✅
+- Migration: migrate_schema_improvements.py
+- Extended schemas table (6 new columns: source, created_at, operations_json, required_fields_json, enum_fields_json, date_fields_json)
+- Created schema_fields table for field metadata
+- Created schema_operations table for operation tracking
+- Added schema_version column to conversion_jobs table
+- Models: schema_field.py, schema_operation.py
+
+#### Improvement 3: Schema Import API ✅
+- Endpoint: POST /api/schema/import-swagger
+- Accepts multipart/form-data (business_class + swagger_file)
+- Returns comprehensive import summary with version detection
+- Endpoint: GET /api/schema/list
+- Returns all schemas for account with metadata
+
+#### Improvement 4: Load Strategy Resolver ✅
+- services/load_strategy_resolver.py
+- Dynamically determines FSM load method based on available operations
+- Priority: createReleased → createUnreleased → create
+- Methods: resolve_load_method(), get_available_operations(), validate_load_mode(), get_load_mode_options()
+
+#### Improvement 5: Remove MCP Authentication Bypass ✅
+- Deleted POST /api/accounts/mcp-login/{account_id} endpoint
+- Updated MCP login tool to use POST /api/accounts/login with password
+- Removed redundant login_with_account_name tool
+- MCP now uses same authentication as UI
+
+#### Improvement 6: Remove MCP Filesystem Access ✅
+- Removed list_files tool (direct filesystem access)
+- Added list_jobs tool that calls GET /api/upload/jobs/recent
+- MCP now uses platform APIs exclusively
+
+#### Improvement 7: Workflow Orchestrator API ✅
+- services/workflow_orchestrator.py
+- modules/workflows/router.py
+- Endpoint: POST /api/workflows/full-conversion
+- Orchestrates: upload → schema → mapping → validation → load
+- Updated MCP run_full_conversion tool to use this endpoint
+- Centralized workflow logic in backend
+
+#### Improvement 8: Schema Management UI ✅
+- pages/SchemaManagement.tsx
+- Upload Swagger/OpenAPI JSON files
+- View all schema versions for account
+- Display field count, required fields, operations
+- Source badges (Local/FSM/Imported)
+- Version history per business class
+- Integrated in App.tsx with navigation
+
+---
 
 ### Phase 1: Foundation (3/3) ✅
 

@@ -11,6 +11,7 @@ class ValidationRuleTemplate(Base):
     rule_set_id = Column(Integer, ForeignKey("validation_rule_sets.id", ondelete="CASCADE"), nullable=True, index=True)  # NULL for unassigned
     rule_type = Column(String(100), nullable=False, index=True)  # REFERENCE_EXISTS, REQUIRED_OVERRIDE, etc.
     field_name = Column(String(255), nullable=False)
+    from_field = Column(Text)  # Source field that triggered the rule (for error reporting)
     reference_business_class = Column(String(255))  # For REFERENCE_EXISTS rules
     condition_expression = Column(Text)  # For conditional rules
     error_message = Column(Text, nullable=False)

@@ -10,6 +10,7 @@ class MappingTemplate(Base):
     business_class = Column(String(255), nullable=False, index=True)
     template_name = Column(String(255), nullable=False)
     mapping_json = Column(Text, nullable=False)  # {"csv_column": "fsm_field", ...}
+    enabled_fields_json = Column(Text)  # {"fsm_field": true/false, ...} - which fields are enabled
     schema_version = Column(Integer, nullable=False)
     is_valid = Column(Boolean, default=True)
     created_at = Column(TIMESTAMP, server_default=func.now())

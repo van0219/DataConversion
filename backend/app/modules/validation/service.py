@@ -172,6 +172,7 @@ class ValidationService:
             rules.append({
                 "rule_type": rule.rule_type,
                 "field_name": rule.field_name,
+                "from_field": rule.from_field,
                 "reference_business_class": rule.reference_business_class,
                 "condition_expression": rule.condition_expression,
                 "error_message": rule.error_message
