@@ -612,6 +612,343 @@ https://mingle-ionapi.inforcloudsuite.com/TAMICS10_AX1/FSM/fsm/soap/ldrest/GLTra
 3. Keep styling identical
 4. Test thoroughly to avoid JSX syntax errors
 
+### 16. Enhanced Loading Experience (CRITICAL UX)
+
+**Principle**: Provide comprehensive feedback during load operations with progress tracking, animations, and error details.
+
+**Loading Animation Components**:
+```tsx
+// Animated spinner with CSS keyframes
+<div style={{
+  width: '48px',
+  height: '48px',
+  border: '4px solid #2a2a2a',
+  borderTop: '4px solid #FF9800',
+  borderRadius: '50%',
+  animation: 'spin 1s linear infinite'
+}} />
+
+// Progress tracking state
+const [loadProgress, setLoadProgress] = useState<{
+  records_processed: number;
+  total_records: number;
+  chunks_processed: number;
+  total_chunks: number;
+  elapsed_seconds: number;
+} | null>(null);
+
+// Progress bar with percentage
+<div style={{
+  width: `${Math.min(100, (progress.records_processed / progress.total_records) * 100)}%`,
+  height: '100%',
+  backgroundColor: '#FF9800',
+  transition: 'width 0.3s ease'
+}} />
+```
+
+**Smart Minimum Display Time**:
+```typescript
+// Conditional minimum display based on file size
+const recordCount = fileInfo?.total_records || 0;
+if (recordCount < 1000) {
+  const minDisplayTime = 1500; // 1.5 seconds for small files
+  if (elapsed < minDisplayTime) {
+    await new Promise(resolve => setTimeout(resolve, minDisplayTime - elapsed));
+  }
+}
+// Large files (≥1000 records) show results immediately when done
+```
+
+**Real-Time Progress Polling**:
+```typescript
+// Poll backend for progress on large files
+if ((fileInfo?.total_records || 0) > 1000) {
+  progressInterval = setInterval(async () => {
+    const progressResponse = await api.get(`/load/${jobId}/progress`);
+    setLoadProgress(progressResponse.data);
+  }, 1000);
+}
+```
+
+**Key Features**:
+- Animated spinner with orange theme
+- Progress bar showing completion percentage
+- Records processed counter with comma formatting
+- Chunks completed and elapsed time display
+- Large dataset warning (10,000+ records)
+- Smart minimum display time (small files only)
+- Real-time updates for long operations
+
+**Why This Matters**:
+- Professional user experience for all file sizes
+- Clear feedback prevents user confusion
+- Progress tracking for large datasets (millions of records)
+- Prevents perceived performance issues
+- Builds user confidence in the system
+
+### 17. Error Details Display (CRITICAL DEBUGGING)
+
+**Principle**: When loads fail, provide comprehensive error information to help users understand and resolve issues.
+
+**Error Details Structure**:
+```typescript
+interface LoadResult {
+  error_details?: any; // FSM API error response
+  error_message?: string; // Human-readable error message
+  // ... other fields
+}
+```
+
+**Backend Error Capture**:
+```python
+# Capture error details from FSM API response
+if failure_count > 0:
+  error_details = {
+    "chunk_number": chunk_num,
+    "failure_count": failure_count,
+    "fsm_response": response
+  }
+
+# Extract human-readable message
+if "exception" in error_details:
+  error_message = f"{error_details.get('exception_type', 'Error')}: {error_details.get('exception')}"
+```
+
+**Frontend Error Display**:
+```tsx
+{/* Error Details Section */}
+{loadResult.total_failure > 0 && (
+  <div style={{ backgroundColor: '#1a0a0a', border: '1px solid #dc2626' }}>
+    {/* Human-readable error message */}
+    {loadResult.error_message && (
+      <div style={{ fontFamily: 'monospace' }}>
+        {loadResult.error_message}
+      </div>
+    )}
+    
+    {/* Expandable full API response */}
+    <details>
+      <summary>View Full API Response</summary>
+      <pre>{JSON.stringify(loadResult.error_details, null, 2)}</pre>
+    </details>
+    
+    {/* Next steps guidance */}
+    <div>
+      💡 Next Steps:
+      <ul>
+        <li>Review the error message above</li>
+        <li>Check validation results for data quality issues</li>
+        <li>Verify FSM field mappings are correct</li>
+      </ul>
+    </div>
+  </div>
+)}
+```
+
+**Error Information Hierarchy**:
+1. **Error Message** - Human-readable summary extracted from API
+2. **Full API Response** - Complete FSM error response (expandable)
+3. **Next Steps** - Actionable guidance for resolution
+4. **Context** - Chunk number, failure count, rollback status
+
+**Benefits**:
+- Users understand WHY the load failed
+- Technical details available for debugging
+- Clear next steps for resolution
+- Reduces support requests
+- Enables self-service troubleshooting
+
+### 18. Step Transitions (UX ENHANCEMENT)
+
+**Principle**: Provide smooth visual transitions between workflow steps to create a polished, professional user experience.
+
+**CSS Animations**:
+```css
+@keyframes slideInFromRight {
+  0% { opacity: 0; transform: translateX(30px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInFromLeft {
+  0% { opacity: 0; transform: translateX(-30px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+```
+
+**Smart Direction Detection**:
+```typescript
+const changeStep = (newStep: StepType) => {
+  const stepOrder = ['upload', 'mapping', 'validation', 'load', 'completed'];
+  const currentIndex = stepOrder.indexOf(currentStep);
+  const newIndex = stepOrder.indexOf(newStep);
+  
+  setTransitionDirection(newIndex > currentIndex ? 'forward' : 'backward');
+  setCurrentStep(newStep);
+};
+
+const getAnimationClass = () => {
+  return transitionDirection === 'forward' ? 'step-forward' : 'step-backward';
+};
+```
+
+**Animation Application**:
+```tsx
+{/* Each step container gets animation class */}
+{currentStep === 'upload' && (
+  <div className={getAnimationClass()} style={{...}}>
+    {/* Step content */}
+  </div>
+)}
+```
+
+**Animation Types**:
+- **Forward Progress**: Slides in from right (upload → mapping → validation → load → completed)
+- **Backward Navigation**: Slides in from left (back button, step corrections)
+- **Initial Load**: Fade-in animation for first step display
+
+**Timing**: 0.5 seconds with `ease-out` easing for smooth, professional feel
+
+**Benefits**:
+- Professional, polished user experience
+- Visual continuity between steps
+- Guides users through workflow progression
+- Reduces perceived loading time
+- Creates sense of forward momentum
+
+**Implementation Notes**:
+- All `setCurrentStep` calls replaced with `changeStep` function
+- Animation classes applied to step containers
+- Direction automatically detected based on step progression
+- CSS animations injected via useEffect for self-contained component
+
+**Principle**: Maintain uniform styling across related UI sections for professional appearance and maintainability.
+
+**Pattern**: When creating multiple sections that serve related purposes (e.g., Load section before load, Interface section after load), use consistent styling patterns.
+
+**Key Elements**:
+
+**Container Styling**:
+```tsx
+// Consistent container across sections
+<div style={{
+  backgroundColor: '#1a1a1a',
+  border: '2px solid #FF9800',  // Theme color
+  borderRadius: '12px',
+  padding: '24px',
+  marginBottom: '24px'
+}}>
+```
+
+**Header Pattern**:
+```tsx
+// Icon + Title + Subtitle
+<div style={{ marginBottom: '20px' }}>
+  <h3 style={{ 
+    fontSize: '18px', 
+    fontWeight: '600', 
+    color: '#FF9800',
+    marginBottom: '8px'
+  }}>
+    ⚡ Section Title
+  </h3>
+  <p style={{ fontSize: '13px', color: '#999' }}>
+    Descriptive subtitle
+  </p>
+</div>
+```
+
+**Form Grid Layout**:
+```tsx
+// 4-column grid for text inputs
+<div style={{
+  display: 'grid',
+  gridTemplateColumns: 'repeat(4, 1fr)',
+  gap: '16px',
+  marginBottom: '20px'
+}}>
+  <input style={{
+    padding: '10px',
+    backgroundColor: '#0a0a0a',
+    border: '1px solid #2a2a2a',
+    borderRadius: '6px',
+    color: '#fff'
+  }} />
+</div>
+```
+
+**Radio Button Group**:
+```tsx
+// Horizontal layout with simple styling
+<div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+  <label style={{
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    cursor: 'pointer',
+    fontSize: '13px',
+    color: '#fff'
+  }}>
+    <input type="radio" style={{ cursor: 'pointer' }} />
+    Option Label
+  </label>
+</div>
+```
+
+**Checkbox Grid**:
+```tsx
+// Auto-fit grid for boolean parameters
+<div style={{
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+  gap: '16px',
+  marginBottom: '24px'
+}}>
+  <label style={{
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '12px',
+    backgroundColor: '#1a1a1a',
+    borderRadius: '6px',
+    border: '1px solid #2a2a2a',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s ease'
+  }}
+  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
+  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+  >
+    <input type="checkbox" style={{ width: '18px', height: '18px' }} />
+    <span style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>
+      Checkbox Label
+    </span>
+  </label>
+</div>
+```
+
+**Why This Matters**:
+- Professional appearance across the application
+- Easier maintenance (single pattern to update)
+- Better user experience (predictable interface)
+- Reduced code duplication
+- Faster development (copy pattern, adjust content)
+
+**Common Mistake**: Creating similar sections with different styling approaches, leading to:
+- Inconsistent user experience
+- Harder maintenance
+- Duplicate code with slight variations
+- JSX syntax errors from incomplete refactoring
+
+**Best Practice**: When adding a new section similar to an existing one:
+1. Copy the entire section structure
+2. Update content (labels, state variables, handlers)
+3. Keep styling identical
+4. Test thoroughly to avoid JSX syntax errors
+
 ## Architectural Improvements (March 2026)
 
 ### Schema-Driven Platform
@@ -947,6 +1284,44 @@ logging.basicConfig(level=logging.DEBUG)
 **Status**: Production-ready, demo-ready, schema-driven platform
 
 ## Recent Updates (March 11, 2026)
+
+### Enhanced Loading Experience & Error Details (March 11, 2026) ⭐
+
+- **Achievement**: Comprehensive loading animation and error reporting improvements
+- **Load Response Format Fix**:
+  - Fixed backend-frontend field name mismatch (`total_success` vs `success_count`)
+  - Added missing fields: `run_group`, `business_class`, `timestamp`, `error_details`, `error_message`
+  - Updated router to transform service response to match frontend interface
+  - Eliminated `toLocaleString()` error on undefined values
+- **Enhanced Loading Animation**:
+  - Added animated spinner with CSS keyframes
+  - Real-time progress tracking for large datasets (records processed, chunks completed, elapsed time)
+  - Progress bar with percentage completion
+  - Smart minimum display time (1.5s for <1000 records, none for large files)
+  - Large dataset warning for 10,000+ records
+  - Progress polling every second for files >1000 records
+- **Detailed Error Reporting**:
+  - Human-readable error messages extracted from FSM API responses
+  - Expandable full API response viewer with JSON formatting
+  - Error details section with troubleshooting guidance
+  - Captures first error from failed chunks for user display
+  - Next steps recommendations for error resolution
+- **Smooth Step Transitions**:
+  - Added slide animations between workflow steps (0.5s duration)
+  - Forward transitions slide from right, backward from left
+  - Smart direction detection based on step progression
+  - Fade-in animations for initial step display
+  - Applied to all workflow steps (upload, mapping, validation, load, completed)
+- **Files Modified**: 
+  - `frontend/src/pages/ConversionWorkflow.tsx` (loading UI, transitions, error display)
+  - `backend/app/modules/load/router.py` (response format transformation)
+  - `backend/app/modules/load/service.py` (error details capture, run_group return)
+- **Documentation**: 
+  - LOAD_RESPONSE_FORMAT_FIX.md
+  - Updated Pattern #16 (Enhanced Loading Experience)
+  - Updated Pattern #17 (Error Details Display)
+  - Updated Pattern #18 (Step Transitions)
+- **Status**: Complete, tested, production-ready with professional UX
 
 ### Uniform Interface UI (March 11, 2026) ⭐
 - **Achievement**: Fixed JSX syntax error and unified UI styling across Load and Interface sections

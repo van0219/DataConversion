@@ -172,20 +172,27 @@ class SchemaService:
         
         new_version = max_version + 1
         
-        # Store new schema version
+        # Deactivate all previous versions
+        db.query(Schema).filter(
+            Schema.account_id == account_id,
+            Schema.business_class == business_class
+        ).update({"is_active": False})
+        
+        # Store new schema version (active by default)
         schema = Schema(
             account_id=account_id,
             business_class=business_class,
             schema_json=json.dumps(parsed_schema),
             schema_hash=schema_hash,
-            version_number=new_version
+            version_number=new_version,
+            is_active=True
         )
         
         db.add(schema)
         db.commit()
         db.refresh(schema)
         
-        logger.info(f"Stored new schema version {new_version} for {business_class}")
+        logger.info(f"Stored new schema version {new_version} for {business_class} (deactivated {max_version} old versions)")
         
         # If version changed, invalidate mapping templates
         if new_version > 1:

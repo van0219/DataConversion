@@ -58,10 +58,34 @@ async def start_load(
             request.chunk_size,
             request.trigger_interface
         )
+        
+        # Transform response to match frontend expectations
+        from datetime import datetime
+        
+        # Extract error message from error details
+        error_message = None
+        if result.get("error_details"):
+            error_details = result["error_details"]
+            if "exception" in error_details:
+                error_message = f"{error_details.get('exception_type', 'Error')}: {error_details.get('exception')}"
+            elif "fsm_response" in error_details:
+                # Try to extract meaningful error from FSM response
+                fsm_resp = error_details.get("fsm_response", {})
+                if isinstance(fsm_resp, dict):
+                    error_message = fsm_resp.get("error") or fsm_resp.get("message") or "FSM API returned errors"
+        
         return {
-            "message": "Load completed",
-            "job_id": request.job_id,
-            **result
+            "status": "completed" if result["total_failure"] == 0 else "failed",
+            "total_records": result["total_success"] + result["total_failure"],
+            "success_count": result["total_success"],
+            "failure_count": result["total_failure"],
+            "total_failure": result["total_failure"],
+            "chunks_processed": result["chunks_processed"],
+            "run_group": result.get("run_group", ""),
+            "business_class": request.business_class,
+            "timestamp": datetime.now().isoformat(),
+            "error_details": result.get("error_details"),
+            "error_message": error_message
         }
     except ValueError as e:
         raise HTTPException(

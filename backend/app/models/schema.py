@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ForeignKey, UniqueConstraint, Boolean
 from sqlalchemy.sql import func
 from app.core.database import Base
 
@@ -20,6 +20,7 @@ class Schema(Base):
     required_fields_json = Column(Text)  # JSON array of required fields
     enum_fields_json = Column(Text)  # JSON object {field: [values]}
     date_fields_json = Column(Text)  # JSON array of date fields
+    is_active = Column(Boolean, default=True, nullable=False)  # Only latest version is active
     
     __table_args__ = (
         UniqueConstraint('account_id', 'business_class', 'version_number', name='uq_schema_version'),

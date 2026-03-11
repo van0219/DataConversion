@@ -83,6 +83,7 @@ class LoadService:
         total_success = 0
         total_failure = 0
         run_group = None  # Extract RunGroup from first record
+        first_error_details = None  # Capture first error for user display
         
         for chunk in StreamingEngine.stream_csv(file_path, chunk_size=chunk_size):
             for record in chunk:
@@ -107,7 +108,7 @@ class LoadService:
                 # When buffer reaches chunk_size, send to FSM
                 if len(chunk_buffer) >= chunk_size:
                     chunk_num += 1
-                    success, failure = await LoadService._load_chunk(
+                    success, failure, error_details = await LoadService._load_chunk(
                         db,
                         fsm_client,
                         business_class,
@@ -119,12 +120,17 @@ class LoadService:
                     )
                     total_success += success
                     total_failure += failure
+                    
+                    # Capture first error for display
+                    if error_details and not first_error_details:
+                        first_error_details = error_details
+                    
                     chunk_buffer = []
         
         # Load remaining records
         if chunk_buffer:
             chunk_num += 1
-            success, failure = await LoadService._load_chunk(
+            success, failure, error_details = await LoadService._load_chunk(
                 db,
                 fsm_client,
                 business_class,
@@ -136,6 +142,10 @@ class LoadService:
             )
             total_success += success
             total_failure += failure
+            
+            # Capture first error for display
+            if error_details and not first_error_details:
+                first_error_details = error_details
         
         # Update final job status
         job.status = "completed"
@@ -143,10 +153,47 @@ class LoadService:
         
         logger.info(f"Load complete for job {job_id}: {total_success} success, {total_failure} failures")
         
+        # If trigger_interface is enabled and load was successful, interface the transactions
+        interface_result = None
+        if trigger_interface and total_success > 0 and total_failure == 0 and run_group:
+            logger.info(f"Triggering interface for RunGroup: {run_group}")
+            try:
+                interface_result = await LoadService.interface_transactions(
+                    db=db,
+                    account_id=account_id,
+                    job_id=job_id,
+                    business_class=business_class,
+                    run_group=run_group,
+                    enterprise_group="",
+                    accounting_entity="",
+                    edit_only=False,
+                    edit_and_interface=False,
+                    partial_update=False,
+                    journalize_by_entity=True,
+                    journal_by_journal_code=False,
+                    bypass_organization_code=True,
+                    bypass_account_code=True,
+                    bypass_structure_relation_edit=False,
+                    interface_in_detail=True,
+                    currency_table="",
+                    bypass_negative_rate_edit=False,
+                    primary_ledger="",
+                    move_errors_to_new_run_group=False,
+                    error_run_group_prefix=""
+                )
+                logger.info(f"Interface completed successfully for RunGroup: {run_group}")
+            except Exception as e:
+                logger.error(f"Interface failed for RunGroup {run_group}: {e}")
+                # Don't fail the entire load if interface fails
+                interface_result = {"error": str(e)}
+        
         return {
             "total_success": total_success,
             "total_failure": total_failure,
-            "chunks_processed": chunk_num
+            "chunks_processed": chunk_num,
+            "run_group": run_group,
+            "error_details": first_error_details,
+            "interface_result": interface_result
         }
     
     @staticmethod
@@ -159,12 +206,14 @@ class LoadService:
         chunk_num: int,
         trigger_interface: bool,
         run_group: str = None
-    ) -> tuple[int, int]:
+    ) -> tuple[int, int, dict]:
         """
         Load a single chunk to FSM.
         If any record fails, rollback all successfully imported records for the RunGroup.
-        Returns: (success_count, failure_count)
+        Returns: (success_count, failure_count, error_details)
         """
+        error_details = None
+        
         try:
             # Call FSM batch create
             response = await fsm_client.batch_create_unreleased(
@@ -181,6 +230,13 @@ class LoadService:
             if failure_count > 0 and run_group:
                 logger.warning(f"Chunk {chunk_num} has {failure_count} failures. Rolling back all records for RunGroup: {run_group}")
                 
+                # Capture error details from response
+                error_details = {
+                    "chunk_number": chunk_num,
+                    "failure_count": failure_count,
+                    "fsm_response": response
+                }
+                
                 try:
                     await fsm_client.delete_all_transactions_for_run_group(
                         business_class,
@@ -189,7 +245,7 @@ class LoadService:
                     logger.info(f"Rollback successful for RunGroup: {run_group}")
                 except Exception as rollback_error:
                     logger.error(f"Rollback failed: {rollback_error}")
-                    # Continue to store the error result
+                    error_details["rollback_error"] = str(rollback_error)
             
             # Store load result
             load_result = LoadResult(
@@ -204,10 +260,17 @@ class LoadService:
             
             logger.info(f"Chunk {chunk_num} loaded: {success_count} success, {failure_count} failures")
             
-            return success_count, failure_count
+            return success_count, failure_count, error_details
             
         except Exception as e:
             logger.error(f"Failed to load chunk {chunk_num}: {e}")
+            
+            # Capture exception details
+            error_details = {
+                "chunk_number": chunk_num,
+                "exception": str(e),
+                "exception_type": type(e).__name__
+            }
             
             # Store failure result
             load_result = LoadResult(
@@ -220,7 +283,7 @@ class LoadService:
             db.add(load_result)
             db.commit()
             
-            return 0, len(records)
+            return 0, len(records), error_details
     
     @staticmethod
     async def interface_transactions(

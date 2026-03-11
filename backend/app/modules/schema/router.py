@@ -75,18 +75,19 @@ def list_schemas(
     db: Session = Depends(get_db)
 ):
     """
-    List all schemas for the current account.
+    List all ACTIVE schemas for the current account (only latest versions).
     
     Returns:
-        List of schemas with version info, field counts, and operations
+        List of active schemas with version info, field counts, and operations
     """
     from app.models.schema import Schema
     from sqlalchemy import func
     
     try:
-        # Get all schemas for account, ordered by business_class and version
+        # Get only active schemas for account, ordered by business_class
         schemas = db.query(Schema).filter(
-            Schema.account_id == account_id
+            Schema.account_id == account_id,
+            Schema.is_active == True
         ).order_by(
             Schema.business_class,
             Schema.version_number.desc()

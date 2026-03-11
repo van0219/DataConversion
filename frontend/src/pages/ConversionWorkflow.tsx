@@ -24,6 +24,7 @@ interface MappingData {
 }
 
 interface ValidationProgress {
+  job_id: number;
   status: string;
   progress: number;
   current_chunk: number;
@@ -52,11 +53,113 @@ interface LoadResult {
   run_group: string;
   business_class: string;
   timestamp: string;
+  error_details?: any; // FSM API error response
+  error_message?: string; // Human-readable error message
+  interface_result?: any; // Interface result if triggered
 }
 
 const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
+  // Add CSS animations for transitions
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      @keyframes slideInFromRight {
+        0% {
+          opacity: 0;
+          transform: translateX(30px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      
+      @keyframes slideInFromLeft {
+        0% {
+          opacity: 0;
+          transform: translateX(-30px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      .step-container {
+        animation: fadeIn 0.5s ease-out;
+      }
+      
+      .step-forward {
+        animation: slideInFromRight 0.5s ease-out;
+      }
+      
+      .step-backward {
+        animation: slideInFromLeft 0.5s ease-out;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
+
   // Step management
   const [currentStep, setCurrentStep] = useState<'upload' | 'mapping' | 'validation' | 'load' | 'completed'>('upload');
+  const [previousStep, setPreviousStep] = useState<'upload' | 'mapping' | 'validation' | 'load' | 'completed'>('upload');
+  const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward'>('forward');
+  const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set(['upload'])); // Track completed steps
+
+  // Helper function to change steps with animation
+  const changeStep = (newStep: 'upload' | 'mapping' | 'validation' | 'load' | 'completed') => {
+    const stepOrder = ['upload', 'mapping', 'validation', 'load', 'completed'];
+    const currentIndex = stepOrder.indexOf(currentStep);
+    const newIndex = stepOrder.indexOf(newStep);
+    
+    setPreviousStep(currentStep);
+    setTransitionDirection(newIndex > currentIndex ? 'forward' : 'backward');
+    setCurrentStep(newStep);
+    
+    // Mark the new step as completed when moving forward
+    if (newIndex > currentIndex) {
+      setCompletedSteps(prev => new Set([...prev, newStep]));
+    }
+  };
+
+  // Helper function to check if a step can be navigated to
+  const canNavigateToStep = (step: string) => {
+    return completedSteps.has(step);
+  };
+
+  // Helper function to handle step click
+  const handleStepClick = (step: 'upload' | 'mapping' | 'validation' | 'load' | 'completed') => {
+    if (canNavigateToStep(step) && step !== currentStep) {
+      changeStep(step);
+    }
+  };
+
+  // Get animation class based on transition direction
+  const getAnimationClass = () => {
+    if (transitionDirection === 'forward') {
+      return 'step-forward';
+    } else if (transitionDirection === 'backward') {
+      return 'step-backward';
+    }
+    return 'step-container';
+  };
   
   // Upload state
   const [file, setFile] = useState<File | null>(null);
@@ -106,6 +209,13 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
     record_count: number;
     run_group: string;
   } | null>(null);
+  const [loadProgress, setLoadProgress] = useState<{
+    records_processed: number;
+    total_records: number;
+    chunks_processed: number;
+    total_chunks: number;
+    elapsed_seconds: number;
+  } | null>(null);
 
   // Interface state
   const [interfaceParams, setInterfaceParams] = useState({
@@ -151,7 +261,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       setFileInfo(response.data.file_info);
       
       // Automatically perform mapping after successful upload
-      setCurrentStep('mapping');
+      setCompletedSteps(prev => new Set([...prev, 'mapping'])); // Mark mapping as available
+      changeStep('mapping');
       await performAutomaticMapping(response.data.job_id);
     } catch (error: any) {
       console.error('Upload failed:', error);
@@ -170,7 +281,35 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
         business_class: businessClass,
         force_refresh: false
       });
-      setSchema(schemaResponse.data);
+      
+      // Parse schema_json string to object
+      const schemaData = schemaResponse.data;
+      let parsedSchema: any = {};
+      
+      if (schemaData.schema_json && typeof schemaData.schema_json === 'string') {
+        parsedSchema = JSON.parse(schemaData.schema_json);
+      } else if (schemaData.schema_json && typeof schemaData.schema_json === 'object') {
+        parsedSchema = schemaData.schema_json;
+      }
+      
+      // Convert fields array to properties object for frontend compatibility
+      if (parsedSchema.fields && Array.isArray(parsedSchema.fields)) {
+        const properties: Record<string, any> = {};
+        parsedSchema.fields.forEach((field: any) => {
+          properties[field.name] = {
+            type: field.type,
+            required: field.required,
+            enum: field.enum,
+            pattern: field.pattern,
+            format: field.format,
+            maxLength: field.maxLength,
+            description: field.description
+          };
+        });
+        parsedSchema.properties = properties;
+      }
+      
+      setSchema(parsedSchema);
       setFetchingSchema(false);
       
       // Then perform auto-mapping
@@ -217,7 +356,49 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
         business_class: businessClass,
         force_refresh: false
       });
-      setSchema(response.data);
+      
+      // Parse schema_json string to object
+      const schemaData = response.data;
+      console.log('Raw schema data:', schemaData);
+      console.log('schema_json type:', typeof schemaData.schema_json);
+      
+      let parsedSchema: any = {};
+      
+      if (schemaData.schema_json && typeof schemaData.schema_json === 'string') {
+        try {
+          parsedSchema = JSON.parse(schemaData.schema_json);
+          console.log('Successfully parsed schema_json');
+        } catch (e) {
+          console.error('Failed to parse schema_json:', e);
+        }
+      } else if (schemaData.schema_json && typeof schemaData.schema_json === 'object') {
+        parsedSchema = schemaData.schema_json;
+        console.log('schema_json is already an object');
+      }
+      
+      // Convert fields array to properties object for frontend compatibility
+      if (parsedSchema.fields && Array.isArray(parsedSchema.fields)) {
+        const properties: Record<string, any> = {};
+        parsedSchema.fields.forEach((field: any) => {
+          properties[field.name] = {
+            type: field.type,
+            required: field.required,
+            enum: field.enum,
+            pattern: field.pattern,
+            format: field.format,
+            maxLength: field.maxLength,
+            description: field.description
+          };
+        });
+        parsedSchema.properties = properties;
+        console.log('Converted fields array to properties object');
+      }
+      
+      console.log('Final parsed schema:', parsedSchema);
+      console.log('Schema properties:', parsedSchema.properties);
+      console.log('Schema properties count:', parsedSchema.properties ? Object.keys(parsedSchema.properties).length : 0);
+      
+      setSchema(parsedSchema);
     } catch (error: any) {
       console.error('Schema fetch failed:', error);
       alert(`Schema fetch failed: ${error.response?.data?.detail || error.message}`);
@@ -322,7 +503,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       // Validation is synchronous - it's already complete!
       // Just load the summary and errors
       setValidating(false);
-      setCurrentStep('validation');
+      setCompletedSteps(prev => new Set([...prev, 'validation', 'load'])); // Mark validation and load as available
+      changeStep('validation');
       await loadValidationSummary();
       await loadValidationErrors();
       
@@ -346,7 +528,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
 
       if (progress.status === 'completed') {
         setValidating(false);
-        setCurrentStep('validation');
+        setCompletedSteps(prev => new Set([...prev, 'validation', 'load'])); // Mark validation and load as available
+        changeStep('validation');
         await loadValidationErrors();
       } else if (progress.status === 'failed') {
         setValidating(false);
@@ -493,6 +676,15 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
 
     console.log('proceedWithLoad: Starting load');
     setLoading(true);
+    setLoadProgress({
+      records_processed: 0,
+      total_records: fileInfo?.total_records || 0,
+      chunks_processed: 0,
+      total_chunks: Math.ceil((fileInfo?.total_records || 0) / 100),
+      elapsed_seconds: 0
+    });
+    
+    const startTime = Date.now();
     
     try {
       // Filter out disabled fields
@@ -504,17 +696,54 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
         }, {} as Record<string, any>);
       
       console.log('proceedWithLoad: Sending load request with enabled mapping');
+      
+      // Start progress polling for large files
+      let progressInterval: NodeJS.Timeout | null = null;
+      if ((fileInfo?.total_records || 0) > 1000) {
+        progressInterval = setInterval(async () => {
+          try {
+            const progressResponse = await api.get(`/load/${jobId}/progress`);
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            setLoadProgress(prev => ({
+              ...progressResponse.data,
+              elapsed_seconds: elapsed
+            }));
+          } catch (error) {
+            // Progress endpoint might not exist yet, ignore errors
+          }
+        }, 1000);
+      }
+      
       const response = await api.post('/load/start', {
         job_id: jobId,
         business_class: businessClass,
-        mapping: enabledMapping, // Use filtered mapping
+        mapping: enabledMapping,
         chunk_size: 100,
-        trigger_interface: false
+        trigger_interface: interfaceParams.editAndInterface
       });
+
+      // Clear progress polling
+      if (progressInterval) {
+        clearInterval(progressInterval);
+      }
+      
+      // Ensure minimum display time for better UX (only for small files)
+      const elapsed = Date.now() - startTime;
+      const recordCount = fileInfo?.total_records || 0;
+      
+      // Only enforce minimum display for small files (under 1000 records)
+      // Large files naturally take longer and don't need artificial delay
+      if (recordCount < 1000) {
+        const minDisplayTime = 1500; // Reduced to 1.5 seconds for small files
+        if (elapsed < minDisplayTime) {
+          await new Promise(resolve => setTimeout(resolve, minDisplayTime - elapsed));
+        }
+      }
 
       console.log('proceedWithLoad: Load response received:', response.data);
       setLoadResult(response.data);
-      setCurrentStep('completed');
+      setCompletedSteps(prev => new Set([...prev, 'completed'])); // Mark completed step as available
+      changeStep('completed');
       
       // Set interface params with RunGroup
       if (response.data.run_group) {
@@ -528,6 +757,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       alert(`Load failed: ${error.response?.data?.detail || error.message}`);
     } finally {
       setLoading(false);
+      setLoadProgress(null);
     }
   };
 
@@ -659,11 +889,11 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           onClick={() => {
             // Go back to previous step
             if (currentStep === 'mapping') {
-              setCurrentStep('upload');
+              changeStep('upload');
             } else if (currentStep === 'validation') {
-              setCurrentStep('mapping');
+              changeStep('mapping');
             } else if (currentStep === 'load' || currentStep === 'completed') {
-              setCurrentStep('validation');
+              changeStep('validation');
             } else {
               // Reset workflow state and go to dashboard
               setFile(null);
@@ -676,7 +906,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               setValidationProgress(null);
               setValidationErrors([]);
               setLoadResult(null);
-              setCurrentStep('upload');
+              setCompletedSteps(new Set(['upload'])); // Reset completed steps
+              changeStep('upload');
               onBack();
             }
           }}
@@ -704,45 +935,113 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           marginBottom: '12px',
           gap: '20px'
         }}>
-          <div style={{
-            padding: '8px 16px',
-            backgroundColor: currentStep === 'upload' ? '#dc2626' : '#2a2a2a',
-            color: '#ffffff',
-            borderRadius: '6px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            1. Upload File
+          <div 
+            onClick={() => handleStepClick('upload')}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: currentStep === 'upload' ? '#dc2626' : (canNavigateToStep('upload') ? '#4a5568' : '#2a2a2a'),
+              color: '#ffffff',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: canNavigateToStep('upload') ? 'pointer' : 'default',
+              transition: 'all 0.2s ease',
+              border: canNavigateToStep('upload') ? '1px solid #4a5568' : '1px solid transparent',
+              opacity: canNavigateToStep('upload') ? 1 : 0.6
+            }}
+            onMouseEnter={(e) => {
+              if (canNavigateToStep('upload') && currentStep !== 'upload') {
+                e.currentTarget.style.backgroundColor = '#5a6578';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (canNavigateToStep('upload') && currentStep !== 'upload') {
+                e.currentTarget.style.backgroundColor = '#4a5568';
+              }
+            }}
+          >
+            1. Upload File {canNavigateToStep('upload') && currentStep !== 'upload' && '✓'}
           </div>
-          <div style={{
-            padding: '8px 16px',
-            backgroundColor: currentStep === 'mapping' ? '#dc2626' : '#2a2a2a',
-            color: '#ffffff',
-            borderRadius: '6px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            2. Mapping
+          <div 
+            onClick={() => handleStepClick('mapping')}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: currentStep === 'mapping' ? '#dc2626' : (canNavigateToStep('mapping') ? '#4a5568' : '#2a2a2a'),
+              color: '#ffffff',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: canNavigateToStep('mapping') ? 'pointer' : 'default',
+              transition: 'all 0.2s ease',
+              border: canNavigateToStep('mapping') ? '1px solid #4a5568' : '1px solid transparent',
+              opacity: canNavigateToStep('mapping') ? 1 : 0.6
+            }}
+            onMouseEnter={(e) => {
+              if (canNavigateToStep('mapping') && currentStep !== 'mapping') {
+                e.currentTarget.style.backgroundColor = '#5a6578';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (canNavigateToStep('mapping') && currentStep !== 'mapping') {
+                e.currentTarget.style.backgroundColor = '#4a5568';
+              }
+            }}
+          >
+            2. Mapping {canNavigateToStep('mapping') && currentStep !== 'mapping' && '✓'}
           </div>
-          <div style={{
-            padding: '8px 16px',
-            backgroundColor: currentStep === 'validation' ? '#dc2626' : '#2a2a2a',
-            color: '#ffffff',
-            borderRadius: '6px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            3. Validation
+          <div 
+            onClick={() => handleStepClick('validation')}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: currentStep === 'validation' ? '#dc2626' : (canNavigateToStep('validation') ? '#4a5568' : '#2a2a2a'),
+              color: '#ffffff',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: canNavigateToStep('validation') ? 'pointer' : 'default',
+              transition: 'all 0.2s ease',
+              border: canNavigateToStep('validation') ? '1px solid #4a5568' : '1px solid transparent',
+              opacity: canNavigateToStep('validation') ? 1 : 0.6
+            }}
+            onMouseEnter={(e) => {
+              if (canNavigateToStep('validation') && currentStep !== 'validation') {
+                e.currentTarget.style.backgroundColor = '#5a6578';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (canNavigateToStep('validation') && currentStep !== 'validation') {
+                e.currentTarget.style.backgroundColor = '#4a5568';
+              }
+            }}
+          >
+            3. Validation {canNavigateToStep('validation') && currentStep !== 'validation' && '✓'}
           </div>
-          <div style={{
-            padding: '8px 16px',
-            backgroundColor: currentStep === 'load' || currentStep === 'completed' ? '#dc2626' : '#2a2a2a',
-            color: '#ffffff',
-            borderRadius: '6px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            4. Load
+          <div 
+            onClick={() => handleStepClick('load')}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: currentStep === 'load' || currentStep === 'completed' ? '#dc2626' : (canNavigateToStep('load') ? '#4a5568' : '#2a2a2a'),
+              color: '#ffffff',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: canNavigateToStep('load') ? 'pointer' : 'default',
+              transition: 'all 0.2s ease',
+              border: canNavigateToStep('load') ? '1px solid #4a5568' : '1px solid transparent',
+              opacity: canNavigateToStep('load') ? 1 : 0.6
+            }}
+            onMouseEnter={(e) => {
+              if (canNavigateToStep('load') && currentStep !== 'load' && currentStep !== 'completed') {
+                e.currentTarget.style.backgroundColor = '#5a6578';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (canNavigateToStep('load') && currentStep !== 'load' && currentStep !== 'completed') {
+                e.currentTarget.style.backgroundColor = '#4a5568';
+              }
+            }}
+          >
+            4. Load {canNavigateToStep('load') && currentStep !== 'load' && currentStep !== 'completed' && '✓'}
           </div>
         </div>
         
@@ -773,7 +1072,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
 
       {/* Upload Step */}
       {currentStep === 'upload' && (
-        <div style={{
+        <div className={getAnimationClass()} style={{
           backgroundColor: '#1a1a1a',
           border: '2px solid #FF9800',
           borderRadius: '12px',
@@ -931,7 +1230,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
 
       {/* Mapping Step */}
       {currentStep === 'mapping' && (
-        <div style={{
+        <div className={getAnimationClass()} style={{
           backgroundColor: '#1a1a1a',
           border: '2px solid #FF9800',
           borderRadius: '12px',
@@ -1016,7 +1315,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           {Object.keys(mappingData.mapping || {}).length > 0 && (
             <div style={{ marginBottom: '20px' }}>
               <button
-                onClick={() => setCurrentStep('validation')}
+                onClick={() => changeStep('validation')}
                 style={{
                   padding: '12px 24px',
                   backgroundColor: '#dc2626',
@@ -1321,7 +1620,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 or proceed to validation without mappings.
               </p>
               <button
-                onClick={() => setCurrentStep('validation')}
+                onClick={() => changeStep('validation')}
                 style={{
                   padding: '10px 20px',
                   backgroundColor: '#2a2a2a',
@@ -1341,7 +1640,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
 
       {/* Validation Step */}
       {currentStep === 'validation' && (
-        <div style={{
+        <div className={getAnimationClass()} style={{
           backgroundColor: '#1a1a1a',
           border: '2px solid #FF9800',
           borderRadius: '12px',
@@ -1365,56 +1664,83 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           <div style={{ 
             display: 'flex', 
             gap: '16px', 
-            marginBottom: '20px' 
+            marginBottom: '20px',
+            flexWrap: 'wrap'
           }}>
             <button
               onClick={handleStartValidation}
-              disabled={validating || (validationProgress && validationProgress.status === 'validated')}
+              disabled={validating || (validationProgress?.status === 'validated')}
               style={{
-                padding: '10px 20px',
-                backgroundColor: (validating || (validationProgress && validationProgress.status === 'validated')) ? '#2a2a2a' : '#dc2626',
+                padding: '12px 24px',
+                backgroundColor: (validating || (validationProgress?.status === 'validated')) ? '#2a2a2a' : '#dc2626',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '6px',
-                cursor: (validating || (validationProgress && validationProgress.status === 'validated')) ? 'not-allowed' : 'pointer',
-                fontSize: '14px'
+                cursor: (validating || (validationProgress?.status === 'validated')) ? 'not-allowed' : 'pointer',
+                fontSize: '14px',
+                fontWeight: '500'
               }}
             >
-              {validating ? 'Validating...' : (validationProgress && validationProgress.status === 'validated') ? 'Validation Complete' : 'Start Validation'}
+              {validating ? 'Validating...' : (validationProgress?.status === 'validated') ? 'Validation Complete' : 'Start Validation'}
             </button>
 
-            {validationErrors.length > 0 && (
-              <button
-                onClick={exportErrors}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#FF9800',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '14px'
-                }}
-              >
-                Export Errors
-              </button>
-            )}
+            {validationProgress?.status === 'validated' && (
+              <>
+                {validationProgress.errors_found > 0 && (
+                  <>
+                    <button
+                      onClick={async () => {
+                        await loadValidationErrors();
+                      }}
+                      style={{
+                        padding: '12px 24px',
+                        backgroundColor: '#FF9800',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                      }}
+                    >
+                      📋 View Errors ({validationProgress.errors_found})
+                    </button>
 
-            {validationProgress?.status === 'completed' && (
-              <button
-                onClick={() => setCurrentStep('load')}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#dc2626',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '14px'
-                }}
-              >
-                Continue to Load
-              </button>
+                    <button
+                      onClick={exportErrors}
+                      style={{
+                        padding: '12px 24px',
+                        backgroundColor: '#4CAF50',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                      }}
+                    >
+                      📥 Download Error Report
+                    </button>
+                  </>
+                )}
+
+                <button
+                  onClick={() => changeStep('load')}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#2196F3',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    marginLeft: 'auto'
+                  }}
+                >
+                  ➡️ Continue to Load
+                </button>
+              </>
             )}
           </div>
 
@@ -1651,7 +1977,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
 
       {/* Load Step */}
       {currentStep === 'load' && (
-        <div style={{
+        <div className={getAnimationClass()} style={{
           backgroundColor: '#1a1a1a',
           border: '2px solid #FF9800',
           borderRadius: '12px',
@@ -1672,30 +1998,134 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             </p>
           </div>
 
-          <div style={{ marginBottom: '20px' }}>
-            <button
-              onClick={handleStartLoad}
-              disabled={loading}
-              style={{
-                padding: '12px 24px',
-                backgroundColor: loading ? '#2a2a2a' : '#dc2626',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                fontSize: '14px',
-                fontWeight: '500'
-              }}
-            >
-              {loading ? 'Loading...' : 'Load to FSM'}
-            </button>
-          </div>
+          {!loading && (
+            <div style={{ marginBottom: '20px' }}>
+              {/* Interface Option Checkbox */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  color: '#fff'
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={interfaceParams.editAndInterface}
+                    onChange={(e) => setInterfaceParams(prev => ({
+                      ...prev,
+                      editAndInterface: e.target.checked
+                    }))}
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  <span style={{ fontWeight: '500' }}>
+                    ⚡ Interface transactions to General Ledger after load
+                  </span>
+                </label>
+                <div style={{
+                  fontSize: '12px',
+                  color: '#999',
+                  marginTop: '4px',
+                  marginLeft: '30px'
+                }}>
+                  Automatically post/journalize loaded records to GL (saves manual step)
+                </div>
+              </div>
+
+              <button
+                onClick={handleStartLoad}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#dc2626',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+              >
+                {interfaceParams.editAndInterface ? 'Load to FSM & Interface to GL' : 'Load to FSM'}
+              </button>
+            </div>
+          )}
+
+          {loading && (
+            <div style={{
+              padding: '24px',
+              backgroundColor: '#0a0a0a',
+              borderRadius: '8px',
+              textAlign: 'center'
+            }}>
+              {/* Animated Spinner */}
+              <div style={{
+                width: '48px',
+                height: '48px',
+                border: '4px solid #2a2a2a',
+                borderTop: '4px solid #FF9800',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+                margin: '0 auto 16px auto'
+              }} />
+              
+              <div style={{ fontSize: '16px', fontWeight: '600', color: '#FF9800', marginBottom: '8px' }}>
+                {interfaceParams.editAndInterface ? 'Loading Records to FSM & Interfacing to GL...' : 'Loading Records to FSM...'}
+              </div>
+              
+              {loadProgress && (
+                <div style={{ fontSize: '13px', color: '#999' }}>
+                  <div style={{ marginBottom: '12px' }}>
+                    Processing {loadProgress.records_processed.toLocaleString()} of {loadProgress.total_records.toLocaleString()} records
+                  </div>
+                  
+                  {/* Progress Bar */}
+                  <div style={{
+                    width: '100%',
+                    height: '8px',
+                    backgroundColor: '#2a2a2a',
+                    borderRadius: '4px',
+                    overflow: 'hidden',
+                    marginBottom: '12px'
+                  }}>
+                    <div style={{
+                      width: `${Math.min(100, (loadProgress.records_processed / loadProgress.total_records) * 100)}%`,
+                      height: '100%',
+                      backgroundColor: '#FF9800',
+                      transition: 'width 0.3s ease'
+                    }} />
+                  </div>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                    <span>Chunk {loadProgress.chunks_processed} of {loadProgress.total_chunks}</span>
+                    <span>{loadProgress.elapsed_seconds}s elapsed</span>
+                  </div>
+                  
+                  {loadProgress.total_records > 10000 && (
+                    <div style={{ marginTop: '8px', fontSize: '11px', color: '#666' }}>
+                      Large dataset detected - this may take several minutes
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {!loadProgress && (
+                <div style={{ fontSize: '13px', color: '#999' }}>
+                  Preparing data for FSM...
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
       {/* Completed Step */}
       {currentStep === 'completed' && loadResult && (
-        <div>
+        <div className={getAnimationClass()}>
           {/* Load Results Display */}
           <div style={{
             backgroundColor: loadResult.total_failure === 0 ? '#1a2e1a' : '#2e1a1a',
@@ -1718,6 +2148,16 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                   ? 'All records have been loaded to FSM successfully'
                   : 'Load failed and all records have been rolled back'
                 }
+                {loadResult.interface_result && !loadResult.interface_result.error && (
+                  <span style={{ color: '#22c55e', marginLeft: '8px' }}>
+                    • Interface to GL completed
+                  </span>
+                )}
+                {loadResult.interface_result?.error && (
+                  <span style={{ color: '#FFA500', marginLeft: '8px' }}>
+                    • Interface to GL failed (records still loaded)
+                  </span>
+                )}
               </p>
             </div>
 
@@ -1773,6 +2213,97 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               </div>
             </div>
 
+            {/* Error Details (only show if load failed) */}
+            {loadResult.total_failure > 0 && (
+              <div style={{
+                backgroundColor: '#1a0a0a',
+                border: '1px solid #dc2626',
+                borderRadius: '8px',
+                padding: '16px',
+                marginBottom: '20px'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '12px'
+                }}>
+                  <h4 style={{
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: '#dc2626',
+                    margin: 0
+                  }}>
+                    ⚠️ Error Details
+                  </h4>
+                </div>
+                
+                {loadResult.error_message && (
+                  <div style={{
+                    padding: '12px',
+                    backgroundColor: '#0a0a0a',
+                    borderRadius: '6px',
+                    marginBottom: '12px'
+                  }}>
+                    <div style={{ fontSize: '12px', color: '#999', marginBottom: '4px' }}>
+                      Error Message:
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#fff', fontFamily: 'monospace' }}>
+                      {loadResult.error_message}
+                    </div>
+                  </div>
+                )}
+                
+                {loadResult.error_details && (
+                  <details style={{ marginTop: '8px' }}>
+                    <summary style={{
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      color: '#FF9800',
+                      padding: '8px',
+                      backgroundColor: '#0a0a0a',
+                      borderRadius: '4px',
+                      userSelect: 'none'
+                    }}>
+                      View Full API Response
+                    </summary>
+                    <pre style={{
+                      marginTop: '8px',
+                      padding: '12px',
+                      backgroundColor: '#0a0a0a',
+                      borderRadius: '6px',
+                      fontSize: '11px',
+                      color: '#fff',
+                      overflow: 'auto',
+                      maxHeight: '300px',
+                      fontFamily: 'monospace',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word'
+                    }}>
+                      {JSON.stringify(loadResult.error_details, null, 2)}
+                    </pre>
+                  </details>
+                )}
+                
+                <div style={{
+                  marginTop: '12px',
+                  padding: '10px',
+                  backgroundColor: '#0a0a0a',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  color: '#999'
+                }}>
+                  💡 <strong style={{ color: '#FF9800' }}>Next Steps:</strong>
+                  <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
+                    <li>Review the error message above to understand what went wrong</li>
+                    <li>Check validation results for data quality issues</li>
+                    <li>Verify FSM field mappings are correct</li>
+                    <li>Contact FSM administrator if the error persists</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
             {/* Next Steps */}
             <div style={{
               display: 'grid',
@@ -1781,7 +2312,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             }}>
               <button
                 onClick={() => {
-                  setCurrentStep('upload');
+                  changeStep('upload');
                   setFile(null);
                   setJobId(null);
                   setFileInfo(null);
@@ -1789,6 +2320,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                   setMappingData({ mapping: {}, unmapped_csv_columns: [], unmapped_fsm_fields: [] });
                   setValidationErrors([]);
                   setLoadResult(null);
+                  setCompletedSteps(new Set(['upload'])); // Reset completed steps
                 }}
                 style={{
                   padding: '12px 16px',
@@ -1804,7 +2336,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 🔄 Start New Conversion
               </button>
               <button
-                onClick={() => setCurrentStep('validation')}
+                onClick={() => changeStep('validation')}
                 style={{
                   padding: '12px 16px',
                   backgroundColor: '#4CAF50',

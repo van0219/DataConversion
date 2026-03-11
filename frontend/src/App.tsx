@@ -155,7 +155,7 @@ function App() {
       {/* Main Content */}
       <div style={styles.main}>
         {currentPage === 'dashboard' && <Dashboard onNewConversion={() => setCurrentPage('conversion')} onSetupData={() => setCurrentPage('setup')} onViewRules={() => setCurrentPage('rules')} />}
-        {currentPage === 'conversion' && <ConversionWorkflow />}
+        {currentPage === 'conversion' && <ConversionWorkflow onBack={() => setCurrentPage('dashboard')} />}
         {currentPage === 'setup' && <SetupDataManagement />}
         {currentPage === 'rules' && <RulesManagement />}
         {currentPage === 'schema' && <SchemaManagement />}
@@ -171,6 +171,7 @@ function Dashboard({ onNewConversion, onSetupData, onViewRules }: { onNewConvers
   const [loading, setLoading] = useState(true);
   const [showAllJobs, setShowAllJobs] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [interfacing, setInterfacing] = useState<number | null>(null); // Track which job is being interfaced
   const jobsPerPage = 5;
 
   useEffect(() => {
@@ -212,13 +213,64 @@ function Dashboard({ onNewConversion, onSetupData, onViewRules }: { onNewConvers
     onNewConversion();
   };
 
+  const handleInterfaceJob = async (job: any) => {
+    if (!job.can_interface || !job.run_group) {
+      alert('This job cannot be interfaced. Missing run group or job not loaded.');
+      return;
+    }
+
+    const confirmed = confirm(
+      `Interface transactions for RunGroup "${job.run_group}" to General Ledger?\n\n` +
+      `This will post/journalize ${job.load_success_count} loaded records.`
+    );
+
+    if (!confirmed) return;
+
+    setInterfacing(job.id);
+    try {
+      const response = await api.post(`/upload/jobs/${job.id}/interface`, {
+        job_id: job.id,
+        run_group: job.run_group,
+        enterprise_group: "",
+        accounting_entity: "",
+        edit_only: false,
+        edit_and_interface: false,
+        partial_update: false,
+        journalize_by_entity: true,
+        journal_by_journal_code: false,
+        bypass_organization_code: true,
+        bypass_account_code: true,
+        bypass_structure_relation_edit: false,
+        interface_in_detail: true,
+        currency_table: "",
+        bypass_negative_rate_edit: false,
+        primary_ledger: "",
+        move_errors_to_new_run_group: false,
+        error_run_group_prefix: ""
+      });
+
+      alert(`Interface completed successfully for RunGroup: ${job.run_group}`);
+      
+      // Refresh jobs list to update status
+      loadDashboardData();
+      
+    } catch (error: any) {
+      console.error('Interface failed:', error);
+      alert(`Interface failed: ${error.response?.data?.detail || error.message}`);
+    } finally {
+      setInterfacing(null);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       'pending': '#666666',
       'validating': '#2196F3',
-      'validated': '#4CAF50',
-      'loading': '#FFA500',
-      'completed': '#4CAF50',
+      'validated': '#FFA500',      // Orange - validation passed but not loaded
+      'loading': '#2196F3',
+      'loaded': '#4CAF50',         // Green - successfully loaded to FSM
+      'completed': '#4CAF50',      // Legacy status
+      'load_failed': '#C8102E',    // Red - load failed
       'failed': '#C8102E'
     };
     return colors[status] || '#666666';
@@ -304,7 +356,8 @@ function Dashboard({ onNewConversion, onSetupData, onViewRules }: { onNewConvers
         </div>
       )}
 
-      {/* Loading State - Skeleton */}
+      {/* Recent Jobs and Quick Metrics sections hidden per user request */}
+      {/* Recent Conversion Jobs section hidden per user request
       {loading && (
         <div style={styles.recentJobsSection}>
           <h2 style={styles.sectionTitle}>Recent Conversion Jobs</h2>
@@ -315,10 +368,11 @@ function Dashboard({ onNewConversion, onSetupData, onViewRules }: { onNewConvers
               <div style={styles.headerCell}>Records</div>
               <div style={styles.headerCell}>Status</div>
               <div style={styles.headerCell}>Created</div>
+              <div style={styles.headerCell}>Actions</div>
             </div>
             {[1, 2, 3].map((i) => (
               <div key={i} style={styles.tableRow}>
-                {[1, 2, 3, 4, 5].map((j) => (
+                {[1, 2, 3, 4, 5, 6].map((j) => (
                   <div key={j} style={styles.tableCell}>
                     <div style={styles.skeletonText}></div>
                   </div>
@@ -329,32 +383,6 @@ function Dashboard({ onNewConversion, onSetupData, onViewRules }: { onNewConvers
         </div>
       )}
 
-      {/* Empty State - No Jobs */}
-      {!loading && recentJobs.length === 0 && (
-        <div style={styles.emptyState}>
-          <div style={styles.emptyIcon}>📊</div>
-          <h3 style={styles.emptyTitle}>No Conversion Jobs Yet</h3>
-          <p style={styles.emptyText}>
-            Get started by clicking "New Conversion" above to upload your first CSV file.
-          </p>
-          <button 
-            onClick={onNewConversion} 
-            style={styles.emptyButton}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#a00d25';
-              e.currentTarget.style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#C8102E';
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
-          >
-            Start Your First Conversion
-          </button>
-        </div>
-      )}
-
-      {/* Recent Jobs */}
       {!loading && recentJobs.length > 0 && (
         <div style={styles.recentJobsSection}>
           <h2 style={styles.sectionTitle}>Recent Conversion Jobs</h2>
@@ -366,6 +394,7 @@ function Dashboard({ onNewConversion, onSetupData, onViewRules }: { onNewConvers
               <div style={styles.headerCell}>Records</div>
               <div style={styles.headerCell}>Status</div>
               <div style={styles.headerCell}>Created</div>
+              <div style={styles.headerCell}>Actions</div>
             </div>
             {recentJobs.map((job) => (
               <div 
@@ -383,14 +412,26 @@ function Dashboard({ onNewConversion, onSetupData, onViewRules }: { onNewConvers
                 <div style={styles.tableCell}>{job.filename}</div>
                 <div style={styles.tableCell}>
                   {job.total_records ? (
-                    <span>
-                      {job.valid_records || 0} / {job.total_records}
-                      {job.invalid_records > 0 && (
-                        <span style={{ color: '#C8102E', marginLeft: '5px' }}>
-                          ({job.invalid_records} errors)
-                        </span>
+                    <div>
+                      <div>
+                        {job.valid_records || 0} / {job.total_records}
+                        {job.invalid_records > 0 && (
+                          <span style={{ color: '#C8102E', marginLeft: '5px' }}>
+                            ({job.invalid_records} errors)
+                          </span>
+                        )}
+                      </div>
+                      {(job.load_success_count > 0 || job.load_failure_count > 0) && (
+                        <div style={{ fontSize: '12px', color: '#999', marginTop: '2px' }}>
+                          Loaded: {job.load_success_count || 0}
+                          {job.load_failure_count > 0 && (
+                            <span style={{ color: '#C8102E' }}>
+                              , Failed: {job.load_failure_count}
+                            </span>
+                          )}
+                        </div>
                       )}
-                    </span>
+                    </div>
                   ) : (
                     '-'
                   )}
@@ -404,11 +445,55 @@ function Dashboard({ onNewConversion, onSetupData, onViewRules }: { onNewConvers
                   </span>
                 </div>
                 <div style={styles.tableCell}>{formatDate(job.created_at)}</div>
+                <div style={styles.tableCell}>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleJobClick(job);
+                      }}
+                      style={{
+                        padding: '6px 12px',
+                        backgroundColor: '#2196F3',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        fontWeight: '500'
+                      }}
+                      title="Resume or view job details"
+                    >
+                      View
+                    </button>
+                    {job.can_interface && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleInterfaceJob(job);
+                        }}
+                        disabled={interfacing === job.id}
+                        style={{
+                          padding: '6px 12px',
+                          backgroundColor: interfacing === job.id ? '#666' : '#FF9800',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          cursor: interfacing === job.id ? 'not-allowed' : 'pointer',
+                          fontWeight: '500'
+                        }}
+                        title={`Interface ${job.load_success_count} records to General Ledger`}
+                      >
+                        {interfacing === job.id ? 'Interfacing...' : 'Interface'}
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
           
-          {/* Pagination Controls */}
           {!showAllJobs && totalJobs > 5 && (
             <div style={styles.paginationContainer}>
               <button 
@@ -478,7 +563,6 @@ function Dashboard({ onNewConversion, onSetupData, onViewRules }: { onNewConvers
         </div>
       )}
 
-      {/* Quick Metrics */}
       {!loading && recentJobs.length > 0 && (
         <div style={styles.quickMetrics}>
           <div style={styles.metricCard}>
@@ -487,13 +571,19 @@ function Dashboard({ onNewConversion, onSetupData, onViewRules }: { onNewConvers
           </div>
           <div style={styles.metricCard}>
             <div style={styles.metricValue}>
-              {recentJobs.filter(j => j.status === 'completed' || j.status === 'validated').length}
+              {recentJobs.filter(j => j.status === 'loaded').length}
             </div>
-            <div style={styles.metricLabel}>Successful</div>
+            <div style={styles.metricLabel}>Loaded to FSM</div>
           </div>
           <div style={styles.metricCard}>
             <div style={styles.metricValue}>
-              {recentJobs.filter(j => j.status === 'failed').length}
+              {recentJobs.filter(j => j.status === 'validated').length}
+            </div>
+            <div style={styles.metricLabel}>Validated Only</div>
+          </div>
+          <div style={styles.metricCard}>
+            <div style={styles.metricValue}>
+              {recentJobs.filter(j => j.status === 'failed' || j.status === 'load_failed').length}
             </div>
             <div style={styles.metricLabel}>Failed</div>
           </div>
@@ -505,6 +595,7 @@ function Dashboard({ onNewConversion, onSetupData, onViewRules }: { onNewConvers
           </div>
         </div>
       )}
+      */}
 
       <div style={styles.infoCard}>
         <h2 style={styles.infoTitle}>Getting Started</h2>
@@ -816,7 +907,7 @@ const styles = {
   },
   tableHeader: {
     display: 'grid',
-    gridTemplateColumns: '1.5fr 2fr 1.5fr 1fr 1.5fr',
+    gridTemplateColumns: '1.5fr 2fr 1.5fr 1fr 1.5fr 1fr',
     padding: '15px 20px',
     backgroundColor: '#2a2a2a',
     borderBottom: '1px solid #3a3a3a',
@@ -828,7 +919,7 @@ const styles = {
   },
   tableRow: {
     display: 'grid',
-    gridTemplateColumns: '1.5fr 2fr 1.5fr 1fr 1.5fr',
+    gridTemplateColumns: '1.5fr 2fr 1.5fr 1fr 1.5fr 1fr',
     padding: '15px 20px',
     borderBottom: '1px solid #2a2a2a',
   },

@@ -49,9 +49,9 @@ class RuleExecutor:
                 row_number
             )
         
-        # STUBBED: Other rule types for future implementation
+        # IMPLEMENTED: Regex pattern validation
         elif rule_type == "REGEX_OVERRIDE":
-            return self._validate_regex_override_stub(rule, record, row_number)
+            return self._validate_regex_override(rule, record, row_number)
         
         elif rule_type == "NUMERIC_COMPARISON":
             return self._validate_numeric_comparison_stub(rule, record, row_number)
@@ -144,16 +144,44 @@ class RuleExecutor:
     # STUBBED RULES (FUTURE IMPLEMENTATION)
     # ========================================================================
     
-    def _validate_regex_override_stub(
+    def _validate_regex_override(
         self,
         rule: Dict,
         record: Dict,
         row_number: int
     ) -> Optional[ValidationError]:
-        """STUB: Regex pattern override validation"""
-        # TODO: Implement regex validation with explicit operator parsing
-        # NO eval() allowed - parse pattern safely
-        logger.debug(f"STUB: REGEX_OVERRIDE rule not yet implemented")
+        """
+        Validate field value matches regex pattern.
+        FULLY IMPLEMENTED - validates using regex pattern from rule.
+        """
+        field_name = rule["field_name"]
+        field_value = record.get(field_name)
+        
+        # Skip validation if field is empty (unless required by another rule)
+        if not field_value or str(field_value).strip() == "":
+            return None
+        
+        value_str = str(field_value).strip()
+        pattern = rule.get("condition_expression")
+        
+        if not pattern:
+            logger.warning(f"REGEX_OVERRIDE rule for {field_name} has no pattern")
+            return None
+        
+        try:
+            if not re.match(pattern, value_str):
+                error_message = rule.get("error_message") or f"Field '{field_name}' does not match required pattern"
+                return ValidationError(
+                    row_number,
+                    field_name,
+                    field_value,
+                    "rule",
+                    error_message
+                )
+        except re.error as e:
+            logger.error(f"Invalid regex pattern '{pattern}': {e}")
+            return None
+        
         return None
     
     def _validate_numeric_comparison_stub(
