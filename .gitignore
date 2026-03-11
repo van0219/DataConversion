@@ -227,7 +227,7 @@ WORKSPACE_CLEANUP_SUMMARY.md
 # ============================================
 
 # Legacy MCP server (if moved back from temp)
-src/
+# src/ - REMOVED: This was excluding frontend/src/ files!
 
 # ============================================
 # MISCELLANEOUS
