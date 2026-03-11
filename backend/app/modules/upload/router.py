@@ -82,6 +82,55 @@ def get_file_info(
     
     return FileInfoResponse(**info)
 
+@router.get("/{job_id}/sample-data")
+def get_job_sample_data(
+    job_id: int,
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """Get sample data from the CSV file for a job"""
+    from app.models.job import ConversionJob
+    from app.services.streaming_engine import StreamingEngine
+    
+    # Verify job belongs to account
+    job = db.query(ConversionJob).filter(
+        ConversionJob.id == job_id,
+        ConversionJob.account_id == account_id
+    ).first()
+    
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found"
+        )
+    
+    try:
+        # Get file path
+        file_path = UploadService.get_file_path(job_id)
+        
+        if not file_path.exists():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="CSV file not found"
+            )
+        
+        # Get sample records (increase sample size for better frequency analysis)
+        headers = StreamingEngine.get_csv_headers(file_path)
+        sample_records = StreamingEngine.get_sample_records(file_path, sample_size=20)
+        
+        return {
+            "job_id": job_id,
+            "headers": headers,
+            "sample_records": sample_records,
+            "sample_size": len(sample_records)
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get sample data: {str(e)}"
+        )
+
 @router.get("/jobs/recent")
 def get_recent_jobs(
     limit: int = 5,

@@ -14,6 +14,8 @@ class LoadStartRequest(BaseModel):
     mapping: dict
     chunk_size: int = 100
     trigger_interface: bool = False
+    # Interface parameters (used when trigger_interface is True)
+    interface_params: Optional[dict] = None
 
 class InterfaceTransactionsRequest(BaseModel):
     job_id: int
@@ -56,7 +58,8 @@ async def start_load(
             request.business_class,
             request.mapping,
             request.chunk_size,
-            request.trigger_interface
+            request.trigger_interface,
+            request.interface_params
         )
         
         # Transform response to match frontend expectations

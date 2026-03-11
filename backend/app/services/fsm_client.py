@@ -551,10 +551,10 @@ class FSMClient:
         # Build URL with dynamic tenant_id and run_group
         url = f"{self.base_url}/{self.tenant_id}/FSM/fsm/soap/classes/GLTransactionInterfaceResult/lists/_generic"
         
-        # Build query parameters (hardcoded except run_group)
+        # Build query parameters - use simple filter (date filter causes FSM errors)
         params = {
             "_fields": "RunGroup,Status,ResultSequence,RecordCount,PassedCount,FailedCount,GLTransactionInterfaceResult",
-            "_limit": "5",
+            "_limit": "10",
             "_lplFilter": f'RunGroup = "{run_group}"',
             "_links": "false",
             "_pageNav": "true",
@@ -580,26 +580,43 @@ class FSMClient:
                 # Response format: [metadata, record1, record2, ...]
                 # Extract records (skip first element which is metadata)
                 if isinstance(result, list) and len(result) > 1:
-                    # Get the first record (latest run with highest ResultSequence)
-                    latest_result = result[1]
-                    if isinstance(latest_result, dict) and "_fields" in latest_result:
-                        fields = latest_result["_fields"]
+                    # Get all records and find the one with highest GLTransactionInterfaceResult
+                    records = []
+                    for i in range(1, len(result)):  # Skip metadata at index 0
+                        if isinstance(result[i], dict) and "_fields" in result[i]:
+                            records.append(result[i]["_fields"])
+                    
+                    if records:
+                        # Sort by GLTransactionInterfaceResult (highest first) to get latest run
+                        latest_record = max(records, key=lambda x: int(x.get("GLTransactionInterfaceResult", 0)))
                         
-                        # Extract summary data
+                        # Extract summary data from latest record
                         summary = {
-                            "result_sequence": fields.get("GLTransactionInterfaceResult", ""),
-                            "status": fields.get("Status", ""),
-                            "status_label": "Complete" if fields.get("Status") == "1" else "Incomplete" if fields.get("Status") == "2" else "",
-                            "records_processed": int(fields.get("RecordCount", 0)),
-                            "records_imported": int(fields.get("PassedCount", 0)),
-                            "records_with_error": int(fields.get("FailedCount", 0)),
-                            "run_group": fields.get("RunGroup", "")
+                            "result_sequence": latest_record.get("GLTransactionInterfaceResult", ""),
+                            "status": latest_record.get("Status", ""),
+                            "status_label": "Complete" if latest_record.get("Status") == "1" else "Incomplete" if latest_record.get("Status") == "2" else "Unknown",
+                            "total_records": int(latest_record.get("RecordCount", 0)),
+                            "successfully_imported": int(latest_record.get("PassedCount", 0)),
+                            "records_with_error": int(latest_record.get("FailedCount", 0)),
+                            "run_group": latest_record.get("RunGroup", ""),
+                            "interface_successful": (
+                                latest_record.get("Status") == "1" and 
+                                int(latest_record.get("FailedCount", 0)) == 0 and 
+                                int(latest_record.get("PassedCount", 0)) > 0
+                            )
                         }
                         
-                        logger.info(f"Interface result: Status={summary['status_label']}, {summary['records_processed']} processed, {summary['records_imported']} imported, {summary['records_with_error']} errors")
+                        logger.info(f"Interface result summary (latest of {len(records)} runs):")
+                        logger.info(f"  Result Sequence: {summary['result_sequence']}")
+                        logger.info(f"  Status: {summary['status_label']} ({summary['status']})")
+                        logger.info(f"  Total Records: {summary['total_records']}")
+                        logger.info(f"  Successfully Imported: {summary['successfully_imported']}")
+                        logger.info(f"  Records with Error: {summary['records_with_error']}")
+                        logger.info(f"  Interface Successful: {summary['interface_successful']}")
+                        
                         return summary
                     else:
-                        logger.warning(f"Unexpected record format: {latest_result}")
+                        logger.warning(f"No valid records found in response")
                         return None
                 else:
                     logger.warning(f"No results found for RunGroup: {run_group}")
@@ -607,7 +624,21 @@ class FSMClient:
                 
             except httpx.HTTPStatusError as e:
                 logger.error(f"Query failed: {e.response.status_code} - {e.response.text}")
-                raise Exception(f"Query failed: {e.response.status_code} - {e.response.text}")
+                # If it's a filter syntax error, try without the date filter
+                if "ConditionNode tree failed" in e.response.text or "Expected a logical operator" in e.response.text:
+                    logger.warning(f"Filter syntax error, retrying without date filter...")
+                    # Retry with simpler filter
+                    simple_params = params.copy()
+                    simple_params["_lplFilter"] = f'RunGroup = "{run_group}"'
+                    
+                    retry_response = await client.get(url, headers={"Authorization": f"Bearer {self.access_token}"}, params=simple_params)
+                    if retry_response.status_code == 200:
+                        result = retry_response.json()
+                        logger.info(f"Retry successful with simple filter")
+                    else:
+                        raise Exception(f"Query failed even with simple filter: {retry_response.status_code} - {retry_response.text}")
+                else:
+                    raise Exception(f"Query failed: {e.response.status_code} - {e.response.text}")
             except Exception as e:
                 logger.error(f"Query error: {str(e)}")
                 raise Exception(f"Query error: {str(e)}")

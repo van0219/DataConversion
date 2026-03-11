@@ -19,7 +19,8 @@ class LoadService:
         business_class: str,
         mapping: Dict,
         chunk_size: int = 100,
-        trigger_interface: bool = False
+        trigger_interface: bool = False,
+        interface_params: Optional[Dict] = None
     ):
         """
         Load validated records to FSM in chunks.
@@ -34,8 +35,19 @@ class LoadService:
         if not job:
             raise ValueError("Job not found")
         
-        if job.status != "validated":
+        if job.status not in ["validated", "completed"]:
             raise ValueError(f"Job must be validated before loading. Current status: {job.status}")
+        
+        # If job is completed, check if it had failures (meaning it was rolled back and can be retried)
+        if job.status == "completed":
+            from app.models.job import LoadResult
+            load_results = db.query(LoadResult).filter(LoadResult.conversion_job_id == job_id).all()
+            if load_results:
+                # Check if any load had failures
+                has_failures = any(result.failure_count > 0 for result in load_results)
+                if not has_failures:
+                    raise ValueError("Job has already been successfully loaded. Cannot load again.")
+            # If no load results or had failures, allow retry
         
         # Update job status
         job.status = "loading"
@@ -77,12 +89,47 @@ class LoadService:
         
         logger.info(f"Starting load for job {job_id}. Skipping {len(invalid_row_numbers)} invalid rows.")
         
+        # Generate unique RunGroup for this conversion run (max 30 characters)
+        from datetime import datetime
+        now = datetime.now()
+        # Create 14-digit timestamp: YYYYMMDDHHMMSS + 2 microsecond digits for uniqueness
+        base_timestamp = now.strftime("%Y%m%d%H%M%S")  # 14 digits
+        microseconds = now.strftime("%f")[:2]  # First 2 microsecond digits
+        timestamp = base_timestamp + microseconds  # Total: 16 digits
+        
+        # But we need exactly 14 digits to fit in 30 chars with longest business class names
+        # So let's use just YYYYMMDDHHMMSS (14 digits) and add microseconds only if we have space
+        timestamp = base_timestamp  # 14 digits: YYYYMMDDHHMMSS
+        
+        # Calculate available space for business class prefix
+        # Format: <prefix>_<timestamp> = 30 chars total
+        # Timestamp is 14 chars, underscore is 1 char
+        # So prefix can be: 30 - 14 - 1 = 15 chars max
+        max_prefix_length = 30 - len(timestamp) - 1
+        
+        # Truncate business class name if needed
+        business_class_prefix = business_class[:max_prefix_length].upper()
+        
+        # Generate RunGroup with exact 30 character limit
+        run_group = f"{business_class_prefix}_{timestamp}"
+        
+        # If we have extra space, we can add microseconds for better uniqueness
+        if len(run_group) < 30:
+            available_space = 30 - len(run_group)
+            extra_microseconds = microseconds[:available_space]
+            run_group = f"{business_class_prefix}_{timestamp}{extra_microseconds}"
+        
+        # Ensure it's exactly 30 characters or less
+        if len(run_group) > 30:
+            run_group = run_group[:30]
+        
+        logger.info(f"Generated unique RunGroup for conversion: {run_group} (length: {len(run_group)})")
+        
         # Process file in chunks
         chunk_buffer = []
         chunk_num = 0
         total_success = 0
         total_failure = 0
-        run_group = None  # Extract RunGroup from first record
         first_error_details = None  # Capture first error for user display
         
         for chunk in StreamingEngine.stream_csv(file_path, chunk_size=chunk_size):
@@ -96,9 +143,12 @@ class LoadService:
                 # Apply field mapping
                 mapped_record = MappingEngine.apply_mapping(record, mapping)
                 
-                # Extract RunGroup from first record (for rollback if needed)
-                if run_group is None:
-                    run_group = mapped_record.get('GLTransactionInterface.RunGroup')
+                # Override RunGroup with our generated unique RunGroup
+                # Find the RunGroup field in the mapped record and replace it
+                for field_name in mapped_record.keys():
+                    if 'rungroup' in field_name.lower():
+                        mapped_record[field_name] = run_group
+                        break
                 
                 # Remove internal fields
                 mapped_record.pop('_row_number', None)
@@ -156,28 +206,37 @@ class LoadService:
         # If trigger_interface is enabled and load was successful, interface the transactions
         interface_result = None
         if trigger_interface and total_success > 0 and total_failure == 0 and run_group:
-            logger.info(f"Triggering interface for RunGroup: {run_group}")
+            logger.info(f"Triggering interface for RunGroup: {run_group} (waiting 3 seconds for FSM to process records)")
+            
+            # Wait 3 seconds to allow FSM to fully process the loaded records
+            import asyncio
+            await asyncio.sleep(3)
+            
+            logger.info(f"Starting interface for RunGroup: {run_group}")
             try:
+                # Use interface parameters from frontend or defaults
+                params = interface_params or {}
+                
                 interface_result = await LoadService.interface_transactions(
                     db=db,
                     account_id=account_id,
                     job_id=job_id,
                     business_class=business_class,
                     run_group=run_group,
-                    enterprise_group="",
-                    accounting_entity="",
-                    edit_only=False,
-                    edit_and_interface=False,
-                    partial_update=False,
-                    journalize_by_entity=True,
-                    journal_by_journal_code=False,
-                    bypass_organization_code=True,
-                    bypass_account_code=True,
-                    bypass_structure_relation_edit=False,
-                    interface_in_detail=True,
-                    currency_table="",
-                    bypass_negative_rate_edit=False,
-                    primary_ledger="",
+                    enterprise_group=params.get("enterpriseGroup", ""),
+                    accounting_entity=params.get("accountingEntity", ""),
+                    edit_only=params.get("editOnly", False),
+                    edit_and_interface=params.get("editAndInterface", True),
+                    partial_update=params.get("partialUpdate", False),
+                    journalize_by_entity=params.get("journalizeByEntity", True),
+                    journal_by_journal_code=params.get("journalByJournalCode", False),
+                    bypass_organization_code=params.get("bypassOrganizationCode", True),
+                    bypass_account_code=params.get("bypassAccountCode", True),
+                    bypass_structure_relation_edit=params.get("bypassStructureRelationEdit", False),
+                    interface_in_detail=params.get("interfaceInDetail", True),
+                    currency_table=params.get("currencyTable", ""),
+                    bypass_negative_rate_edit=params.get("bypassNegativeRateEdit", False),
+                    primary_ledger=params.get("primaryLedger", ""),
                     move_errors_to_new_run_group=False,
                     error_run_group_prefix=""
                 )
@@ -369,30 +428,57 @@ class LoadService:
         # CRITICAL: Query GLTransactionInterfaceResult to verify actual interface results
         # The interface API call success doesn't mean records were actually posted to GL
         # We must query GLTransactionInterfaceResult to get the summary
-        logger.info(f"Querying GLTransactionInterfaceResult to verify interface results for RunGroup: {run_group}")
+        logger.info(f"Waiting 5 seconds for FSM to process interface, then querying results for RunGroup: {run_group}")
         
-        summary = await fsm_client.query_gl_transaction_interface_result(run_group)
+        # Wait for FSM to process the interface (interface is asynchronous in FSM)
+        import asyncio
+        await asyncio.sleep(5)
+        
+        # Query interface results with retry logic (interface may take time to complete)
+        summary = None
+        max_retries = 3
+        retry_delay = 3
+        
+        for attempt in range(max_retries):
+            try:
+                summary = await fsm_client.query_gl_transaction_interface_result(run_group)
+                if summary:
+                    break
+                else:
+                    logger.info(f"No interface result found yet (attempt {attempt + 1}/{max_retries}), retrying in {retry_delay} seconds...")
+                    if attempt < max_retries - 1:  # Don't sleep on last attempt
+                        await asyncio.sleep(retry_delay)
+            except Exception as e:
+                logger.warning(f"Failed to query interface result (attempt {attempt + 1}/{max_retries}): {e}")
+                if attempt < max_retries - 1:  # Don't sleep on last attempt
+                    await asyncio.sleep(retry_delay)
         
         if summary:
-            logger.info(f"Interface result: Status={summary['status_label']}, {summary['records_processed']} processed, {summary['records_imported']} imported, {summary['records_with_error']} errors")
+            logger.info(f"Interface result: Status={summary['status_label']}, {summary['total_records']} processed, {summary['successfully_imported']} imported, {summary['records_with_error']} errors")
+            
+            # Determine if interface was truly successful
+            interface_successful = summary.get('interface_successful', False)
             
             return {
                 "api_response": result,
+                "interface_successful": interface_successful,
                 "verification": {
                     "result_sequence": summary["result_sequence"],
                     "status": summary["status"],
                     "status_label": summary["status_label"],
-                    "records_processed": summary["records_processed"],
-                    "records_imported": summary["records_imported"],
+                    "total_records": summary["total_records"],
+                    "successfully_imported": summary["successfully_imported"],
                     "records_with_error": summary["records_with_error"],
                     "run_group": summary["run_group"]
                 }
             }
         else:
-            logger.warning(f"No interface result found for RunGroup: {run_group}")
+            logger.warning(f"No interface result found for RunGroup: {run_group} after {max_retries} attempts")
             return {
                 "api_response": result,
-                "verification": None
+                "interface_successful": False,
+                "verification": None,
+                "error": "Could not verify interface results - no GLTransactionInterfaceResult found"
             }
     
     @staticmethod
