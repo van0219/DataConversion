@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
@@ -11,46 +11,34 @@ from app.modules.validation.schemas import (
     ValidationSummary,
     ValidationErrorItem
 )
+from app.models.job import ConversionJob
 
 router = APIRouter()
 
 @router.post("/start")
-async def start_validation(
+def start_validation(
     request: ValidationStartRequest,
-    background_tasks: BackgroundTasks,
     account_id: int = Depends(get_current_account_id),
     db: Session = Depends(get_db)
 ):
-    """Start validation process for uploaded file"""
+    """Start validation process for uploaded file - BLOCKING until complete"""
     try:
-        # Validate that job exists and is ready for validation
-        from app.models.job import ConversionJob
+        logger.info(f"DEBUG: start_validation called with job_id={request.job_id}, account_id={account_id}")
+        
+        # Get job
         job = db.query(ConversionJob).filter(
             ConversionJob.id == request.job_id,
             ConversionJob.account_id == account_id
         ).first()
         
         if not job:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Job not found"
-            )
+            logger.error(f"DEBUG: Job {request.job_id} not found with account_id={account_id}")
+            raise ValueError(f"Job {request.job_id} not found")
         
-        if job.status not in ["pending", "uploaded"]:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Job is not ready for validation. Current status: {job.status}"
-            )
+        logger.info(f"DEBUG: Job found, starting validation")
         
-        # Set job status to validating immediately
-        job.status = "validating"
-        job.valid_records = 0
-        job.invalid_records = 0
-        db.commit()
-        
-        # Start validation in background
-        background_tasks.add_task(
-            ValidationService.start_validation,
+        # Run validation synchronously - blocks until complete
+        ValidationService.start_validation(
             db,
             account_id,
             request.job_id,
@@ -59,16 +47,18 @@ async def start_validation(
             request.enable_rules
         )
         
-        return {"message": "Validation started", "job_id": request.job_id}
-    except HTTPException:
-        raise
+        logger.info(f"DEBUG: Validation complete, returning response")
+        
+        # Return only after validation is complete
+        return {"message": "Validation completed", "job_id": request.job_id}
+        
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Validation start failed: {str(e)}")
+        logger.error(f"Validation failed: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Validation failed: {str(e)}"
@@ -81,9 +71,19 @@ def get_validation_progress(
     db: Session = Depends(get_db)
 ):
     """Get validation progress for job"""
+    logger.info(f"DEBUG: get_validation_progress called with job_id={job_id}, account_id={account_id}")
+    
+    # Check if job exists at all
+    job_any = db.query(ConversionJob).filter(ConversionJob.id == job_id).first()
+    if job_any:
+        logger.info(f"DEBUG: Job {job_id} exists with account_id={job_any.account_id}, status={job_any.status}")
+    else:
+        logger.info(f"DEBUG: Job {job_id} does not exist in database")
+    
     progress = ValidationService.get_progress(db, account_id, job_id)
     
     if not progress:
+        logger.error(f"DEBUG: get_progress returned None for job_id={job_id}, account_id={account_id}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job not found"
@@ -138,8 +138,6 @@ def export_validation_errors(
     db: Session = Depends(get_db)
 ):
     """Export original CSV with ErrorMessage column added"""
-    from app.models.job import ConversionJob
-    
     # Get job to get original filename
     job = db.query(ConversionJob).filter(
         ConversionJob.id == job_id,

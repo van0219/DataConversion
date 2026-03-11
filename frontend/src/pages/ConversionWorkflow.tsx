@@ -17,6 +17,7 @@ interface MappingData {
     fsm_field: string;
     confidence: string;
     score: number;
+    enabled?: boolean; // Add enabled flag
   }>;
   unmapped_csv_columns: string[];
   unmapped_fsm_fields: string[];
@@ -74,6 +75,20 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
   });
   const [fetchingSchema, setFetchingSchema] = useState(false);
   const [autoMapping, setAutoMapping] = useState(false);
+  const [searchDropdownOpen, setSearchDropdownOpen] = useState<string | null>(null); // Track which dropdown is open
+  const [searchQuery, setSearchQuery] = useState<Record<string, string>>({}); // Track search query per field
+  
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchDropdownOpen) {
+        setSearchDropdownOpen(null);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [searchDropdownOpen]);
 
   // Validation state
   const [validating, setValidating] = useState(false);
@@ -284,28 +299,39 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
     try {
       console.log('Starting validation for job:', jobId);
       console.log('Business class:', businessClass);
-      console.log('Mapping:', mappingData.mapping);
+      
+      // Filter out disabled fields
+      const enabledMapping = Object.entries(mappingData.mapping)
+        .filter(([_, mappingInfo]) => mappingInfo.enabled !== false)
+        .reduce((acc, [csvColumn, mappingInfo]) => {
+          acc[csvColumn] = mappingInfo;
+          return acc;
+        }, {} as Record<string, any>);
+      
+      console.log('Enabled mapping:', enabledMapping);
       
       const response = await api.post('/validation/start', {
         job_id: jobId,
         business_class: businessClass,
-        mapping: mappingData.mapping, // Use backend-compatible format
+        mapping: enabledMapping, // Use filtered mapping
         enable_rules: true
       });
 
       console.log('Validation start response:', response.data);
 
-      // Reset retry counter for polling
-      (pollValidationProgress as any).retryCount = 0;
+      // Validation is synchronous - it's already complete!
+      // Just load the summary and errors
+      setValidating(false);
+      setCurrentStep('validation');
+      await loadValidationSummary();
+      await loadValidationErrors();
       
-      // Wait a bit longer before starting to poll to allow backend to initialize
-      setTimeout(pollValidationProgress, 2000); // Wait 2 seconds before first poll
     } catch (error: any) {
       console.error('Validation failed:', error);
       setValidating(false);
       
       const errorMessage = error.response?.data?.detail || error.message || 'Unknown error';
-      alert(`Validation failed to start: ${errorMessage}`);
+      alert(`Validation failed: ${errorMessage}`);
     }
   };
 
@@ -353,12 +379,36 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
     }
   };
 
+  const loadValidationSummary = async () => {
+    if (!jobId) return;
+
+    try {
+      const response = await api.get(`/validation/${jobId}/summary`);
+      const summary = response.data;
+      
+      // Set validation progress with summary data
+      setValidationProgress({
+        job_id: summary.job_id,
+        status: summary.status,
+        progress: 100,
+        current_chunk: 1,
+        total_chunks: 1,
+        records_processed: summary.total_records,
+        total_records: summary.total_records,
+        errors_found: summary.error_count,
+        filename: fileInfo?.filename || ''
+      });
+    } catch (error: any) {
+      console.error('Failed to load validation summary:', error);
+    }
+  };
+
   const loadValidationErrors = async () => {
     if (!jobId) return;
 
     try {
-      const response = await api.get(`/validation/errors/${jobId}`);
-      setValidationErrors(response.data.errors || []);
+      const response = await api.get(`/validation/${jobId}/errors`);
+      setValidationErrors(response.data || []);
     } catch (error: any) {
       console.error('Failed to load errors:', error);
       
@@ -375,7 +425,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
     if (!jobId) return;
 
     try {
-      const response = await api.get(`/validation/export-errors/${jobId}`, {
+      const response = await api.get(`/validation/${jobId}/errors/export`, {
         responseType: 'blob'
       });
       
@@ -445,11 +495,19 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
     setLoading(true);
     
     try {
-      console.log('proceedWithLoad: Sending load request to backend');
+      // Filter out disabled fields
+      const enabledMapping = Object.entries(mappingData.mapping)
+        .filter(([_, mappingInfo]) => mappingInfo.enabled !== false)
+        .reduce((acc, [csvColumn, mappingInfo]) => {
+          acc[csvColumn] = mappingInfo;
+          return acc;
+        }, {} as Record<string, any>);
+      
+      console.log('proceedWithLoad: Sending load request with enabled mapping');
       const response = await api.post('/load/start', {
         job_id: jobId,
         business_class: businessClass,
-        mapping: mappingData.mapping,
+        mapping: enabledMapping, // Use filtered mapping
         chunk_size: 100,
         trigger_interface: false
       });
@@ -598,7 +656,30 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           Data Conversion Workflow
         </h1>
         <button
-          onClick={onBack}
+          onClick={() => {
+            // Go back to previous step
+            if (currentStep === 'mapping') {
+              setCurrentStep('upload');
+            } else if (currentStep === 'validation') {
+              setCurrentStep('mapping');
+            } else if (currentStep === 'load' || currentStep === 'completed') {
+              setCurrentStep('validation');
+            } else {
+              // Reset workflow state and go to dashboard
+              setFile(null);
+              setJobId(null);
+              setFileInfo(null);
+              setBusinessClass('');
+              setSchema(null);
+              setMapping({});
+              setMappingData({ mapping: {}, unmapped_csv_columns: [], unmapped_fsm_fields: [] });
+              setValidationProgress(null);
+              setValidationErrors([]);
+              setLoadResult(null);
+              setCurrentStep('upload');
+              onBack();
+            }
+          }}
           style={{
             padding: '10px 20px',
             backgroundColor: '#2a2a2a',
@@ -609,7 +690,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             fontSize: '14px'
           }}
         >
-          ← Back to Dashboard
+          ← {currentStep === 'upload' ? 'Back to Dashboard' : 'Back to Previous Step'}
         </button>
       </div>
 
@@ -992,7 +1073,9 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
 
               {/* Table Rows */}
               <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                {Object.entries(mappingData.mapping || {}).map(([csvColumn, mappingInfo], index) => (
+                {Object.entries(mappingData.mapping || {}).map(([csvColumn, mappingInfo], index) => {
+                  const isEnabled = mappingInfo.enabled !== false;
+                  return (
                   <div key={csvColumn} style={{
                     display: 'grid',
                     gridTemplateColumns: '80px 1fr 1fr 120px',
@@ -1000,14 +1083,27 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                     padding: '12px 16px',
                     borderBottom: index < Object.keys(mappingData.mapping || {}).length - 1 ? '1px solid #2a2a2a' : 'none',
                     alignItems: 'center',
-                    fontSize: '13px'
+                    fontSize: '13px',
+                    opacity: isEnabled ? 1 : 0.4,
+                    backgroundColor: isEnabled ? 'transparent' : '#0a0a0a'
                   }}>
                     {/* Enable Checkbox */}
                     <div style={{ display: 'flex', justifyContent: 'center' }}>
                       <input
                         type="checkbox"
-                        checked={true}
-                        onChange={() => {}}
+                        checked={isEnabled}
+                        onChange={(e) => {
+                          setMappingData(prev => ({
+                            ...prev,
+                            mapping: {
+                              ...prev.mapping,
+                              [csvColumn]: {
+                                ...mappingInfo,
+                                enabled: e.target.checked
+                              }
+                            }
+                          }));
+                        }}
                         style={{
                           width: '16px',
                           height: '16px',
@@ -1018,70 +1114,132 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
 
                     {/* CSV Field */}
                     <div style={{ 
-                      color: '#fff',
+                      color: isEnabled ? '#fff' : '#666',
                       fontWeight: '500',
                       fontFamily: 'monospace'
                     }}>
                       {csvColumn}
                     </div>
 
-                    {/* FSM Field Searchable Input */}
+                    {/* FSM Field Searchable Dropdown */}
                     <div style={{ position: 'relative' }}>
                       <input
                         type="text"
-                        value={mappingInfo.fsm_field || ''}
-                        onChange={(e) => {
-                          const newFsmField = e.target.value;
-                          // Update both mapping structures
-                          setMapping(prev => {
-                            const newMapping = { ...prev };
-                            // Remove old mapping
-                            Object.keys(newMapping).forEach(key => {
-                              if (newMapping[key] === csvColumn) {
-                                delete newMapping[key];
-                              }
-                            });
-                            // Add new mapping
-                            if (newFsmField) {
-                              newMapping[newFsmField] = csvColumn;
-                            }
-                            return newMapping;
-                          });
-                          
-                          setMappingData(prev => ({
-                            ...prev,
-                            mapping: {
-                              ...prev.mapping,
-                              [csvColumn]: {
-                                ...mappingInfo,
-                                fsm_field: newFsmField,
-                                confidence: 'manual'
-                              }
-                            }
-                          }));
+                        value={searchQuery[csvColumn] !== undefined ? searchQuery[csvColumn] : (mappingInfo.fsm_field || '')}
+                        disabled={!isEnabled}
+                        onFocus={() => {
+                          if (isEnabled) {
+                            setSearchDropdownOpen(csvColumn);
+                            setSearchQuery(prev => ({ ...prev, [csvColumn]: mappingInfo.fsm_field || '' }));
+                          }
                         }}
-                        placeholder="Type FSM field name..."
-                        list={`fsm-fields-${csvColumn}`}
+                        onChange={(e) => {
+                          if (!isEnabled) return;
+                          setSearchQuery(prev => ({ ...prev, [csvColumn]: e.target.value }));
+                        }}
+                        placeholder="Search FSM field..."
                         style={{
                           width: '100%',
                           padding: '6px 8px',
+                          backgroundColor: isEnabled ? '#1a1a1a' : '#0a0a0a',
+                          border: `1px solid ${isEnabled ? '#2a2a2a' : '#1a1a1a'}`,
+                          borderRadius: '4px',
+                          color: isEnabled ? '#fff' : '#666',
+                          fontSize: '12px',
+                          cursor: isEnabled ? 'text' : 'not-allowed'
+                        }}
+                      />
+                      
+                      {/* Dropdown List */}
+                      {searchDropdownOpen === csvColumn && isEnabled && schema && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '100%',
+                          left: 0,
+                          right: 0,
+                          maxHeight: '200px',
+                          overflowY: 'auto',
                           backgroundColor: '#1a1a1a',
                           border: '1px solid #2a2a2a',
                           borderRadius: '4px',
-                          color: '#fff',
-                          fontSize: '12px'
-                        }}
-                      />
-                      <datalist id={`fsm-fields-${csvColumn}`}>
-                        {schema && Object.keys(schema.properties || {})
-                          .filter(field => 
-                            field.toLowerCase().includes((mappingInfo.fsm_field || '').toLowerCase())
-                          )
-                          .slice(0, 20) // Limit to 20 suggestions for performance
-                          .map(field => (
-                            <option key={field} value={field} />
-                          ))}
-                      </datalist>
+                          marginTop: '4px',
+                          zIndex: 1000,
+                          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)'
+                        }}>
+                          {(() => {
+                            const allFields = Object.keys(schema.properties || {});
+                            const searchTerm = (searchQuery[csvColumn] || '').toLowerCase();
+                            const filteredFields = allFields.filter(field => 
+                              field.toLowerCase().includes(searchTerm)
+                            );
+                            
+                            console.log('Schema fields:', allFields.length);
+                            console.log('Search term:', searchTerm);
+                            console.log('Filtered fields:', filteredFields.length);
+                            
+                            if (filteredFields.length === 0) {
+                              return (
+                                <div style={{
+                                  padding: '8px 12px',
+                                  fontSize: '12px',
+                                  color: '#666',
+                                  textAlign: 'center'
+                                }}>
+                                  No matching fields found
+                                </div>
+                              );
+                            }
+                            
+                            return filteredFields.slice(0, 50).map(field => (
+                              <div
+                                key={field}
+                                onClick={() => {
+                                  // Update both mapping structures
+                                  setMapping(prev => {
+                                    const newMapping = { ...prev };
+                                    // Remove old mapping
+                                    Object.keys(newMapping).forEach(key => {
+                                      if (newMapping[key] === csvColumn) {
+                                        delete newMapping[key];
+                                      }
+                                    });
+                                    // Add new mapping
+                                    newMapping[field] = csvColumn;
+                                    return newMapping;
+                                  });
+                                  
+                                  setMappingData(prev => ({
+                                    ...prev,
+                                    mapping: {
+                                      ...prev.mapping,
+                                      [csvColumn]: {
+                                        ...mappingInfo,
+                                        fsm_field: field,
+                                        confidence: 'manual'
+                                      }
+                                    }
+                                  }));
+                                  
+                                  setSearchDropdownOpen(null);
+                                  setSearchQuery(prev => ({ ...prev, [csvColumn]: field }));
+                                }}
+                                style={{
+                                  padding: '8px 12px',
+                                  cursor: 'pointer',
+                                  fontSize: '12px',
+                                  color: '#fff',
+                                  borderBottom: '1px solid #2a2a2a',
+                                  transition: 'background-color 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2a2a'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                              >
+                                {field}
+                              </div>
+                            ));
+                          })()}
+                        </div>
+                      )}
                     </div>
 
                     {/* Confidence Badge */}
@@ -1112,7 +1270,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       </span>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Unmapped Fields Summary */}
@@ -1210,18 +1369,18 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           }}>
             <button
               onClick={handleStartValidation}
-              disabled={validating}
+              disabled={validating || (validationProgress && validationProgress.status === 'validated')}
               style={{
                 padding: '10px 20px',
-                backgroundColor: validating ? '#2a2a2a' : '#dc2626',
+                backgroundColor: (validating || (validationProgress && validationProgress.status === 'validated')) ? '#2a2a2a' : '#dc2626',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '6px',
-                cursor: validating ? 'not-allowed' : 'pointer',
+                cursor: (validating || (validationProgress && validationProgress.status === 'validated')) ? 'not-allowed' : 'pointer',
                 fontSize: '14px'
               }}
             >
-              {validating ? 'Validating...' : 'Start Validation'}
+              {validating ? 'Validating...' : (validationProgress && validationProgress.status === 'validated') ? 'Validation Complete' : 'Start Validation'}
             </button>
 
             {validationErrors.length > 0 && (
@@ -1275,13 +1434,22 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 height: '8px',
                 backgroundColor: '#2a2a2a',
                 borderRadius: '4px',
-                marginBottom: '12px'
+                marginBottom: '12px',
+                overflow: 'hidden',
+                display: 'flex'
               }}>
+                {/* Green bar for valid records */}
                 <div style={{
-                  width: `${validationProgress.progress}%`,
+                  width: `${(validationProgress.records_processed - validationProgress.errors_found) / validationProgress.total_records * 100}%`,
+                  height: '100%',
+                  backgroundColor: '#22c55e',
+                  transition: 'width 0.3s ease'
+                }} />
+                {/* Red bar for invalid records */}
+                <div style={{
+                  width: `${validationProgress.errors_found / validationProgress.total_records * 100}%`,
                   height: '100%',
                   backgroundColor: '#dc2626',
-                  borderRadius: '4px',
                   transition: 'width 0.3s ease'
                 }} />
               </div>

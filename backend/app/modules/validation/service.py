@@ -15,7 +15,8 @@ import io
 
 class ValidationService:
     @staticmethod
-    async def start_validation(
+    @staticmethod
+    def start_validation(
         db: Session,
         account_id: int,
         job_id: int,
@@ -27,10 +28,6 @@ class ValidationService:
         Start validation process with streaming architecture.
         Pipeline: Stream → Normalize → Schema Validation → Rule Validation → Persist
         """
-        # Create new database session for background task
-        from app.core.database import SessionLocal
-        db = SessionLocal()
-        
         try:
             # Get job
             job = db.query(ConversionJob).filter(
@@ -41,6 +38,13 @@ class ValidationService:
             if not job:
                 logger.error(f"Job {job_id} not found for account {account_id}")
                 return
+            
+            # Set status to validating
+            job.status = "validating"
+            job.valid_records = 0
+            job.invalid_records = 0
+            db.commit()
+            logger.info(f"Job {job_id} status set to validating")
             
             logger.info(f"Starting validation for job {job_id}")
             
@@ -91,7 +95,7 @@ class ValidationService:
                     rule_errors = []
                     if enable_rules and not schema_errors:  # Only run rules if schema is valid
                         for rule in rules:
-                            error = await rule_executor.execute_rule(rule, normalized_record, row_number)
+                            error = rule_executor.execute_rule(rule, normalized_record, row_number)
                             if error:
                                 rule_errors.append(error)
                     
@@ -145,8 +149,6 @@ class ValidationService:
                     db.commit()
             except:
                 pass
-        finally:
-            db.close()
     
     @staticmethod
     def _get_active_rules(
