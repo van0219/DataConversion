@@ -10,12 +10,12 @@ class ValidationStartRequest(BaseModel):
 class ValidationProgress(BaseModel):
     job_id: int
     status: str
-    total_records: int
-    processed_records: int
-    valid_records: int
-    invalid_records: int
+    progress: float
     current_chunk: int
     total_chunks: int
+    records_processed: int
+    total_records: int
+    errors_found: int
     filename: str
 
 class ValidationErrorItem(BaseModel):

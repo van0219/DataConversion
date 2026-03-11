@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Response, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
@@ -17,12 +17,40 @@ router = APIRouter()
 @router.post("/start")
 async def start_validation(
     request: ValidationStartRequest,
+    background_tasks: BackgroundTasks,
     account_id: int = Depends(get_current_account_id),
     db: Session = Depends(get_db)
 ):
     """Start validation process for uploaded file"""
     try:
-        await ValidationService.start_validation(
+        # Validate that job exists and is ready for validation
+        from app.models.job import ConversionJob
+        job = db.query(ConversionJob).filter(
+            ConversionJob.id == request.job_id,
+            ConversionJob.account_id == account_id
+        ).first()
+        
+        if not job:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Job not found"
+            )
+        
+        if job.status not in ["pending", "uploaded"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Job is not ready for validation. Current status: {job.status}"
+            )
+        
+        # Set job status to validating immediately
+        job.status = "validating"
+        job.valid_records = 0
+        job.invalid_records = 0
+        db.commit()
+        
+        # Start validation in background
+        background_tasks.add_task(
+            ValidationService.start_validation,
             db,
             account_id,
             request.job_id,
@@ -30,13 +58,17 @@ async def start_validation(
             request.mapping,
             request.enable_rules
         )
+        
         return {"message": "Validation started", "job_id": request.job_id}
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
+        logger.error(f"Validation start failed: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Validation failed: {str(e)}"
