@@ -228,8 +228,42 @@ class SchemaService:
     
     @staticmethod
     def get_parsed_schema(schema: Schema) -> Dict:
-        """Get parsed schema JSON from schema record"""
-        return json.loads(schema.schema_json)
+        """
+        Get parsed schema JSON from schema record.
+        Handles both old format (business_class, fields, raw_schema) 
+        and new format (properties, required).
+        """
+        data = json.loads(schema.schema_json)
+        
+        # If already in new format, return as-is
+        if "properties" in data:
+            return data
+        
+        # Convert old format to new format
+        if "fields" in data and isinstance(data["fields"], list):
+            properties = {}
+            required = []
+            
+            for field in data["fields"]:
+                field_name = field.get("name")
+                if not field_name:
+                    continue
+                
+                properties[field_name] = {
+                    "type": field.get("type", "string"),
+                    "description": field.get("description", "")
+                }
+                
+                if field.get("required", False):
+                    required.append(field_name)
+            
+            return {
+                "properties": properties,
+                "required": required
+            }
+        
+        # If neither format, return empty structure
+        return {"properties": {}, "required": []}
     
     @staticmethod
     def _invalidate_mapping_templates(db: Session, account_id: int, business_class: str):

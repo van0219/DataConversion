@@ -13,6 +13,7 @@ class ValidationRuleTemplate(Base):
     field_name = Column(String(255), nullable=False)
     from_field = Column(Text)  # Source field that triggered the rule (for error reporting)
     reference_business_class = Column(String(255))  # For REFERENCE_EXISTS rules
+    reference_field_name = Column(String(255))  # Field name in reference class to check against
     condition_expression = Column(Text)  # For conditional rules
     error_message = Column(Text, nullable=False)
     version = Column(Integer, default=1)

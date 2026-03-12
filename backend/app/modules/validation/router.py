@@ -16,7 +16,7 @@ from app.models.job import ConversionJob
 router = APIRouter()
 
 @router.post("/start")
-def start_validation(
+async def start_validation(
     request: ValidationStartRequest,
     account_id: int = Depends(get_current_account_id),
     db: Session = Depends(get_db)
@@ -38,13 +38,14 @@ def start_validation(
         logger.info(f"DEBUG: Job found, starting validation")
         
         # Run validation synchronously - blocks until complete
-        ValidationService.start_validation(
+        await ValidationService.start_validation(
             db,
             account_id,
             request.job_id,
             request.business_class,
             request.mapping,
-            request.enable_rules
+            request.enable_rules,
+            request.selected_rule_set_id
         )
         
         logger.info(f"DEBUG: Validation complete, returning response")

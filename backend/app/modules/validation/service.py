@@ -16,17 +16,21 @@ import io
 class ValidationService:
     @staticmethod
     @staticmethod
-    def start_validation(
+    async def start_validation(
         db: Session,
         account_id: int,
         job_id: int,
         business_class: str,
         mapping: Dict,
-        enable_rules: bool = True
+        enable_rules: bool = True,
+        selected_rule_set_id: Optional[int] = None
     ):
         """
         Start validation process with streaming architecture.
         Pipeline: Stream → Normalize → Schema Validation → Rule Validation → Persist
+        
+        Args:
+            selected_rule_set_id: Optional rule set to apply (in addition to Default rule set)
         """
         try:
             # Get job
@@ -61,7 +65,12 @@ class ValidationService:
             # Get validation rules
             rules = []
             if enable_rules:
-                rules = ValidationService._get_active_rules(db, account_id, business_class)
+                rules = ValidationService._get_active_rules(
+                    db, 
+                    account_id, 
+                    business_class,
+                    selected_rule_set_id
+                )
             
             # Initialize rule executor
             rule_executor = RuleExecutor(db, account_id)
@@ -95,7 +104,7 @@ class ValidationService:
                     rule_errors = []
                     if enable_rules and not schema_errors:  # Only run rules if schema is valid
                         for rule in rules:
-                            error = rule_executor.execute_rule(rule, normalized_record, row_number)
+                            error = await rule_executor.execute_rule(rule, normalized_record, row_number)
                             if error:
                                 rule_errors.append(error)
                     
@@ -154,59 +163,75 @@ class ValidationService:
     def _get_active_rules(
         db: Session,
         account_id: int,
-        business_class: str
+        business_class: str,
+        selected_rule_set_id: Optional[int] = None
     ) -> List[Dict]:
         """
-        Get active validation rules for business class.
-        Execution order: GLOBAL → BUSINESS_CLASS → ACCOUNT
+        Get active validation rules for business class using rule sets.
+        
+        Rule Set Logic:
+        - If a custom rule set is selected, use ONLY that rule set
+        - If no rule set is selected, use the Default rule set
+        - Never apply both (custom sets are often copies of Default)
         """
+        from app.models.validation_rule_set import ValidationRuleSet
+        
         rules = []
+        rule_set_to_use = None
+        rule_set_name = "Default"
         
-        # GLOBAL rules (account_id = NULL in assignment)
-        global_rules = db.query(ValidationRuleTemplate).join(
-            ValidationRuleAssignment,
-            ValidationRuleTemplate.id == ValidationRuleAssignment.rule_template_id
-        ).filter(
-            ValidationRuleAssignment.account_id.is_(None),
-            ValidationRuleAssignment.is_enabled == True,
+        # Step 1: Determine which rule set to use
+        if selected_rule_set_id:
+            # User selected a custom rule set - use ONLY that one
+            rule_set_to_use = db.query(ValidationRuleSet).filter(
+                ValidationRuleSet.id == selected_rule_set_id,
+                ValidationRuleSet.business_class == business_class,
+                ValidationRuleSet.is_active == True
+            ).first()
+            
+            if rule_set_to_use:
+                rule_set_name = rule_set_to_use.name
+                logger.info(f"Using selected rule set '{rule_set_name}' for {business_class}")
+            else:
+                logger.warning(f"Selected rule set {selected_rule_set_id} not found, falling back to Default")
+        
+        # Step 2: If no custom rule set selected (or not found), use Default
+        if not rule_set_to_use:
+            rule_set_to_use = db.query(ValidationRuleSet).filter(
+                ValidationRuleSet.business_class == business_class,
+                ValidationRuleSet.is_common == True,
+                ValidationRuleSet.is_active == True
+            ).first()
+            
+            if rule_set_to_use:
+                logger.info(f"Using Default rule set for {business_class}")
+            else:
+                logger.warning(f"No Default rule set found for {business_class}")
+                return []
+        
+        # Step 3: Get all active rules from the selected rule set
+        rule_records = db.query(ValidationRuleTemplate).filter(
+            ValidationRuleTemplate.rule_set_id == rule_set_to_use.id,
             ValidationRuleTemplate.is_active == True
         ).all()
         
-        # BUSINESS_CLASS rules
-        bc_rules = db.query(ValidationRuleTemplate).join(
-            ValidationRuleAssignment,
-            ValidationRuleTemplate.id == ValidationRuleAssignment.rule_template_id
-        ).filter(
-            ValidationRuleTemplate.business_class == business_class,
-            ValidationRuleAssignment.is_enabled == True,
-            ValidationRuleTemplate.is_active == True
-        ).all()
+        logger.info(f"Loaded {len(rule_records)} rules from '{rule_set_name}' rule set")
         
-        # ACCOUNT rules
-        account_rules = db.query(ValidationRuleTemplate).join(
-            ValidationRuleAssignment,
-            ValidationRuleTemplate.id == ValidationRuleAssignment.rule_template_id
-        ).filter(
-            ValidationRuleAssignment.account_id == account_id,
-            ValidationRuleAssignment.is_enabled == True,
-            ValidationRuleTemplate.is_active == True
-        ).all()
-        
-        # Combine in order
-        all_rules = list(global_rules) + list(bc_rules) + list(account_rules)
-        
-        # Convert to dict format
-        for rule in all_rules:
+        # Step 4: Convert to dict format
+        for rule in rule_records:
             rules.append({
                 "rule_type": rule.rule_type,
                 "field_name": rule.field_name,
                 "from_field": rule.from_field,
                 "reference_business_class": rule.reference_business_class,
+                "reference_field_name": rule.reference_field_name,
                 "condition_expression": rule.condition_expression,
-                "error_message": rule.error_message
+                "error_message": rule.error_message,
+                "pattern": rule.pattern,
+                "enum_values": rule.enum_values
             })
         
-        logger.info(f"Loaded {len(rules)} active rules for {business_class}")
+        logger.info(f"Total rules loaded for {business_class}: {len(rules)} from '{rule_set_name}'")
         return rules
     
     @staticmethod

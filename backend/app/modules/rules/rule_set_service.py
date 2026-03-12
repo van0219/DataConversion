@@ -50,25 +50,25 @@ class RuleSetService:
     @staticmethod
     def get_or_create_common_rule_set(db: Session, business_class: str) -> ValidationRuleSet:
         """
-        Get or create the Common rule set for a business class.
-        Common rule sets are created automatically when needed.
+        Get or create the Default rule set for a business class.
+        Default rule sets are created automatically when needed.
         """
-        common_set = RuleSetService.get_common_rule_set(db, business_class)
+        default_set = RuleSetService.get_common_rule_set(db, business_class)
         
-        if not common_set:
-            common_set = ValidationRuleSet(
-                name="Common",
+        if not default_set:
+            default_set = ValidationRuleSet(
+                name="Default",
                 business_class=business_class,
-                description=f"Common validation rules for {business_class}. These rules always apply to all conversions.",
+                description=f"Default validation rules for {business_class}. These rules always apply to all conversions.",
                 is_common=True,
                 is_active=True
             )
-            db.add(common_set)
+            db.add(default_set)
             db.commit()
-            db.refresh(common_set)
-            logger.info(f"Created Common rule set for {business_class}")
+            db.refresh(default_set)
+            logger.info(f"Created Default rule set for {business_class}")
         
-        return common_set
+        return default_set
     
     @staticmethod
     def create_rule_set(
@@ -127,12 +127,12 @@ class RuleSetService:
         if not rule_set:
             raise ValueError(f"Rule set with ID {rule_set_id} not found")
         
-        # Protect Common rule sets
+        # Protect Default rule sets
         if rule_set.is_common:
-            if name is not None and name != "Common":
-                raise ValueError("Cannot rename Common rule set")
+            if name is not None and name != "Default":
+                raise ValueError("Cannot rename Default rule set")
             if is_active is not None and not is_active:
-                raise ValueError("Cannot deactivate Common rule set")
+                raise ValueError("Cannot deactivate Default rule set")
         
         # Update fields
         if name is not None:
@@ -172,9 +172,9 @@ class RuleSetService:
         if not rule_set:
             raise ValueError(f"Rule set with ID {rule_set_id} not found")
         
-        # Protect Common rule sets
+        # Protect Default rule sets
         if rule_set.is_common:
-            raise ValueError("Cannot delete Common rule set")
+            raise ValueError("Cannot delete Default rule set")
         
         name = rule_set.name
         business_class = rule_set.business_class

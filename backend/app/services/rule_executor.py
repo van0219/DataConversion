@@ -37,6 +37,7 @@ class RuleExecutor:
                 field_name,
                 field_value,
                 rule["reference_business_class"],
+                rule.get("reference_field_name"),
                 rule["error_message"],
                 row_number
             )
@@ -81,6 +82,7 @@ class RuleExecutor:
         field_name: str,
         value: any,
         reference_business_class: str,
+        reference_field_name: str,
         error_message: str,
         row_number: int
     ) -> Optional[ValidationError]:
@@ -93,12 +95,15 @@ class RuleExecutor:
         
         value_str = str(value).strip()
         
+        # Use reference_field_name if provided, otherwise use business class name as default
+        lookup_field = reference_field_name if reference_field_name else reference_business_class
+        
         # Check cache first
-        cache_key = f"{reference_business_class}:{value_str}"
+        cache_key = f"{reference_business_class}:{lookup_field}:{value_str}"
         if cache_key in self.reference_cache:
             exists = self.reference_cache[cache_key]
         else:
-            # Query snapshot
+            # Query snapshot using the reference field name
             exists = SnapshotService.check_reference_exists(
                 self.db,
                 self.account_id,

@@ -6,6 +6,7 @@ class ValidationStartRequest(BaseModel):
     business_class: str
     mapping: dict
     enable_rules: bool = True
+    selected_rule_set_id: Optional[int] = None  # Optional rule set to apply (in addition to Default)
 
 class ValidationProgress(BaseModel):
     job_id: int

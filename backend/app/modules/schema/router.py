@@ -4,7 +4,9 @@ from app.core.database import get_db
 from app.modules.accounts.router import get_current_account_id
 from app.modules.schema.service import SchemaService
 from app.modules.schema.schemas import SchemaFetchRequest, SchemaResponse
+import logging
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 @router.post("/fetch", response_model=SchemaResponse)
@@ -32,6 +34,151 @@ async def fetch_schema(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to fetch schema: {str(e)}"
         )
+
+@router.get("/list")
+def list_schemas(
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """
+    List all ACTIVE schemas for the current account (only latest versions).
+    
+    Returns:
+        List of active schemas with version info, field counts, and operations
+    """
+    from app.models.schema import Schema
+    from sqlalchemy import func
+    
+    try:
+        # Get only active schemas for account, ordered by business_class
+        schemas = db.query(Schema).filter(
+            Schema.account_id == account_id,
+            Schema.is_active == True
+        ).order_by(
+            Schema.business_class,
+            Schema.version_number.desc()
+        ).all()
+        
+        # Format response
+        result = []
+        for schema in schemas:
+            import json
+            # Parse JSON fields
+            operations = json.loads(schema.operations_json) if schema.operations_json else []
+            required_fields = json.loads(schema.required_fields_json) if schema.required_fields_json else []
+            enum_fields = json.loads(schema.enum_fields_json) if schema.enum_fields_json else {}
+            
+            # Calculate total fields from schema_json
+            total_fields = 0
+            try:
+                schema_data = json.loads(schema.schema_json)
+                
+                # New format: {"properties": {...}, "required": [...]}
+                if 'properties' in schema_data:
+                    total_fields = len(schema_data['properties'])
+                # Old format: {"business_class": "...", "fields": [...], "raw_schema": {...}}
+                elif 'fields' in schema_data and isinstance(schema_data['fields'], list):
+                    total_fields = len(schema_data['fields'])
+                # Fallback: count from required_fields and enum_fields
+                else:
+                    total_fields = len(required_fields) + len(enum_fields)
+            except Exception as e:
+                logger.warning(f"Error parsing schema_json for {schema.business_class}: {e}")
+                # Fallback to old calculation on error
+                total_fields = len(required_fields) + len(enum_fields)
+            
+            result.append({
+                "id": schema.id,
+                "business_class": schema.business_class,
+                "version": schema.version_number,
+                "version_hash": schema.schema_hash,
+                "source": schema.source,
+                "created_at": schema.created_at.isoformat() if schema.created_at else None,
+                "fields_count": total_fields,
+                "required_fields_count": len(required_fields),
+                "operations": operations
+            })
+        
+        return {"schemas": result}
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to list schemas: {str(e)}"
+        )
+
+@router.get("/{business_class}/fields")
+def get_schema_fields(
+    business_class: str,
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """
+    Get list of field names for a business class.
+    Used for populating reference field dropdowns.
+    
+    Checks both schemas table (for conversion classes) and snapshot_records (for setup classes).
+    
+    Returns:
+        List of field names from the latest active schema or snapshot data
+    """
+    import json
+    from app.models.snapshot import SnapshotRecord
+    
+    try:
+        # First, try to get from schemas table (conversion classes)
+        schema = SchemaService.get_latest_schema(db, account_id, business_class)
+        
+        if schema:
+            # Parse schema JSON to get field names
+            schema_data = json.loads(schema.schema_json)
+            
+            # Extract field names from properties
+            field_names = []
+            if 'properties' in schema_data:
+                field_names = list(schema_data['properties'].keys())
+            elif 'fields' in schema_data and isinstance(schema_data['fields'], list):
+                field_names = [f['name'] for f in schema_data['fields'] if 'name' in f]
+            
+            return {
+                "business_class": business_class,
+                "field_count": len(field_names),
+                "fields": sorted(field_names),  # Return alphabetically sorted
+                "source": "schema"
+            }
+        
+        # If not in schemas, try snapshot_records (setup classes)
+        sample_record = db.query(SnapshotRecord).filter(
+            SnapshotRecord.account_id == account_id,
+            SnapshotRecord.business_class == business_class
+        ).first()
+        
+        if sample_record:
+            # Parse record data to get field names
+            record_data = json.loads(sample_record.record_data)
+            field_names = list(record_data.keys())
+            
+            return {
+                "business_class": business_class,
+                "field_count": len(field_names),
+                "fields": sorted(field_names),  # Return alphabetically sorted
+                "source": "snapshot"
+            }
+        
+        # Not found in either location
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No schema or snapshot data found for {business_class}. Please sync setup data or fetch schema first."
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get schema fields: {str(e)}"
+        )
+
 
 @router.get("/{business_class}/latest", response_model=SchemaResponse)
 def get_latest_schema(

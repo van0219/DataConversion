@@ -200,6 +200,11 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [errorFilter, setErrorFilter] = useState('');
   const [errorTypeFilter, setErrorTypeFilter] = useState('');
+  const [ruleSets, setRuleSets] = useState<any[]>([]);
+  const [selectedRuleSetId, setSelectedRuleSetId] = useState<number | null>(null);
+  const [loadingRuleSets, setLoadingRuleSets] = useState(false);
+  const [availableRuleSets, setAvailableRuleSets] = useState<any[]>([]);
+  const [enableRules, setEnableRules] = useState(true);
 
   // Load state
   const [loading, setLoading] = useState(false);
@@ -218,7 +223,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
     enterpriseGroup: '',
     accountingEntity: '',
     editOnly: false,                    // Don't edit only - we want to interface
-    editAndInterface: true,             // Edit AND interface to GL (this is what we want)
+    editAndInterface: false,            // Default to unchecked - user must opt-in
     partialUpdate: false,
     journalizeByEntity: true,
     journalByJournalCode: false,
@@ -258,6 +263,13 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
 
     autoPopulateOnLoadStep();
   }, [currentStep, interfaceParams.editAndInterface, jobId, mappingData.mapping]);
+
+  // Load rule sets when entering validation step
+  useEffect(() => {
+    if (currentStep === 'validation' && businessClass) {
+      loadRuleSets();
+    }
+  }, [currentStep, businessClass]);
 
   // Function to get most frequent value from CSV data
   const getMostFrequentValue = async (fieldName: string): Promise<string> => {
@@ -591,6 +603,32 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
   };
 
   // Validation handlers
+  const loadRuleSets = async () => {
+    if (!businessClass) {
+      console.log('No business class selected, skipping rule set load');
+      return;
+    }
+
+    setLoadingRuleSets(true);
+    try {
+      console.log('Loading rule sets for business class:', businessClass);
+      const response = await api.get('/rules/rule-sets', {
+        params: { business_class: businessClass }
+      });
+      console.log('Rule sets loaded:', response.data);
+      
+      setAvailableRuleSets(response.data || []); // Store in availableRuleSets
+      
+      // Don't auto-select Default rule set - let user choose
+      // Default will be used if selectedRuleSetId is null
+    } catch (error) {
+      console.error('Failed to load rule sets:', error);
+      setAvailableRuleSets([]);
+    } finally {
+      setLoadingRuleSets(false);
+    }
+  };
+
   const handleStartValidation = async () => {
     if (!jobId) {
       alert('No job ID available. Please upload a file first.');
@@ -606,9 +644,12 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
     setValidationProgress(null);
     setValidationErrors([]);
     
+    const startTime = Date.now();
+    
     try {
       console.log('Starting validation for job:', jobId);
       console.log('Business class:', businessClass);
+      console.log('Selected rule set ID:', selectedRuleSetId);
       
       // Filter out disabled fields
       const enabledMapping = Object.entries(mappingData.mapping)
@@ -624,10 +665,18 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
         job_id: jobId,
         business_class: businessClass,
         mapping: enabledMapping, // Use filtered mapping
-        enable_rules: true
+        enable_rules: enableRules, // Use state variable
+        selected_rule_set_id: selectedRuleSetId // Pass selected rule set
       });
 
       console.log('Validation start response:', response.data);
+
+      // Ensure minimum 2-second loading animation
+      const elapsed = Date.now() - startTime;
+      const minDisplayTime = 2000; // 2 seconds
+      if (elapsed < minDisplayTime) {
+        await new Promise(resolve => setTimeout(resolve, minDisplayTime - elapsed));
+      }
 
       // Validation is synchronous - it's already complete!
       // Just load the summary and errors
@@ -639,6 +688,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       
     } catch (error: any) {
       console.error('Validation failed:', error);
+      
+      // Ensure minimum 2-second loading animation even on error
+      const elapsed = Date.now() - startTime;
+      const minDisplayTime = 2000;
+      if (elapsed < minDisplayTime) {
+        await new Promise(resolve => setTimeout(resolve, minDisplayTime - elapsed));
+      }
+      
       setValidating(false);
       
       const errorMessage = error.response?.data?.detail || error.message || 'Unknown error';
@@ -1831,6 +1888,98 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             </p>
           </div>
 
+          {/* Validation Options */}
+          {!validating && validationProgress?.status !== 'validated' && (
+            <div style={{
+              backgroundColor: theme.background.primary,
+              border: `1px solid ${theme.background.quaternary}`,
+              borderRadius: '8px',
+              padding: '20px',
+              marginBottom: '20px'
+            }}>
+              <h4 style={{ 
+                fontSize: '14px', 
+                fontWeight: '600', 
+                color: theme.text.primary,
+                marginBottom: '16px'
+              }}>
+                Validation Options
+              </h4>
+
+              {/* Rule Set Selector */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '8px', 
+                  color: theme.text.secondary,
+                  fontSize: '13px',
+                  fontWeight: '500'
+                }}>
+                  Rule Set:
+                </label>
+                <select
+                  value={selectedRuleSetId || ''}
+                  onChange={(e) => setSelectedRuleSetId(e.target.value ? parseInt(e.target.value) : null)}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    backgroundColor: theme.background.secondary,
+                    border: `1px solid ${theme.background.quaternary}`,
+                    borderRadius: '6px',
+                    color: theme.text.primary,
+                    fontSize: '14px'
+                  }}
+                >
+                  <option value="">Default</option>
+                  {availableRuleSets.filter(rs => !rs.is_common).map(rs => (
+                    <option key={rs.id} value={rs.id}>
+                      {rs.name} ({rs.rule_count} rules)
+                    </option>
+                  ))}
+                </select>
+                <p style={{ 
+                  fontSize: '12px', 
+                  color: theme.text.tertiary, 
+                  marginTop: '6px' 
+                }}>
+                  Select which rule set to apply during validation. Default rule set is used if none selected.
+                </p>
+              </div>
+
+              {/* Enable Rules Toggle */}
+              <div style={{ marginBottom: '0' }}>
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  color: theme.text.primary
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={enableRules}
+                    onChange={(e) => setEnableRules(e.target.checked)}
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  <span style={{ fontWeight: '500' }}>Enable Business Rules Validation</span>
+                </label>
+                <p style={{ 
+                  fontSize: '12px', 
+                  color: theme.text.tertiary, 
+                  marginTop: '6px',
+                  marginLeft: '28px'
+                }}>
+                  Uncheck to validate against schema only (faster, but skips custom business rules)
+                </p>
+              </div>
+            </div>
+          )}
+
           <div style={{ 
             display: 'flex', 
             gap: '16px', 
@@ -1839,22 +1988,22 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           }}>
             <button
               onClick={handleStartValidation}
-              disabled={validating || (validationProgress?.status === 'validated')}
+              disabled={validating}
               style={{
                 padding: '12px 24px',
-                backgroundColor: (validating || (validationProgress?.status === 'validated')) ? theme.background.tertiary : theme.primary.main,
+                backgroundColor: validating ? theme.background.tertiary : theme.primary.main,
                 color: '#FFFFFF',
                 border: 'none',
                 borderRadius: '6px',
-                cursor: (validating || (validationProgress?.status === 'validated')) ? 'not-allowed' : 'pointer',
+                cursor: validating ? 'not-allowed' : 'pointer',
                 fontSize: '14px',
                 fontWeight: '500'
               }}
             >
-              {validating ? 'Validating...' : (validationProgress?.status === 'validated') ? 'Validation Complete' : 'Start Validation'}
+              {validating ? 'Validating...' : (validationProgress?.status === 'validated' || validationProgress?.status === 'failed') ? 'Re-run Validation' : 'Start Validation'}
             </button>
 
-            {validationProgress?.status === 'validated' && (
+            {(validationProgress?.status === 'validated' || validationProgress?.status === 'failed') && (
               <>
                 {validationProgress.errors_found > 0 && (
                   <>
@@ -1913,6 +2062,36 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               </>
             )}
           </div>
+
+          {/* Loading Animation */}
+          {validating && (
+            <div style={{
+              padding: '24px',
+              backgroundColor: theme.background.secondary,
+              borderRadius: '8px',
+              textAlign: 'center',
+              marginBottom: '20px'
+            }}>
+              {/* Animated Spinner */}
+              <div style={{
+                width: '48px',
+                height: '48px',
+                border: `4px solid ${theme.background.quaternary}`,
+                borderTop: `4px solid ${theme.primary.main}`,
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+                margin: '0 auto 16px auto'
+              }} />
+              
+              <div style={{ fontSize: '16px', fontWeight: '600', color: theme.primary.main, marginBottom: '8px' }}>
+                Validating Data...
+              </div>
+              
+              <div style={{ fontSize: '13px', color: theme.text.secondary }}>
+                Checking {fileInfo?.total_records || 0} records against FSM schema{enableRules ? ' and business rules' : ''}...
+              </div>
+            </div>
+          )}
 
           {validationProgress && (
             <div style={{
@@ -2161,7 +2340,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             }}>
               ⚡ Load to FSM
             </h3>
-            <p style={{ fontSize: '13px', color: '#999' }}>
+            <p style={{ fontSize: '13px', color: theme.text.secondary }}>
               Load validated records to FSM system
             </p>
           </div>
@@ -2176,7 +2355,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                   gap: '12px',
                   cursor: 'pointer',
                   fontSize: '14px',
-                  color: '#fff'
+                  color: theme.text.primary
                 }}>
                   <input
                     type="checkbox"
@@ -2194,7 +2373,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 </label>
                 <div style={{
                   fontSize: '12px',
-                  color: '#999',
+                  color: theme.text.secondary,
                   marginTop: '4px',
                   marginLeft: '30px'
                 }}>
@@ -2215,47 +2394,48 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                     <h3 style={{ 
                       fontSize: '18px', 
                       fontWeight: '600', 
-                      color: 'theme.primary.main',
+                      color: theme.primary.main,
                       marginBottom: '8px'
                     }}>
                       ⚙️ Interface Parameters
                     </h3>
-                    <p style={{ fontSize: '13px', color: '#999' }}>
+                    <p style={{ fontSize: '13px', color: theme.text.secondary }}>
                       Configure parameters for interfacing transactions to General Ledger
                     </p>
                   </div>
 
-                  {/* Text Input Parameters - 5 column grid */}
+                  {/* Text Input Parameters - Flexbox 2 column layout */}
                   <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(4, 1fr)',
+                    display: 'flex',
+                    flexWrap: 'wrap',
                     gap: '16px',
                     marginBottom: '20px'
                   }}>
-                    <div>
-                      <label style={{ fontSize: '12px', color: '#ccc', marginBottom: '4px', display: 'block' }}>
+                    <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: '300px' }}>
+                      <label style={{ fontSize: '12px', color: theme.text.primary, marginBottom: '4px', display: 'block', fontWeight: '500' }}>
                         RunGroup * (Generated by system)
                       </label>
                       <input
                         type="text"
-                        value={interfaceParams.runGroup}
+                        value={businessClass ? `${businessClass.toUpperCase().substring(0, 15)}_${new Date().toISOString().replace(/[-:T.Z]/g, '').substring(0, 14)}` : ''}
                         readOnly
-                        placeholder="Auto-generated unique RunGroup"
+                        placeholder="Example: GLTRANSACTIONIN_20260313063353"
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: 'theme.background.secondary',
-                          border: `1px solid ${theme.background.tertiary}`,
+                          backgroundColor: theme.background.tertiary,
+                          border: `1px solid ${theme.background.quaternary}`,
                           borderRadius: '6px',
-                          color: '#999',
+                          color: theme.text.primary,
                           fontSize: '13px',
-                          cursor: 'not-allowed'
+                          cursor: 'not-allowed',
+                          boxSizing: 'border-box'
                         }}
                       />
                     </div>
 
-                    <div>
-                      <label style={{ fontSize: '12px', color: '#ccc', marginBottom: '4px', display: 'block' }}>
+                    <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: '300px' }}>
+                      <label style={{ fontSize: '12px', color: theme.text.primary, marginBottom: '4px', display: 'block', fontWeight: '500' }}>
                         Finance Enterprise Group (Auto-filled from file)
                       </label>
                       <input
@@ -2266,18 +2446,19 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: 'theme.background.secondary',
-                          border: `1px solid ${theme.background.tertiary}`,
+                          backgroundColor: theme.background.tertiary,
+                          border: `1px solid ${theme.background.quaternary}`,
                           borderRadius: '6px',
-                          color: '#999',
+                          color: theme.text.secondary,
                           fontSize: '13px',
-                          cursor: 'not-allowed'
+                          cursor: 'not-allowed',
+                          boxSizing: 'border-box'
                         }}
                       />
                     </div>
 
-                    <div>
-                      <label style={{ fontSize: '12px', color: '#ccc', marginBottom: '4px', display: 'block' }}>
+                    <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: '300px' }}>
+                      <label style={{ fontSize: '12px', color: theme.text.primary, marginBottom: '4px', display: 'block', fontWeight: '500' }}>
                         Accounting Entity
                       </label>
                       <input
@@ -2291,16 +2472,18 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: 'theme.background.secondary',
+                          backgroundColor: theme.background.secondary,
                           border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
-                          color: theme.text.primary, fontSize: '13px'
+                          color: theme.text.primary,
+                          fontSize: '13px',
+                          boxSizing: 'border-box'
                         }}
                       />
                     </div>
 
-                    <div>
-                      <label style={{ fontSize: '12px', color: '#ccc', marginBottom: '4px', display: 'block' }}>
+                    <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: '300px' }}>
+                      <label style={{ fontSize: '12px', color: theme.text.primary, marginBottom: '4px', display: 'block', fontWeight: '500' }}>
                         Currency Table
                       </label>
                       <input
@@ -2314,16 +2497,18 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: 'theme.background.secondary',
+                          backgroundColor: theme.background.secondary,
                           border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
-                          color: theme.text.primary, fontSize: '13px'
+                          color: theme.text.primary,
+                          fontSize: '13px',
+                          boxSizing: 'border-box'
                         }}
                       />
                     </div>
 
-                    <div>
-                      <label style={{ fontSize: '12px', color: '#ccc', marginBottom: '4px', display: 'block' }}>
+                    <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: '300px' }}>
+                      <label style={{ fontSize: '12px', color: theme.text.primary, marginBottom: '4px', display: 'block', fontWeight: '500' }}>
                         Primary Ledger
                       </label>
                       <input
@@ -2337,10 +2522,12 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: 'theme.background.secondary',
+                          backgroundColor: theme.background.secondary,
                           border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
-                          color: theme.text.primary, fontSize: '13px'
+                          color: theme.text.primary,
+                          fontSize: '13px',
+                          boxSizing: 'border-box'
                         }}
                       />
                     </div>
@@ -2348,7 +2535,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
 
                   {/* Processing Mode Radio Buttons */}
                   <div style={{ marginBottom: '20px' }}>
-                    <label style={{ fontSize: '12px', color: '#ccc', marginBottom: '8px', display: 'block' }}>
+                    <label style={{ fontSize: '12px', color: theme.text.primary, marginBottom: '8px', display: 'block', fontWeight: '500' }}>
                       Processing Mode
                     </label>
                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
@@ -2358,7 +2545,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         gap: '8px',
                         cursor: 'pointer',
                         fontSize: '13px',
-                        color: '#fff'
+                        color: theme.text.primary
                       }}>
                         <input
                           type="radio"
@@ -2379,7 +2566,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         gap: '8px',
                         cursor: 'pointer',
                         fontSize: '13px',
-                        color: '#fff'
+                        color: theme.text.primary
                       }}>
                         <input
                           type="radio"
@@ -2632,7 +2819,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                   {/* Error RunGroup Prefix - Show only if Move Errors is checked */}
                   {interfaceParams.moveErrorsToNewRunGroup && (
                     <div style={{ marginBottom: '20px' }}>
-                      <label style={{ fontSize: '12px', color: '#ccc', marginBottom: '4px', display: 'block' }}>
+                      <label style={{ fontSize: '12px', color: theme.text.primary, marginBottom: '4px', display: 'block', fontWeight: '500' }}>
                         Error RunGroup Prefix
                       </label>
                       <input
@@ -2698,52 +2885,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               </div>
               
               {interfaceParams.editAndInterface && (
-                <div style={{ fontSize: '13px', color: '#ccc', marginBottom: '12px' }}>
+                <div style={{ fontSize: '13px', color: theme.text.secondary, marginBottom: '12px' }}>
                   Phase 1: Loading records → Phase 2: Wait 3 seconds → Phase 3: Interface to GL
                 </div>
               )}
               
-              {loadProgress && (
-                <div style={{ fontSize: '13px', color: '#999' }}>
-                  <div style={{ marginBottom: '12px' }}>
-                    Processing {loadProgress.records_processed.toLocaleString()} of {loadProgress.total_records.toLocaleString()} records
-                  </div>
-                  
-                  {/* Progress Bar */}
-                  <div style={{
-                    width: '100%',
-                    height: '8px',
-                    backgroundColor: 'theme.background.tertiary',
-                    borderRadius: '4px',
-                    overflow: 'hidden',
-                    marginBottom: '12px'
-                  }}>
-                    <div style={{
-                      width: `${Math.min(100, (loadProgress.records_processed / loadProgress.total_records) * 100)}%`,
-                      height: '100%',
-                      backgroundColor: 'theme.primary.main',
-                      transition: 'width 0.3s ease'
-                    }} />
-                  </div>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                    <span>Chunk {loadProgress.chunks_processed} of {loadProgress.total_chunks}</span>
-                    <span>{loadProgress.elapsed_seconds}s elapsed</span>
-                  </div>
-                  
-                  {loadProgress.total_records > 10000 && (
-                    <div style={{ marginTop: '8px', fontSize: '11px', color: '#666' }}>
-                      Large dataset detected - this may take several minutes
-                    </div>
-                  )}
-                </div>
-              )}
-              
-              {!loadProgress && (
-                <div style={{ fontSize: '13px', color: '#999' }}>
-                  Preparing data for FSM...
-                </div>
-              )}
+              <div style={{ fontSize: '13px', color: theme.text.secondary }}>
+                Please wait while we process your data...
+              </div>
             </div>
           )}
         </div>
@@ -2754,8 +2903,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
         <div className={getAnimationClass()}>
           {/* Load Results Display */}
           <div style={{
-            backgroundColor: loadResult.total_failure === 0 ? '#1a2e1a' : '#2e1a1a',
-            border: `2px solid ${loadResult.total_failure === 0 ? '#22c55e' : 'theme.primary.main'}`,
+            backgroundColor: theme.background.secondary,
+            border: `2px solid ${loadResult.total_failure === 0 ? '#22c55e' : theme.status.error}`,
             borderRadius: '12px',
             padding: '24px',
             marginBottom: '24px'
@@ -2764,12 +2913,12 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               <h3 style={{ 
                 fontSize: '18px', 
                 fontWeight: '600', 
-                color: loadResult.total_failure === 0 ? '#22c55e' : 'theme.primary.main',
+                color: loadResult.total_failure === 0 ? '#22c55e' : theme.status.error,
                 marginBottom: '8px'
               }}>
                 {loadResult.total_failure === 0 ? '🎉 Load Completed Successfully' : '❌ Load Failed'}
               </h3>
-              <p style={{ fontSize: '13px', color: '#999' }}>
+              <p style={{ fontSize: '13px', color: theme.text.secondary }}>
                 {loadResult.total_failure === 0 
                   ? 'All records have been loaded to FSM successfully'
                   : 'Load failed and all records have been rolled back'
@@ -2795,47 +2944,51 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             }}>
               <div style={{
                 padding: '16px',
-                backgroundColor: 'theme.background.secondary',
-                borderRadius: '6px',
+                backgroundColor: '#FFFFFF',
+                border: `2px solid ${theme.background.quaternary}`,
+                borderRadius: '8px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '24px', fontWeight: '600', color: 'theme.primary.main' }}>
+                <div style={{ fontSize: '24px', fontWeight: '600', color: theme.primary.main }}>
                   {loadResult.success_count.toLocaleString()}
                 </div>
-                <div style={{ fontSize: '12px', color: '#999' }}>Records Loaded</div>
+                <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Records Loaded</div>
               </div>
               <div style={{
                 padding: '16px',
-                backgroundColor: 'theme.background.secondary',
-                borderRadius: '6px',
+                backgroundColor: '#FFFFFF',
+                border: `2px solid ${theme.background.quaternary}`,
+                borderRadius: '8px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '18px', fontWeight: '600', color: 'theme.primary.main' }}>
+                <div style={{ fontSize: '18px', fontWeight: '600', color: theme.primary.main }}>
                   {loadResult.business_class}
                 </div>
-                <div style={{ fontSize: '12px', color: '#999' }}>Business Class</div>
+                <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Business Class</div>
               </div>
               <div style={{
                 padding: '16px',
-                backgroundColor: 'theme.background.secondary',
-                borderRadius: '6px',
+                backgroundColor: '#FFFFFF',
+                border: `2px solid ${theme.background.quaternary}`,
+                borderRadius: '8px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '18px', fontWeight: '600', color: 'theme.primary.main' }}>
+                <div style={{ fontSize: '18px', fontWeight: '600', color: theme.primary.main }}>
                   {loadResult.run_group}
                 </div>
-                <div style={{ fontSize: '12px', color: '#999' }}>Run Group</div>
+                <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Run Group</div>
               </div>
               <div style={{
                 padding: '16px',
-                backgroundColor: 'theme.background.secondary',
-                borderRadius: '6px',
+                backgroundColor: '#FFFFFF',
+                border: `2px solid ${theme.background.quaternary}`,
+                borderRadius: '8px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '18px', fontWeight: '600', color: 'theme.primary.main' }}>
+                <div style={{ fontSize: '18px', fontWeight: '600', color: theme.primary.main }}>
                   {loadResult.chunks_processed}
                 </div>
-                <div style={{ fontSize: '12px', color: '#999' }}>Chunks Processed</div>
+                <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Chunks Processed</div>
               </div>
             </div>
 
@@ -2843,7 +2996,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             {loadResult.total_failure > 0 && (
               <div style={{
                 backgroundColor: '#1a0a0a',
-                border: '1px solid theme.primary.main',
+                border: `1px solid ${theme.primary.main}`,
                 borderRadius: '8px',
                 padding: '16px',
                 marginBottom: '20px'
@@ -2857,7 +3010,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                   <h4 style={{
                     fontSize: '14px',
                     fontWeight: '600',
-                    color: 'theme.primary.main',
+                    color: theme.primary.main,
                     margin: 0
                   }}>
                     ⚠️ Error Details
@@ -2867,11 +3020,11 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 {loadResult.error_message && (
                   <div style={{
                     padding: '12px',
-                    backgroundColor: 'theme.background.secondary',
+                    backgroundColor: theme.background.secondary,
                     borderRadius: '6px',
                     marginBottom: '12px'
                   }}>
-                    <div style={{ fontSize: '12px', color: '#999', marginBottom: '4px' }}>
+                    <div style={{ fontSize: '12px', color: theme.text.secondary, marginBottom: '4px' }}>
                       Error Message:
                     </div>
                     <div style={{ fontSize: '13px', color: theme.text.primary, fontFamily: 'monospace' }}>
@@ -2885,9 +3038,9 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                     <summary style={{
                       cursor: 'pointer',
                       fontSize: '13px',
-                      color: 'theme.primary.main',
+                      color: theme.primary.main,
                       padding: '8px',
-                      backgroundColor: 'theme.background.secondary',
+                      backgroundColor: theme.background.secondary,
                       borderRadius: '4px',
                       userSelect: 'none'
                     }}>
@@ -2896,7 +3049,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                     <pre style={{
                       marginTop: '8px',
                       padding: '12px',
-                      backgroundColor: 'theme.background.secondary',
+                      backgroundColor: theme.background.secondary,
                       borderRadius: '6px',
                       fontSize: '11px',
                       color: '#fff',
@@ -2917,9 +3070,9 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                   backgroundColor: 'theme.background.secondary',
                   borderRadius: '6px',
                   fontSize: '12px',
-                  color: '#999'
+                  color: theme.text.secondary
                 }}>
-                  💡 <strong style={{ color: 'theme.primary.main' }}>Next Steps:</strong>
+                  💡 <strong style={{ color: theme.primary.main }}>Next Steps:</strong>
                   <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
                     <li>Review the error message above to understand what went wrong</li>
                     <li>Check validation results for data quality issues</li>
@@ -2980,7 +3133,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 onClick={onBack}
                 style={{
                   padding: '12px 16px',
-                  backgroundColor: 'theme.background.tertiary',
+                  backgroundColor: theme.primary.main,
                   color: '#fff',
                   border: 'none',
                   borderRadius: '6px',
@@ -3007,19 +3160,26 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 <h3 style={{ 
                   fontSize: '18px', 
                   fontWeight: '600', 
-                  color: 'theme.primary.main',
+                  color: theme.primary.main,
                   marginBottom: '8px'
                 }}>
                   ⚡ Interface Transactions
                 </h3>
-                <p style={{ fontSize: '13px', color: '#999' }}>
+                <p style={{ fontSize: '13px', color: theme.text.secondary }}>
                   Post/journalize loaded transactions to General Ledger
                 </p>
               </div>
 
               {!showInterfaceForm ? (
                 <button
-                  onClick={() => setShowInterfaceForm(true)}
+                  onClick={() => {
+                    setShowInterfaceForm(true);
+                    // Auto-populate RunGroup when opening the form
+                    setInterfaceParams(prev => ({
+                      ...prev,
+                      runGroup: loadResult?.run_group || ''
+                    }));
+                  }}
                   style={{
                     padding: '12px 24px',
                     backgroundColor: theme.primary.main,
@@ -3038,40 +3198,45 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                   {/* Interface Parameters Form */}
                   <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(4, 1fr)',
+                    gridTemplateColumns: 'repeat(2, 1fr)',
                     gap: '16px',
                     marginBottom: '20px'
                   }}>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#999' }}>
-                        RunGroup
+                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: theme.text.primary, fontWeight: '500' }}>
+                        RunGroup * (Generated by system)
                       </label>
                       <input
                         type="text"
-                        value={interfaceParams.runGroup}
-                        onChange={(e) => setInterfaceParams(prev => ({ ...prev, runGroup: e.target.value }))}
+                        value={interfaceParams.runGroup || loadResult?.run_group || ''}
+                        readOnly
+                        disabled
+                        placeholder="Auto-generated unique RunGroup"
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: 'theme.background.secondary',
-                          border: `1px solid ${theme.background.tertiary}`,
+                          backgroundColor: theme.background.tertiary,
+                          border: `1px solid ${theme.background.quaternary}`,
                           borderRadius: '6px',
-                          color: theme.text.primary, fontSize: '14px'
+                          color: theme.text.primary,
+                          fontSize: '14px',
+                          cursor: 'not-allowed'
                         }}
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#999' }}>
-                        Finance Enterprise Group
+                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: theme.text.primary, fontWeight: '500' }}>
+                        Finance Enterprise Group (Auto-filled from file)
                       </label>
                       <input
                         type="text"
                         value={interfaceParams.enterpriseGroup}
                         onChange={(e) => setInterfaceParams(prev => ({ ...prev, enterpriseGroup: e.target.value }))}
+                        placeholder="Optional filter"
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: 'theme.background.secondary',
+                          backgroundColor: theme.background.secondary,
                           border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
                           color: theme.text.primary, fontSize: '14px'
@@ -3079,17 +3244,18 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#999' }}>
+                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: theme.text.primary, fontWeight: '500' }}>
                         Accounting Entity
                       </label>
                       <input
                         type="text"
                         value={interfaceParams.accountingEntity}
                         onChange={(e) => setInterfaceParams(prev => ({ ...prev, accountingEntity: e.target.value }))}
+                        placeholder="Optional filter"
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: 'theme.background.secondary',
+                          backgroundColor: theme.background.secondary,
                           border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
                           color: theme.text.primary, fontSize: '14px'
@@ -3097,17 +3263,18 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#999' }}>
+                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: theme.text.primary, fontWeight: '500' }}>
                         Currency Table
                       </label>
                       <input
                         type="text"
                         value={interfaceParams.currencyTable}
                         onChange={(e) => setInterfaceParams(prev => ({ ...prev, currencyTable: e.target.value }))}
+                        placeholder="Optional"
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: 'theme.background.secondary',
+                          backgroundColor: theme.background.secondary,
                           border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
                           color: theme.text.primary, fontSize: '14px'
@@ -3115,17 +3282,17 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#999' }}>
+                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: theme.text.primary, fontWeight: '500' }}>
                         Primary Ledger
                       </label>
                       <input
                         type="text"
                         value={interfaceParams.primaryLedger}
                         onChange={(e) => setInterfaceParams(prev => ({ ...prev, primaryLedger: e.target.value }))}
-                        style={{
+                        placeholder="Optional"                        style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: 'theme.background.secondary',
+                          backgroundColor: theme.background.secondary,
                           border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
                           color: theme.text.primary, fontSize: '14px'
@@ -3136,7 +3303,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
 
                   {/* Processing Mode Radio Buttons */}
                   <div style={{ marginBottom: '20px' }}>
-                    <label style={{ fontSize: '12px', color: '#ccc', marginBottom: '8px', display: 'block' }}>
+                    <label style={{ fontSize: '12px', color: theme.text.primary, fontWeight: '500', marginBottom: '8px', display: 'block' }}>
                       Processing Mode
                     </label>
                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
@@ -3396,7 +3563,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                   {/* Error RunGroup Prefix - Show only if Move Errors is checked */}
                   {interfaceParams.moveErrorsToNewRunGroup && (
                     <div style={{ marginBottom: '20px' }}>
-                      <label style={{ fontSize: '12px', color: '#ccc', marginBottom: '4px', display: 'block' }}>
+                      <label style={{ fontSize: '12px', color: theme.text.primary, marginBottom: '4px', display: 'block', fontWeight: '500' }}>
                         Error RunGroup Prefix
                       </label>
                       <input
@@ -3480,7 +3647,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                           <div style={{ marginBottom: '8px', fontWeight: '600', color: '#fff' }}>
                             Interface Verification Results:
                           </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', color: '#ccc' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', color: theme.text.secondary }}>
                             <div>Status: <span style={{ color: interfaceResult.verification.status_label === 'Complete' ? '#22c55e' : 'theme.primary.main', fontWeight: '500' }}>
                               {interfaceResult.verification.status_label || 'Unknown'}
                             </span></div>
@@ -3529,12 +3696,12 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 <h3 style={{ 
                   fontSize: '18px', 
                   fontWeight: '600', 
-                  color: 'theme.primary.main',
+                  color: theme.primary.main,
                   marginBottom: '8px'
                 }}>
                   🗑️ Delete RunGroup
                 </h3>
-                <p style={{ fontSize: '13px', color: '#999' }}>
+                <p style={{ fontSize: '13px', color: theme.text.secondary }}>
                   Permanently delete all transactions for this RunGroup (useful for testing)
                 </p>
               </div>
@@ -3543,7 +3710,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 onClick={handleDeleteRunGroup}
                 style={{
                   padding: '12px 24px',
-                  backgroundColor: 'theme.primary.main',
+                  backgroundColor: theme.primary.main,
                   color: '#fff',
                   border: 'none',
                   borderRadius: '6px',
@@ -3575,7 +3742,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           zIndex: 1000
         }}>
           <div style={{
-            backgroundColor: 'theme.background.secondary',
+            backgroundColor: theme.background.secondary,
             border: `2px solid ${theme.accent.purpleTintMedium}`,
             borderRadius: '12px',
             padding: '32px',
@@ -3588,24 +3755,24 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               <h3 style={{ 
                 fontSize: '20px', 
                 fontWeight: '600', 
-                color: 'theme.primary.main',
+                color: theme.primary.main,
                 marginBottom: '8px'
               }}>
                 Delete RunGroup
               </h3>
-              <p style={{ fontSize: '14px', color: '#999', marginBottom: '16px' }}>
+              <p style={{ fontSize: '14px', color: theme.text.secondary, marginBottom: '16px' }}>
                 This will permanently delete all transactions for RunGroup:
               </p>
-              <p style={{ fontSize: '16px', color: 'theme.primary.main', fontWeight: '600', marginBottom: '16px' }}>
+              <p style={{ fontSize: '16px', color: theme.primary.main, fontWeight: '600', marginBottom: '16px' }}>
                 {loadResult?.run_group}
               </p>
-              <p style={{ fontSize: '12px', color: 'theme.primary.main' }}>
+              <p style={{ fontSize: '12px', color: theme.primary.main }}>
                 ⚠️ This action cannot be undone!
               </p>
             </div>
 
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#fff' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: theme.text.primary, fontWeight: '500' }}>
                 Type the RunGroup name to confirm:
               </label>
               <input
@@ -3616,8 +3783,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 style={{
                   width: '100%',
                   padding: '12px',
-                  backgroundColor: 'theme.background.secondary',
-                  border: '1px solid theme.primary.main',
+                  backgroundColor: theme.background.secondary,
+                  border: `1px solid ${theme.primary.main}`,
                   borderRadius: '6px',
                   color: theme.text.primary, fontSize: '14px'
                 }}
@@ -3634,13 +3801,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 style={{
                   flex: 1,
                   padding: '14px 20px',
-                  backgroundColor: deleting || deleteConfirmation !== loadResult?.run_group ? 'theme.background.tertiary' : 'theme.primary.main',
+                  backgroundColor: deleting || deleteConfirmation !== loadResult?.run_group ? theme.background.quaternary : theme.status.error,
                   color: '#fff',
                   border: 'none',
                   borderRadius: '8px',
                   cursor: deleting || deleteConfirmation !== loadResult?.run_group ? 'not-allowed' : 'pointer',
                   fontSize: '14px',
-                  fontWeight: '500'
+                  fontWeight: '500',
+                  opacity: deleting || deleteConfirmation !== loadResult?.run_group ? 0.5 : 1
                 }}
               >
                 {deleting ? 'Deleting...' : 'Delete RunGroup'}
@@ -3653,7 +3821,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 style={{
                   flex: 1,
                   padding: '14px 20px',
-                  backgroundColor: 'theme.background.tertiary',
+                  backgroundColor: theme.primary.main,
                   color: '#fff',
                   border: 'none',
                   borderRadius: '8px',

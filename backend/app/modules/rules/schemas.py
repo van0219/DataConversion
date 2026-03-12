@@ -9,6 +9,7 @@ class RuleTemplateBase(BaseModel):
     rule_type: str  # REFERENCE_EXISTS, REQUIRED_OVERRIDE, PATTERN_MATCH, ENUM_VALIDATION, etc.
     field_name: str
     reference_business_class: Optional[str] = None
+    reference_field_name: Optional[str] = None  # Field name in reference class
     condition_expression: Optional[str] = None
     error_message: str
     is_active: bool = True

@@ -317,7 +317,8 @@ def get_rule_set_fields(
         - rule_set_name: Rule set name
         - fields: List of all fields with their rules
     """
-    from app.models.rule import ValidationRuleSet, ValidationRuleTemplate
+    from app.models.validation_rule_set import ValidationRuleSet
+    from app.models.rule import ValidationRuleTemplate
     from app.models.schema import Schema
     import json
     
@@ -400,6 +401,7 @@ def get_rule_set_fields(
             "business_class": business_class,
             "rule_set_id": rule_set_id,
             "rule_set_name": rule_set.name,
+            "is_common": rule_set.is_common,
             "schema_id": schema.id,
             "schema_version": schema.version_number,
             "total_fields": len(fields),

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { theme } from '../theme';
 
@@ -190,11 +190,11 @@ const SetupDataManagement: React.FC = () => {
     if (!syncStatus) return null;
 
     const statusConfig = {
-      queued: { bg: '#374151', border: '#4b5563', text: ' Queued', color: '#9ca3af' },
+      queued: { bg: theme.background.quaternary, border: '#4b5563', text: ' Queued', color: theme.text.secondary },
       syncing: { bg: '#1e40af', border: '#3b82f6', text: ' Syncing...', color: theme.background.secondary },
       completed: { bg: '#064e3b', border: '#059669', text: ' Completed', color: theme.background.secondary },
-      failed: { bg: '#7f1d1d', border: '#dc2626', text: ' Failed', color: theme.background.secondary },
-      idle: { bg: '#374151', border: '#4b5563', text: 'Idle', color: '#9ca3af' }
+      failed: { bg: '#7f1d1d', border: theme.status.error, text: ' Failed', color: theme.background.secondary },
+      idle: { bg: theme.background.quaternary, border: '#4b5563', text: 'Idle', color: theme.text.secondary }
     };
 
     const config = statusConfig[syncStatus.status];
@@ -371,7 +371,7 @@ const SetupDataManagement: React.FC = () => {
         <div style={{
           padding: '15px',
           backgroundColor: '#7f1d1d',
-          border: '1px solid #dc2626',
+          border: `1px solid ${theme.status.error}`,
           borderRadius: '4px',
           marginBottom: '20px',
           color: theme.background.secondary
@@ -386,7 +386,7 @@ const SetupDataManagement: React.FC = () => {
           disabled={syncing || loading}
           style={{
             padding: '12px 24px',
-            backgroundColor: syncing ? '#6b7280' : '#dc2626',
+            backgroundColor: syncing ? '#6b7280' : theme.primary.main,
             color: theme.background.secondary,
             border: 'none',
             borderRadius: '4px',
@@ -403,9 +403,9 @@ const SetupDataManagement: React.FC = () => {
           disabled={syncing || loading}
           style={{
             padding: '12px 24px',
-            backgroundColor: '#2a2a2a',
-            color: theme.background.secondary,
-            border: '1px solid #3a3a3a',
+            backgroundColor: theme.background.secondary,
+            color: theme.text.primary,
+            border: `1px solid ${theme.background.quaternary}`,
             borderRadius: '4px',
             cursor: syncing || loading ? 'not-allowed' : 'pointer',
             fontSize: '16px',
@@ -424,8 +424,8 @@ const SetupDataManagement: React.FC = () => {
             style={{
               width: '100%',
               padding: '10px 15px',
-              backgroundColor: '#1f2937',
-              border: '1px solid #374151',
+              backgroundColor: theme.background.secondary,
+              border: `1px solid ${theme.background.quaternary}`,
               borderRadius: '4px',
               color: theme.text.primary,
               fontSize: '14px'
@@ -434,67 +434,31 @@ const SetupDataManagement: React.FC = () => {
         </div>
       </div>
 
-      {syncing && (
-        <div style={{
-          padding: '20px',
-          backgroundColor: '#1f2937',
-          border: '1px solid #374151',
-          borderRadius: '4px',
-          marginBottom: '30px'
-        }}>
-          <h3 style={{ color: theme.text.primary, marginBottom: '15px' }}>Sync Progress</h3>
-          <div style={{ display: 'grid', gap: '10px' }}>
-            {setupClasses.filter(c => c.is_active).map((setupClass) => {
-              const syncStatus = syncStatuses.get(setupClass.name);
-              return (
-                <div
-                  key={setupClass.id}
-                  style={{
-                    padding: '10px',
-                    backgroundColor: '#111827',
-                    border: '1px solid #374151',
-                    borderRadius: '4px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}
-                >
-                  <span style={{ color: theme.text.primary, fontWeight: '500' }}>
-                    {setupClass.name}
-                  </span>
-                  {getSyncStatusBadge(setupClass.name)}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       <div style={{
-        backgroundColor: '#1f2937',
-        border: '1px solid #374151',
+        backgroundColor: theme.background.secondary,
+        border: `1px solid ${theme.background.quaternary}`,
         borderRadius: '4px',
         overflow: 'hidden'
       }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ backgroundColor: '#111827', borderBottom: '1px solid #374151' }}>
-              <th style={{ padding: '12px', textAlign: 'left', color: '#9ca3af', fontWeight: '500' }}>
+            <tr style={{ backgroundColor: theme.background.tertiary, borderBottom: `1px solid ${theme.background.quaternary}` }}>
+              <th style={{ padding: '12px', textAlign: 'left', color: theme.text.secondary, fontWeight: '500' }}>
                 Name
               </th>
-              <th style={{ padding: '12px', textAlign: 'center', color: '#9ca3af', fontWeight: '500' }}>
+              <th style={{ padding: '12px', textAlign: 'center', color: theme.text.secondary, fontWeight: '500' }}>
                 Category
               </th>
-              <th style={{ padding: '12px', textAlign: 'center', color: '#9ca3af', fontWeight: '500' }}>
+              <th style={{ padding: '12px', textAlign: 'center', color: theme.text.secondary, fontWeight: '500' }}>
                 Status
               </th>
-              <th style={{ padding: '12px', textAlign: 'right', color: '#9ca3af', fontWeight: '500' }}>
+              <th style={{ padding: '12px', textAlign: 'right', color: theme.text.secondary, fontWeight: '500' }}>
                 Records
               </th>
-              <th style={{ padding: '12px', textAlign: 'left', color: '#9ca3af', fontWeight: '500' }}>
+              <th style={{ padding: '12px', textAlign: 'left', color: theme.text.secondary, fontWeight: '500' }}>
                 Last Sync
               </th>
-              <th style={{ padding: '12px', textAlign: 'center', color: '#9ca3af', fontWeight: '500' }}>
+              <th style={{ padding: '12px', textAlign: 'center', color: theme.text.secondary, fontWeight: '500' }}>
                 Actions
               </th>
             </tr>
@@ -502,22 +466,28 @@ const SetupDataManagement: React.FC = () => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={6} style={{ padding: '20px', textAlign: 'center', color: '#9ca3af' }}>
+                <td colSpan={6} style={{ padding: '20px', textAlign: 'center', color: theme.text.secondary }}>
                   Loading...
                 </td>
               </tr>
             ) : filteredSetupClasses.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ padding: '20px', textAlign: 'center', color: '#9ca3af' }}>
+                <td colSpan={6} style={{ padding: '20px', textAlign: 'center', color: theme.text.secondary }}>
                   {searchTerm ? `No classes found matching "${searchTerm}"` : 'No setup classes configured'}
                 </td>
               </tr>
             ) : (
-              filteredSetupClasses.map((setupClass) => {
+              filteredSetupClasses.map((setupClass, idx) => {
                 const registryItem = getRegistryForClass(setupClass.name);
                 const isSyncing = syncingClasses.has(setupClass.id);
                 return (
-                  <tr key={setupClass.id} style={{ borderBottom: '1px solid #374151' }}>
+                  <tr 
+                    key={setupClass.id} 
+                    style={{ 
+                      borderBottom: '1px solid theme.background.quaternary',
+                      backgroundColor: idx % 2 === 0 ? theme.background.secondary : theme.background.primary
+                    }}
+                  >
                     <td style={{ padding: '12px', color: theme.text.primary }}>
                       {setupClass.name}
                     </td>
@@ -546,7 +516,7 @@ const SetupDataManagement: React.FC = () => {
                     <td style={{ padding: '12px', textAlign: 'right', color: theme.text.primary }}>
                       {registryItem ? registryItem.record_count.toLocaleString() : '-'}
                     </td>
-                    <td style={{ padding: '12px', color: '#9ca3af', fontSize: '14px' }}>
+                    <td style={{ padding: '12px', color: theme.text.secondary, fontSize: '14px' }}>
                       {formatDate(registryItem?.last_sync_timestamp || null)}
                     </td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>
@@ -557,7 +527,7 @@ const SetupDataManagement: React.FC = () => {
                           disabled={!setupClass.is_active || isSyncing}
                           style={{
                             padding: '6px 12px',
-                            backgroundColor: isSyncing ? '#6b7280' : '#059669',
+                            backgroundColor: isSyncing ? '#6b7280' : theme.primary.main,
                             color: theme.background.secondary,
                             border: 'none',
                             borderRadius: '4px',
@@ -570,7 +540,24 @@ const SetupDataManagement: React.FC = () => {
                           }}
                           title="Sync this business class from FSM"
                         >
-                          🔄 {isSyncing ? 'Syncing...' : 'Sync'}
+                          {(() => {
+                            const syncStatus = syncStatuses.get(setupClass.name);
+                            if (syncStatus) {
+                              switch (syncStatus.status) {
+                                case 'queued':
+                                  return 'Queued';
+                                case 'syncing':
+                                  return 'Syncing...';
+                                case 'completed':
+                                  return `Completed (${syncStatus.recordCount || 0})`;
+                                case 'failed':
+                                  return 'Failed';
+                                default:
+                                  return 'Sync';
+                              }
+                            }
+                            return isSyncing ? 'Syncing...' : 'Sync';
+                          })()}
                         </button>
 
                         {/* Overflow Menu Button */}
@@ -581,17 +568,18 @@ const SetupDataManagement: React.FC = () => {
                           }}
                           style={{
                             padding: '6px 10px',
-                            backgroundColor: '#2a2a2a',
-                            color: theme.background.secondary,
-                            border: '1px solid #3a3a3a',
+                            backgroundColor: theme.background.secondary,
+                            color: theme.text.primary,
+                            border: `1px solid ${theme.background.quaternary}`,
                             borderRadius: '4px',
                             cursor: 'pointer',
-                            fontSize: '16px',
+                            fontSize: '18px',
+                            fontWeight: 'bold',
                             lineHeight: '1'
                           }}
                           title="More actions"
                         >
-                          ⋯
+                          ⋮
                         </button>
 
                         {/* Overflow Menu Dropdown */}
@@ -603,8 +591,8 @@ const SetupDataManagement: React.FC = () => {
                               top: '100%',
                               right: 0,
                               marginTop: '4px',
-                              backgroundColor: '#1f2937',
-                              border: '1px solid #374151',
+                              backgroundColor: theme.background.secondary,
+                              border: `1px solid ${theme.background.quaternary}`,
                               borderRadius: '4px',
                               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
                               zIndex: 1000,
@@ -630,10 +618,9 @@ const SetupDataManagement: React.FC = () => {
                                 alignItems: 'center',
                                 gap: '8px'
                               }}
-                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#374151'}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.background.quaternary}
                               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                             >
-                              <span style={{ fontSize: '16px' }}>✏️</span>
                               Edit
                             </button>
 
@@ -653,7 +640,7 @@ const SetupDataManagement: React.FC = () => {
                                 width: '100%',
                                 padding: '10px 15px',
                                 backgroundColor: 'transparent',
-                                color: setupClass.is_active ? '#ef4444' : '#10b981',
+                                color: setupClass.is_active ? theme.status.error : theme.status.success,
                                 border: 'none',
                                 textAlign: 'left',
                                 cursor: 'pointer',
@@ -662,10 +649,9 @@ const SetupDataManagement: React.FC = () => {
                                 alignItems: 'center',
                                 gap: '8px'
                               }}
-                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#374151'}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.background.quaternary}
                               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                             >
-                              <span style={{ fontSize: '16px' }}>{setupClass.is_active ? '⛔' : '✅'}</span>
                               {setupClass.is_active ? 'Deactivate' : 'Activate'}
                             </button>
 
@@ -696,12 +682,11 @@ const SetupDataManagement: React.FC = () => {
                               }}
                               onMouseEnter={(e) => {
                                 if (setupClass.original_endpoint_url) {
-                                  e.currentTarget.style.backgroundColor = '#374151';
+                                  e.currentTarget.style.backgroundColor = theme.background.quaternary;
                                 }
                               }}
                               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                             >
-                              <span style={{ fontSize: '16px' }}>↺</span>
                               Reset
                             </button>
 
@@ -716,9 +701,9 @@ const SetupDataManagement: React.FC = () => {
                                   width: '100%',
                                   padding: '10px 15px',
                                   backgroundColor: 'transparent',
-                                  color: '#ef4444',
+                                  color: theme.status.error,
                                   border: 'none',
-                                  borderTop: '1px solid #374151',
+                                  borderTop: '1px solid theme.background.quaternary',
                                   textAlign: 'left',
                                   cursor: 'pointer',
                                   fontSize: '14px',
@@ -726,10 +711,9 @@ const SetupDataManagement: React.FC = () => {
                                   alignItems: 'center',
                                   gap: '8px'
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#374151'}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.background.quaternary}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                               >
-                                <span style={{ fontSize: '16px' }}>🗑️</span>
                                 Delete
                               </button>
                             )}
@@ -760,8 +744,8 @@ const SetupDataManagement: React.FC = () => {
           zIndex: 1000
         }}>
           <div style={{
-            backgroundColor: '#1f2937',
-            border: '1px solid #374151',
+            backgroundColor: theme.background.secondary,
+            border: '1px solid theme.background.quaternary',
             borderRadius: '8px',
             padding: '30px',
             width: '500px',
@@ -770,7 +754,7 @@ const SetupDataManagement: React.FC = () => {
             <h2 style={{ color: theme.text.primary, marginBottom: '20px' }}>Add New Setup Class</h2>
             
             <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', color: '#9ca3af', marginBottom: '5px' }}>
+              <label style={{ display: 'block', color: theme.text.secondary, marginBottom: '5px' }}>
                 Select Business Class
               </label>
               <select
@@ -782,8 +766,8 @@ const SetupDataManagement: React.FC = () => {
                 style={{
                   width: '100%',
                   padding: '10px',
-                  backgroundColor: '#111827',
-                  border: '1px solid #374151',
+                  backgroundColor: theme.background.tertiary,
+                  border: '1px solid theme.background.quaternary',
                   borderRadius: '4px',
                   color: theme.text.primary
                 }}
@@ -796,7 +780,7 @@ const SetupDataManagement: React.FC = () => {
                 ))}
               </select>
               {availableSwaggerFiles.length === 0 && (
-                <p style={{ color: '#9ca3af', fontSize: '12px', marginTop: '5px' }}>
+                <p style={{ color: theme.text.secondary, fontSize: '12px', marginTop: '5px' }}>
                   No available business classes found. All classes have been added.
                 </p>
               )}
@@ -805,7 +789,7 @@ const SetupDataManagement: React.FC = () => {
             {selectedSwagger && (
               <>
                 <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', color: '#9ca3af', marginBottom: '5px' }}>
+                  <label style={{ display: 'block', color: theme.text.secondary, marginBottom: '5px' }}>
                     Class Name
                   </label>
                   <input
@@ -815,17 +799,17 @@ const SetupDataManagement: React.FC = () => {
                     style={{
                       width: '100%',
                       padding: '10px',
-                      backgroundColor: '#0a0a0a',
-                      border: '1px solid #374151',
+                      backgroundColor: theme.background.primary,
+                      border: '1px solid theme.background.quaternary',
                       borderRadius: '4px',
-                      color: '#9ca3af',
+                      color: theme.text.secondary,
                       cursor: 'not-allowed'
                     }}
                   />
                 </div>
 
                 <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', color: '#9ca3af', marginBottom: '5px' }}>
+                  <label style={{ display: 'block', color: theme.text.secondary, marginBottom: '5px' }}>
                     Select List
                   </label>
                   <select
@@ -834,10 +818,11 @@ const SetupDataManagement: React.FC = () => {
                     style={{
                       width: '100%',
                       padding: '10px',
-                      backgroundColor: '#111827',
-                      border: '1px solid #374151',
+                      backgroundColor: theme.background.tertiary,
+                      border: `1px solid ${theme.background.quaternary}`,
                       borderRadius: '4px',
-                      color: theme.text.primary
+                      color: theme.text.primary,
+                      fontSize: '14px'
                     }}
                   >
                     <option value="">-- Select a list --</option>
@@ -848,14 +833,14 @@ const SetupDataManagement: React.FC = () => {
                     ))}
                   </select>
                   {selectedSwagger.available_lists && selectedSwagger.available_lists.length > 0 && (
-                    <p style={{ color: '#9ca3af', fontSize: '12px', marginTop: '5px' }}>
+                    <p style={{ color: theme.text.secondary, fontSize: '12px', marginTop: '5px' }}>
                       {selectedSwagger.available_lists.length} list(s) available
                     </p>
                   )}
                 </div>
 
                 <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', color: '#9ca3af', marginBottom: '5px' }}>
+                  <label style={{ display: 'block', color: theme.text.secondary, marginBottom: '5px' }}>
                     Endpoint URL (Read-only)
                   </label>
                   <textarea
@@ -865,10 +850,10 @@ const SetupDataManagement: React.FC = () => {
                     style={{
                       width: '100%',
                       padding: '10px',
-                      backgroundColor: '#0a0a0a',
-                      border: '1px solid #374151',
+                      backgroundColor: theme.background.primary,
+                      border: '1px solid theme.background.quaternary',
                       borderRadius: '4px',
-                      color: '#9ca3af',
+                      color: theme.text.secondary,
                       cursor: 'not-allowed',
                       fontFamily: 'monospace',
                       fontSize: '12px',
@@ -878,7 +863,7 @@ const SetupDataManagement: React.FC = () => {
                 </div>
 
                 <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', color: '#9ca3af', marginBottom: '5px' }}>
+                  <label style={{ display: 'block', color: theme.text.secondary, marginBottom: '5px' }}>
                     Key Field
                   </label>
                   <input
@@ -888,10 +873,10 @@ const SetupDataManagement: React.FC = () => {
                     style={{
                       width: '100%',
                       padding: '10px',
-                      backgroundColor: '#0a0a0a',
-                      border: '1px solid #374151',
+                      backgroundColor: theme.background.primary,
+                      border: '1px solid theme.background.quaternary',
                       borderRadius: '4px',
-                      color: '#9ca3af',
+                      color: theme.text.secondary,
                       cursor: 'not-allowed'
                     }}
                   />
@@ -920,7 +905,7 @@ const SetupDataManagement: React.FC = () => {
                 }}
                 style={{
                   padding: '10px 20px',
-                  backgroundColor: '#374151',
+                  backgroundColor: theme.background.quaternary,
                   color: theme.background.secondary,
                   border: '1px solid #4b5563',
                   borderRadius: '4px',
@@ -934,7 +919,7 @@ const SetupDataManagement: React.FC = () => {
                 disabled={!selectedSwagger || !formData.list_name}
                 style={{
                   padding: '10px 20px',
-                  backgroundColor: (selectedSwagger && formData.list_name) ? '#dc2626' : '#6b7280',
+                  backgroundColor: (selectedSwagger && formData.list_name) ? theme.primary.main : '#6b7280',
                   color: theme.background.secondary,
                   border: 'none',
                   borderRadius: '4px',
@@ -963,8 +948,8 @@ const SetupDataManagement: React.FC = () => {
           zIndex: 1000
         }}>
           <div style={{
-            backgroundColor: '#1f2937',
-            border: '1px solid #374151',
+            backgroundColor: theme.background.secondary,
+            border: '1px solid theme.background.quaternary',
             borderRadius: '8px',
             padding: '30px',
             width: '500px',
@@ -975,7 +960,7 @@ const SetupDataManagement: React.FC = () => {
             </h2>
             
             <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', color: '#9ca3af', marginBottom: '5px' }}>
+              <label style={{ display: 'block', color: theme.text.secondary, marginBottom: '5px' }}>
                 Class Name
               </label>
               <input
@@ -985,16 +970,16 @@ const SetupDataManagement: React.FC = () => {
                 style={{
                   width: '100%',
                   padding: '10px',
-                  backgroundColor: '#111827',
-                  border: '1px solid #374151',
+                  backgroundColor: theme.background.tertiary,
+                  border: '1px solid theme.background.quaternary',
                   borderRadius: '4px',
-                  color: '#ffffff'
+                  color: theme.text.primary
                 }}
               />
             </div>
 
             <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', color: '#9ca3af', marginBottom: '5px' }}>
+              <label style={{ display: 'block', color: theme.text.secondary, marginBottom: '5px' }}>
                 Endpoint URL
               </label>
               <input
@@ -1004,16 +989,16 @@ const SetupDataManagement: React.FC = () => {
                 style={{
                   width: '100%',
                   padding: '10px',
-                  backgroundColor: '#111827',
-                  border: '1px solid #374151',
+                  backgroundColor: theme.background.tertiary,
+                  border: '1px solid theme.background.quaternary',
                   borderRadius: '4px',
-                  color: '#ffffff'
+                  color: theme.text.primary
                 }}
               />
             </div>
 
             <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', color: '#9ca3af', marginBottom: '5px' }}>
+              <label style={{ display: 'block', color: theme.text.secondary, marginBottom: '5px' }}>
                 Key Field
               </label>
               <input
@@ -1023,16 +1008,16 @@ const SetupDataManagement: React.FC = () => {
                 style={{
                   width: '100%',
                   padding: '10px',
-                  backgroundColor: '#111827',
-                  border: '1px solid #374151',
+                  backgroundColor: theme.background.tertiary,
+                  border: '1px solid theme.background.quaternary',
                   borderRadius: '4px',
-                  color: '#ffffff'
+                  color: theme.text.primary
                 }}
               />
             </div>
 
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', color: '#ffffff', cursor: 'pointer' }}>
+              <label style={{ display: 'flex', alignItems: 'center', color: theme.text.primary, cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={formData.is_active}
@@ -1052,8 +1037,8 @@ const SetupDataManagement: React.FC = () => {
                 }}
                 style={{
                   padding: '10px 20px',
-                  backgroundColor: '#374151',
-                  color: '#ffffff',
+                  backgroundColor: theme.background.quaternary,
+                  color: theme.text.primary,
                   border: '1px solid #4b5563',
                   borderRadius: '4px',
                   cursor: 'pointer'
@@ -1065,8 +1050,8 @@ const SetupDataManagement: React.FC = () => {
                 onClick={handleEditClass}
                 style={{
                   padding: '10px 20px',
-                  backgroundColor: '#dc2626',
-                  color: '#ffffff',
+                  backgroundColor: theme.status.error,
+                  color: theme.text.primary,
                   border: 'none',
                   borderRadius: '4px',
                   cursor: 'pointer'
@@ -1083,3 +1068,5 @@ const SetupDataManagement: React.FC = () => {
 };
 
 export default SetupDataManagement;
+
+
