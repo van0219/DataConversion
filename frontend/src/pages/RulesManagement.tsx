@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
+import { theme } from '../theme';
 
 interface Rule {
   id: number;
@@ -34,6 +35,7 @@ const RulesManagement = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedBusinessClass, setSelectedBusinessClass] = useState<string>('all');
+  const [availableBusinessClasses, setAvailableBusinessClasses] = useState<string[]>([]);
   const [newRule, setNewRule] = useState({
     name: '',
     business_class: '',
@@ -60,9 +62,31 @@ const RulesManagement = () => {
   const account = JSON.parse(localStorage.getItem('account') || '{}');
 
   useEffect(() => {
+    loadAvailableBusinessClasses();
+  }, []);
+
+  useEffect(() => {
     loadRules();
     loadRuleSets();
   }, [selectedBusinessClass]);
+
+  const loadAvailableBusinessClasses = async () => {
+    try {
+      const response = await api.get('/schema/list');
+      const schemas = response.data.schemas || [];
+      
+      // Extract unique business classes from schemas
+      const businessClasses = [...new Set(schemas.map((s: any) => s.business_class))];
+      setAvailableBusinessClasses(businessClasses);
+      
+      // If no business class selected and we have schemas, select the first one
+      if (selectedBusinessClass === 'all' && businessClasses.length > 0) {
+        setSelectedBusinessClass(businessClasses[0]);
+      }
+    } catch (error) {
+      console.error('Failed to load business classes:', error);
+    }
+  };
 
   const loadRules = async () => {
     try {
@@ -280,10 +304,11 @@ const RulesManagement = () => {
           >
             <option value="all">All Classes</option>
             <option value="">GLOBAL</option>
-            <option value="GLTransactionInterface">GLTransactionInterface</option>
-            <option value="PayablesInvoice">PayablesInvoice</option>
-            <option value="Vendor">Vendor</option>
-            <option value="Customer">Customer</option>
+            {availableBusinessClasses.map((businessClass) => (
+              <option key={businessClass} value={businessClass}>
+                {businessClass}
+              </option>
+            ))}
           </select>
         </label>
       </div>
@@ -481,10 +506,11 @@ const RulesManagement = () => {
                 style={styles.input}
               >
                 <option value="">GLOBAL (all business classes)</option>
-                <option value="GLTransactionInterface">GLTransactionInterface</option>
-                <option value="PayablesInvoice">PayablesInvoice</option>
-                <option value="Vendor">Vendor</option>
-                <option value="Customer">Customer</option>
+                {availableBusinessClasses.map((businessClass) => (
+                  <option key={businessClass} value={businessClass}>
+                    {businessClass}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -654,6 +680,8 @@ const styles = {
   container: {
     padding: '40px',
     minHeight: '100vh',
+    backgroundColor: theme.background.primary,
+    color: theme.text.primary,
   },
   header: {
     display: 'flex',
@@ -664,12 +692,12 @@ const styles = {
   title: {
     fontSize: '32px',
     fontWeight: '700' as const,
-    color: '#ffffff',
+    color: theme.text.primary,
   },
   createButton: {
     padding: '12px 24px',
-    backgroundColor: '#C8102E',
-    color: '#ffffff',
+    backgroundColor: theme.primary.main,
+    color: theme.background.secondary,
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
@@ -680,7 +708,7 @@ const styles = {
     marginBottom: '30px',
   },
   filterLabel: {
-    color: '#ffffff',
+    color: theme.text.primary,
     fontSize: '14px',
     display: 'flex',
     alignItems: 'center',
@@ -688,9 +716,9 @@ const styles = {
   },
   filterSelect: {
     padding: '8px 12px',
-    backgroundColor: '#1a1a1a',
-    color: '#ffffff',
-    border: '1px solid #2a2a2a',
+    backgroundColor: theme.background.secondary,
+    color: theme.text.primary,
+    border: `1px solid ${theme.background.quaternary}`,
     borderRadius: '4px',
     fontSize: '14px',
     marginLeft: '10px',
@@ -701,8 +729,8 @@ const styles = {
     gap: '20px',
   },
   ruleCard: {
-    backgroundColor: '#1a1a1a',
-    border: '1px solid #2a2a2a',
+    backgroundColor: theme.background.secondary,
+    border: `1px solid ${theme.background.quaternary}`,
     borderRadius: '8px',
     padding: '20px',
   },
@@ -712,12 +740,12 @@ const styles = {
     alignItems: 'center',
     marginBottom: '15px',
     paddingBottom: '15px',
-    borderBottom: '1px solid #2a2a2a',
+    borderBottom: `1px solid ${theme.background.quaternary}`,
   },
   ruleName: {
     fontSize: '18px',
     fontWeight: '600' as const,
-    color: '#ffffff',
+    color: theme.text.primary,
   },
   ruleActions: {
     display: 'flex',
@@ -734,7 +762,7 @@ const styles = {
     cursor: 'pointer',
   },
   toggleText: {
-    color: '#cccccc',
+    color: theme.text.secondary,
     fontSize: '14px',
   },
   deleteButton: {
@@ -760,21 +788,21 @@ const styles = {
     minWidth: '80px',
   },
   ruleValue: {
-    color: '#ffffff',
+    color: theme.text.primary,
     fontSize: '14px',
     flex: 1,
   },
   scopeBadge: {
     padding: '4px 12px',
-    backgroundColor: '#2a2a2a',
-    color: '#ffffff',
+    backgroundColor: theme.background.tertiary,
+    color: theme.text.primary,
     borderRadius: '4px',
     fontSize: '12px',
     fontWeight: '600' as const,
   },
   typeBadge: {
     padding: '4px 12px',
-    color: '#ffffff',
+    color: theme.background.secondary,
     borderRadius: '4px',
     fontSize: '12px',
     fontWeight: '600' as const,
@@ -790,18 +818,18 @@ const styles = {
   },
   emptyText: {
     fontSize: '20px',
-    color: '#ffffff',
+    color: theme.text.primary,
     marginBottom: '10px',
   },
   emptySubtext: {
     fontSize: '16px',
-    color: '#999999',
+    color: theme.text.secondary,
   },
   loading: {
     textAlign: 'center' as const,
     padding: '60px',
     fontSize: '18px',
-    color: '#999999',
+    color: theme.text.secondary,
   },
   modalOverlay: {
     position: 'fixed' as const,
@@ -816,8 +844,8 @@ const styles = {
     zIndex: 1000,
   },
   modal: {
-    backgroundColor: '#1a1a1a',
-    border: '1px solid #2a2a2a',
+    backgroundColor: theme.background.secondary,
+    border: `1px solid ${theme.background.quaternary}`,
     borderRadius: '8px',
     padding: '30px',
     maxWidth: '600px',
@@ -828,7 +856,7 @@ const styles = {
   modalTitle: {
     fontSize: '24px',
     fontWeight: '600' as const,
-    color: '#ffffff',
+    color: theme.text.primary,
     marginBottom: '20px',
   },
   formGroup: {
@@ -836,7 +864,7 @@ const styles = {
   },
   label: {
     display: 'block',
-    color: '#ffffff',
+    color: theme.text.primary,
     fontSize: '14px',
     marginBottom: '8px',
     fontWeight: '500' as const,
@@ -844,9 +872,9 @@ const styles = {
   input: {
     width: '100%',
     padding: '10px',
-    backgroundColor: '#2a2a2a',
-    color: '#ffffff',
-    border: '1px solid #3a3a3a',
+    backgroundColor: theme.background.secondary,
+    color: theme.text.primary,
+    border: `1px solid ${theme.background.quaternary}`,
     borderRadius: '4px',
     fontSize: '14px',
     boxSizing: 'border-box' as const,
@@ -859,17 +887,17 @@ const styles = {
   },
   cancelButton: {
     padding: '10px 20px',
-    backgroundColor: '#2a2a2a',
-    color: '#ffffff',
-    border: '1px solid #3a3a3a',
+    backgroundColor: theme.background.secondary,
+    color: theme.text.primary,
+    border: `1px solid ${theme.background.quaternary}`,
     borderRadius: '4px',
     cursor: 'pointer',
     fontSize: '14px',
   },
   saveButton: {
     padding: '10px 20px',
-    backgroundColor: '#C8102E',
-    color: '#ffffff',
+    backgroundColor: theme.primary.main,
+    color: theme.background.secondary,
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
@@ -879,8 +907,8 @@ const styles = {
   ruleSetsSection: {
     marginBottom: '40px',
     padding: '20px',
-    backgroundColor: '#0a0a0a',
-    border: '1px solid #2a2a2a',
+    backgroundColor: theme.background.secondary,
+    border: `1px solid ${theme.background.quaternary}`,
     borderRadius: '8px',
   },
   ruleSetsHeader: {
@@ -892,14 +920,14 @@ const styles = {
   sectionTitle: {
     fontSize: '20px',
     fontWeight: '600' as const,
-    color: '#ffffff',
+    color: theme.text.primary,
     margin: 0,
   },
   createRuleSetButton: {
     padding: '8px 16px',
-    backgroundColor: '#2a2a2a',
-    color: '#ffffff',
-    border: '1px solid #3a3a3a',
+    backgroundColor: theme.background.secondary,
+    color: theme.text.primary,
+    border: `1px solid ${theme.background.quaternary}`,
     borderRadius: '4px',
     cursor: 'pointer',
     fontSize: '14px',
@@ -911,15 +939,15 @@ const styles = {
   },
   ruleSetCard: {
     padding: '15px',
-    backgroundColor: '#1a1a1a',
-    border: '2px solid #2a2a2a',
+    backgroundColor: theme.background.secondary,
+    border: `2px solid ${theme.background.quaternary}`,
     borderRadius: '6px',
     cursor: 'pointer',
     transition: 'all 0.2s',
   },
   ruleSetCardSelected: {
-    borderColor: '#C8102E',
-    backgroundColor: '#2a1a1a',
+    borderColor: theme.primary.main,
+    backgroundColor: theme.accent.purpleTintLight,
   },
   ruleSetCardHeader: {
     display: 'flex',
@@ -934,28 +962,28 @@ const styles = {
   },
   ruleSetIndicator: {
     fontSize: '16px',
-    color: '#C8102E',
+    color: theme.primary.main,
   },
   ruleSetName: {
     fontSize: '16px',
     fontWeight: '600' as const,
-    color: '#ffffff',
+    color: theme.text.primary,
   },
   commonBadge: {
     padding: '2px 8px',
-    backgroundColor: '#C8102E',
-    color: '#ffffff',
+    backgroundColor: theme.primary.main,
+    color: theme.background.secondary,
     borderRadius: '4px',
     fontSize: '11px',
     fontWeight: '600' as const,
   },
   ruleCount: {
     fontSize: '13px',
-    color: '#999999',
+    color: theme.text.secondary,
   },
   ruleSetDescription: {
     fontSize: '13px',
-    color: '#cccccc',
+    color: theme.text.secondary,
     marginBottom: '10px',
     lineHeight: '1.4',
   },
@@ -968,9 +996,9 @@ const styles = {
   },
   editButton: {
     padding: '6px 12px',
-    backgroundColor: '#2a2a2a',
-    color: '#ffffff',
-    border: '1px solid #3a3a3a',
+    backgroundColor: theme.background.secondary,
+    color: theme.text.primary,
+    border: `1px solid ${theme.background.quaternary}`,
     borderRadius: '4px',
     cursor: 'pointer',
     fontSize: '12px',
@@ -978,9 +1006,9 @@ const styles = {
   },
   deleteButtonSmall: {
     padding: '6px 12px',
-    backgroundColor: '#2a2a2a',
-    color: '#ffffff',
-    border: '1px solid #3a3a3a',
+    backgroundColor: theme.background.secondary,
+    color: theme.text.primary,
+    border: `1px solid ${theme.background.quaternary}`,
     borderRadius: '4px',
     cursor: 'pointer',
     fontSize: '12px',
@@ -995,7 +1023,7 @@ const styles = {
   },
   helpText: {
     fontSize: '12px',
-    color: '#999999',
+    color: theme.text.secondary,
     marginTop: '5px',
   },
 };

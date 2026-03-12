@@ -1,5 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import { theme } from '../theme';
 
 interface SetupBusinessClass {
   id: number;
@@ -190,9 +191,9 @@ const SetupDataManagement: React.FC = () => {
 
     const statusConfig = {
       queued: { bg: '#374151', border: '#4b5563', text: ' Queued', color: '#9ca3af' },
-      syncing: { bg: '#1e40af', border: '#3b82f6', text: ' Syncing...', color: '#ffffff' },
-      completed: { bg: '#064e3b', border: '#059669', text: ' Completed', color: '#ffffff' },
-      failed: { bg: '#7f1d1d', border: '#dc2626', text: ' Failed', color: '#ffffff' },
+      syncing: { bg: '#1e40af', border: '#3b82f6', text: ' Syncing...', color: theme.background.secondary },
+      completed: { bg: '#064e3b', border: '#059669', text: ' Completed', color: theme.background.secondary },
+      failed: { bg: '#7f1d1d', border: '#dc2626', text: ' Failed', color: theme.background.secondary },
       idle: { bg: '#374151', border: '#4b5563', text: 'Idle', color: '#9ca3af' }
     };
 
@@ -358,10 +359,10 @@ const SetupDataManagement: React.FC = () => {
   );
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto' }}>
+    <div style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto', backgroundColor: theme.background.primary, minHeight: '100vh', color: theme.text.primary }}>
       <div style={{ marginBottom: '30px' }}>
-        <h1 style={{ color: '#ffffff', marginBottom: '10px' }}>Setup Data Management</h1>
-        <p style={{ color: '#9ca3af' }}>
+        <h1 style={{ color: theme.text.primary, marginBottom: '10px' }}>Setup Data Management</h1>
+        <p style={{ color: theme.text.secondary }}>
           Manage FSM setup business classes and sync reference data for validation
         </p>
       </div>
@@ -373,7 +374,7 @@ const SetupDataManagement: React.FC = () => {
           border: '1px solid #dc2626',
           borderRadius: '4px',
           marginBottom: '20px',
-          color: '#ffffff'
+          color: theme.background.secondary
         }}>
           {error}
         </div>
@@ -386,7 +387,7 @@ const SetupDataManagement: React.FC = () => {
           style={{
             padding: '12px 24px',
             backgroundColor: syncing ? '#6b7280' : '#dc2626',
-            color: '#ffffff',
+            color: theme.background.secondary,
             border: 'none',
             borderRadius: '4px',
             cursor: syncing ? 'not-allowed' : 'pointer',
@@ -403,7 +404,7 @@ const SetupDataManagement: React.FC = () => {
           style={{
             padding: '12px 24px',
             backgroundColor: '#2a2a2a',
-            color: '#ffffff',
+            color: theme.background.secondary,
             border: '1px solid #3a3a3a',
             borderRadius: '4px',
             cursor: syncing || loading ? 'not-allowed' : 'pointer',
@@ -426,7 +427,7 @@ const SetupDataManagement: React.FC = () => {
               backgroundColor: '#1f2937',
               border: '1px solid #374151',
               borderRadius: '4px',
-              color: '#ffffff',
+              color: theme.text.primary,
               fontSize: '14px'
             }}
           />
@@ -441,7 +442,7 @@ const SetupDataManagement: React.FC = () => {
           borderRadius: '4px',
           marginBottom: '30px'
         }}>
-          <h3 style={{ color: '#ffffff', marginBottom: '15px' }}>Sync Progress</h3>
+          <h3 style={{ color: theme.text.primary, marginBottom: '15px' }}>Sync Progress</h3>
           <div style={{ display: 'grid', gap: '10px' }}>
             {setupClasses.filter(c => c.is_active).map((setupClass) => {
               const syncStatus = syncStatuses.get(setupClass.name);
@@ -458,7 +459,7 @@ const SetupDataManagement: React.FC = () => {
                     alignItems: 'center'
                   }}
                 >
-                  <span style={{ color: '#ffffff', fontWeight: '500' }}>
+                  <span style={{ color: theme.text.primary, fontWeight: '500' }}>
                     {setupClass.name}
                   </span>
                   {getSyncStatusBadge(setupClass.name)}
@@ -517,7 +518,7 @@ const SetupDataManagement: React.FC = () => {
                 const isSyncing = syncingClasses.has(setupClass.id);
                 return (
                   <tr key={setupClass.id} style={{ borderBottom: '1px solid #374151' }}>
-                    <td style={{ padding: '12px', color: '#ffffff' }}>
+                    <td style={{ padding: '12px', color: theme.text.primary }}>
                       {setupClass.name}
                     </td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>
@@ -526,7 +527,7 @@ const SetupDataManagement: React.FC = () => {
                         borderRadius: '4px',
                         fontSize: '12px',
                         backgroundColor: setupClass.category === 'standard' ? '#1e40af' : '#7c2d12',
-                        color: '#ffffff'
+                        color: theme.background.secondary
                       }}>
                         {setupClass.category === 'standard' ? 'Standard' : 'Custom'}
                       </span>
@@ -537,12 +538,12 @@ const SetupDataManagement: React.FC = () => {
                         borderRadius: '4px',
                         fontSize: '12px',
                         backgroundColor: setupClass.is_active ? '#064e3b' : '#7f1d1d',
-                        color: '#ffffff'
+                        color: theme.background.secondary
                       }}>
                         {setupClass.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td style={{ padding: '12px', textAlign: 'right', color: '#ffffff' }}>
+                    <td style={{ padding: '12px', textAlign: 'right', color: theme.text.primary }}>
                       {registryItem ? registryItem.record_count.toLocaleString() : '-'}
                     </td>
                     <td style={{ padding: '12px', color: '#9ca3af', fontSize: '14px' }}>
@@ -557,7 +558,7 @@ const SetupDataManagement: React.FC = () => {
                           style={{
                             padding: '6px 12px',
                             backgroundColor: isSyncing ? '#6b7280' : '#059669',
-                            color: '#ffffff',
+                            color: theme.background.secondary,
                             border: 'none',
                             borderRadius: '4px',
                             cursor: setupClass.is_active && !isSyncing ? 'pointer' : 'not-allowed',
@@ -581,7 +582,7 @@ const SetupDataManagement: React.FC = () => {
                           style={{
                             padding: '6px 10px',
                             backgroundColor: '#2a2a2a',
-                            color: '#ffffff',
+                            color: theme.background.secondary,
                             border: '1px solid #3a3a3a',
                             borderRadius: '4px',
                             cursor: 'pointer',
@@ -620,7 +621,7 @@ const SetupDataManagement: React.FC = () => {
                                 width: '100%',
                                 padding: '10px 15px',
                                 backgroundColor: 'transparent',
-                                color: '#ffffff',
+                                color: theme.text.primary,
                                 border: 'none',
                                 textAlign: 'left',
                                 cursor: 'pointer',
@@ -766,7 +767,7 @@ const SetupDataManagement: React.FC = () => {
             width: '500px',
             maxWidth: '90%'
           }}>
-            <h2 style={{ color: '#ffffff', marginBottom: '20px' }}>Add New Setup Class</h2>
+            <h2 style={{ color: theme.text.primary, marginBottom: '20px' }}>Add New Setup Class</h2>
             
             <div style={{ marginBottom: '15px' }}>
               <label style={{ display: 'block', color: '#9ca3af', marginBottom: '5px' }}>
@@ -784,7 +785,7 @@ const SetupDataManagement: React.FC = () => {
                   backgroundColor: '#111827',
                   border: '1px solid #374151',
                   borderRadius: '4px',
-                  color: '#ffffff'
+                  color: theme.text.primary
                 }}
               >
                 <option value="">-- Select a business class --</option>
@@ -836,7 +837,7 @@ const SetupDataManagement: React.FC = () => {
                       backgroundColor: '#111827',
                       border: '1px solid #374151',
                       borderRadius: '4px',
-                      color: '#ffffff'
+                      color: theme.text.primary
                     }}
                   >
                     <option value="">-- Select a list --</option>
@@ -897,7 +898,7 @@ const SetupDataManagement: React.FC = () => {
                 </div>
 
                 <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', color: '#ffffff', cursor: 'pointer' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', color: theme.text.primary, cursor: 'pointer' }}>
                     <input
                       type="checkbox"
                       checked={formData.is_active}
@@ -920,7 +921,7 @@ const SetupDataManagement: React.FC = () => {
                 style={{
                   padding: '10px 20px',
                   backgroundColor: '#374151',
-                  color: '#ffffff',
+                  color: theme.background.secondary,
                   border: '1px solid #4b5563',
                   borderRadius: '4px',
                   cursor: 'pointer'
@@ -934,7 +935,7 @@ const SetupDataManagement: React.FC = () => {
                 style={{
                   padding: '10px 20px',
                   backgroundColor: (selectedSwagger && formData.list_name) ? '#dc2626' : '#6b7280',
-                  color: '#ffffff',
+                  color: theme.background.secondary,
                   border: 'none',
                   borderRadius: '4px',
                   cursor: (selectedSwagger && formData.list_name) ? 'pointer' : 'not-allowed'
@@ -969,7 +970,7 @@ const SetupDataManagement: React.FC = () => {
             width: '500px',
             maxWidth: '90%'
           }}>
-            <h2 style={{ color: '#ffffff', marginBottom: '20px' }}>
+            <h2 style={{ color: theme.text.primary, marginBottom: '20px' }}>
               Edit Setup Class: {editingClass.name}
             </h2>
             

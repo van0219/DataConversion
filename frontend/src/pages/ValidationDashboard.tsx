@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
+import { theme } from '../theme';
 
 interface ValidationProgress {
   job_id: number;
@@ -445,11 +446,11 @@ function getStatusStyle(status: string) {
     case 'validating':
       return { ...baseStyle, backgroundColor: '#FFA500', color: '#000' };
     case 'validated':
-      return { ...baseStyle, backgroundColor: '#4CAF50', color: '#fff' };
+      return { ...baseStyle, backgroundColor: '#4CAF50', color: theme.background.secondary };
     case 'failed':
-      return { ...baseStyle, backgroundColor: '#C8102E', color: '#fff' };
+      return { ...baseStyle, backgroundColor: '#C8102E', color: theme.background.secondary };
     default:
-      return { ...baseStyle, backgroundColor: '#666', color: '#fff' };
+      return { ...baseStyle, backgroundColor: '#666', color: theme.background.secondary };
   }
 }
 
@@ -469,7 +470,7 @@ function getErrorTypeBadge(errorType: string) {
     padding: '4px 8px',
     borderRadius: '4px',
     backgroundColor: colors[errorType] || '#666',
-    color: '#fff',
+    color: theme.background.secondary,
     fontSize: '12px',
     fontWeight: '600' as const,
   };
@@ -478,9 +479,9 @@ function getErrorTypeBadge(errorType: string) {
 const styles = {
   container: {
     padding: '20px',
-    backgroundColor: '#000000',
+    backgroundColor: theme.background.primary,
     minHeight: '100vh',
-    color: '#ffffff',
+    color: theme.text.primary,
   },
   header: {
     display: 'flex',
@@ -491,34 +492,34 @@ const styles = {
   title: {
     fontSize: '32px',
     fontWeight: '700' as const,
-    color: '#ffffff',
+    color: theme.text.primary,
   },
   backButton: {
     padding: '10px 20px',
     backgroundColor: '#2a2a2a',
-    color: '#ffffff',
+    color: theme.text.primary,
     border: '1px solid #3a3a3a',
     borderRadius: '4px',
     cursor: 'pointer',
     fontSize: '14px',
   },
   card: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: theme.background.secondary,
     padding: '30px',
     borderRadius: '8px',
     marginBottom: '20px',
-    border: '1px solid #2a2a2a',
+    border: `1px solid ${theme.background.quaternary}`,
   },
   cardTitle: {
     fontSize: '24px',
     fontWeight: '600' as const,
     marginBottom: '20px',
-    color: '#ffffff',
+    color: theme.text.primary,
   },
   statusBadge: {
     fontSize: '16px',
     marginBottom: '20px',
-    color: '#ffffff',
+    color: theme.text.primary,
   },
   progressBar: {
     width: '100%',
@@ -563,7 +564,7 @@ const styles = {
   statValue: {
     fontSize: '32px',
     fontWeight: '700' as const,
-    color: '#ffffff',
+    color: theme.text.primary,
   },
   summaryStats: {
     display: 'flex',
@@ -582,13 +583,13 @@ const styles = {
   summaryValue: {
     fontSize: '24px',
     fontWeight: '600' as const,
-    color: '#ffffff',
+    color: theme.text.primary,
   },
   sectionTitle: {
     fontSize: '18px',
     fontWeight: '600' as const,
     marginBottom: '15px',
-    color: '#ffffff',
+    color: theme.text.primary,
   },
   tableContainer: {
     overflowX: 'auto' as const,
@@ -602,7 +603,7 @@ const styles = {
     padding: '12px',
     textAlign: 'left' as const,
     backgroundColor: '#2a2a2a',
-    color: '#ffffff',
+    color: theme.text.primary,
     fontWeight: '600' as const,
     borderBottom: '2px solid #C8102E',
     position: 'sticky' as const,
@@ -628,7 +629,7 @@ const styles = {
   primaryButton: {
     padding: '12px 24px',
     backgroundColor: '#C8102E',
-    color: '#ffffff',
+    color: theme.background.secondary,
     border: 'none',
     borderRadius: '4px',
     fontSize: '16px',
@@ -638,7 +639,7 @@ const styles = {
   secondaryButton: {
     padding: '12px 24px',
     backgroundColor: '#2a2a2a',
-    color: '#ffffff',
+    color: theme.text.primary,
     border: '1px solid #3a3a3a',
     borderRadius: '4px',
     fontSize: '16px',
@@ -656,13 +657,13 @@ const styles = {
     backgroundColor: '#2a2a2a',
     border: '1px solid #3a3a3a',
     borderRadius: '4px',
-    color: '#ffffff',
+    color: theme.text.primary,
     fontSize: '14px',
   },
   filterButton: {
     padding: '10px 20px',
     backgroundColor: '#C8102E',
-    color: '#ffffff',
+    color: theme.background.secondary,
     border: 'none',
     borderRadius: '4px',
     fontSize: '14px',
@@ -675,6 +676,6 @@ const styles = {
     alignItems: 'center',
     height: '100vh',
     fontSize: '24px',
-    color: '#ffffff',
+    color: theme.text.primary,
   },
 };

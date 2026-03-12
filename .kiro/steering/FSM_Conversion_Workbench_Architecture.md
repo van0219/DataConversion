@@ -13,7 +13,7 @@ Local-first web application (FastAPI + React + SQLite) for FSM data conversion. 
 
 **Backend**: FastAPI 0.109.0, SQLAlchemy, SQLite, JWT auth, Fernet encryption, Pydantic validation
 
-**Frontend**: React 18.2.0 + TypeScript, Vite 5.0.11, Axios, inline styles (black/red/white theme)
+**Frontend**: React 18.2.0 + TypeScript, Vite 5.0.11, Axios, inline styles (Infor purple theme: #4600AF primary)
 
 **Database**: SQLite with 10 tables (accounts, schemas, snapshot_records, snapshot_registry, setup_business_classes, conversion_jobs, validation_errors, load_results, mapping_templates, validation_rule_templates, validation_rule_assignments)
 
@@ -1008,11 +1008,21 @@ const ConversionWorkflow: React.FC<Props> = ({ accountId, onComplete }) => {
   // ...
 };
 
-// Theme colors (use consistently)
+// Theme colors (use consistently from theme.ts)
+import { theme } from '../theme';
+
+// Infor Purple Theme
 const colors = {
-  background: '#000000',
-  primary: '#dc2626',
-  text: '#ffffff'
+  primary: '#4600AF',        // Infor Purple
+  primaryLight: '#6B2DC7',
+  primaryDark: '#350080',
+  background: '#F7F7FB',     // Light gray background
+  cardBackground: '#FFFFFF', // White cards
+  text: '#1A1A1A',          // Dark text
+  textSecondary: '#4B4B5A',
+  success: '#00BD58',
+  error: '#ED0C2E',
+  warning: '#FFAC00'
 };
 ```
 

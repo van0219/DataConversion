@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { theme } from '../theme';
 
 interface LoadingScreenProps {
   message?: string;
@@ -40,11 +41,11 @@ export default function LoadingScreen({
       <div style={styles.loadingOverlay}>
         <div style={styles.loadingContent}>
           <svg width="80" height="80" viewBox="0 0 64 64" style={styles.loadingLogo}>
-            <circle cx="32" cy="32" r="32" fill="#000000"/>
-            <text x="32" y="42" fontFamily="Arial, sans-serif" fontSize="32" fontWeight="bold" fill="#C8102E" textAnchor="middle">DB</text>
-            <line x1="16" y1="50" x2="48" y2="50" stroke="#C8102E" strokeWidth="3" strokeLinecap="round"/>
-            <circle cx="16" cy="50" r="3" fill="#FFFFFF"/>
-            <circle cx="48" cy="50" r="3" fill="#FFFFFF"/>
+            <circle cx="32" cy="32" r="32" fill="#FFFFFF"/>
+            <text x="32" y="42" fontFamily="Arial, sans-serif" fontSize="32" fontWeight="bold" fill="#4600AF" textAnchor="middle">DB</text>
+            <line x1="16" y1="50" x2="48" y2="50" stroke="#4600AF" strokeWidth="3" strokeLinecap="round"/>
+            <circle cx="16" cy="50" r="3" fill="#4600AF"/>
+            <circle cx="48" cy="50" r="3" fill="#4600AF"/>
           </svg>
           <div style={styles.loadingSpinner}></div>
           <div style={styles.loadingText}>{message}</div>
@@ -61,7 +62,7 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    backgroundColor: 'rgba(247, 247, 251, 0.98)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -79,13 +80,13 @@ const styles = {
   loadingSpinner: {
     width: '50px',
     height: '50px',
-    border: '4px solid #2a2a2a',
-    borderTop: '4px solid #C8102E',
+    border: '4px solid #E6E6EF',
+    borderTop: '4px solid #4600AF',
     borderRadius: '50%',
     animation: 'spin 1s linear infinite',
   },
   loadingText: {
-    color: '#ffffff',
+    color: theme.text.primary,
     fontSize: '18px',
     fontWeight: '500' as const,
   },

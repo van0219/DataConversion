@@ -5,6 +5,7 @@ import SetupDataManagement from './pages/SetupDataManagement';
 import RulesManagement from './pages/RulesManagement';
 import SchemaManagement from './pages/SchemaManagement';
 import api from './services/api';
+import { theme } from './theme';
 
 type Page = 'login' | 'dashboard' | 'conversion' | 'setup' | 'rules' | 'schema';
 
@@ -68,21 +69,33 @@ function App() {
           {!sidebarCollapsed ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <svg width="40" height="40" viewBox="0 0 64 64" style={styles.logoIcon}>
-                <circle cx="32" cy="32" r="32" fill="#000000"/>
-                <text x="32" y="42" fontFamily="Arial, sans-serif" fontSize="32" fontWeight="bold" fill="#C8102E" textAnchor="middle">DB</text>
-                <line x1="16" y1="50" x2="48" y2="50" stroke="#C8102E" strokeWidth="3" strokeLinecap="round"/>
-                <circle cx="16" cy="50" r="3" fill="#FFFFFF"/>
-                <circle cx="48" cy="50" r="3" fill="#FFFFFF"/>
+                <defs>
+                  <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#4600AF" />
+                    <stop offset="100%" stopColor="#6B2DC7" />
+                  </linearGradient>
+                </defs>
+                <circle cx="32" cy="32" r="30" fill="url(#logoGradient)" stroke="#ffffff" strokeWidth="2"/>
+                <text x="32" y="42" fontFamily="Arial, sans-serif" fontSize="28" fontWeight="bold" fill="#ffffff" textAnchor="middle">DB</text>
+                <circle cx="16" cy="50" r="2" fill="#ffffff" opacity="0.8"/>
+                <circle cx="48" cy="50" r="2" fill="#ffffff" opacity="0.8"/>
+                <line x1="18" y1="50" x2="46" y2="50" stroke="#ffffff" strokeWidth="2" opacity="0.6"/>
               </svg>
               <div style={styles.logo}>FSM DataBridge</div>
             </div>
           ) : (
             <svg width="40" height="40" viewBox="0 0 64 64" style={styles.logoIcon}>
-              <circle cx="32" cy="32" r="32" fill="#000000"/>
-              <text x="32" y="42" fontFamily="Arial, sans-serif" fontSize="32" fontWeight="bold" fill="#C8102E" textAnchor="middle">DB</text>
-              <line x1="16" y1="50" x2="48" y2="50" stroke="#C8102E" strokeWidth="3" strokeLinecap="round"/>
-              <circle cx="16" cy="50" r="3" fill="#FFFFFF"/>
-              <circle cx="48" cy="50" r="3" fill="#FFFFFF"/>
+              <defs>
+                <linearGradient id="logoGradientCollapsed" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#4600AF" />
+                  <stop offset="100%" stopColor="#6B2DC7" />
+                </linearGradient>
+              </defs>
+              <circle cx="32" cy="32" r="30" fill="url(#logoGradientCollapsed)" stroke="#ffffff" strokeWidth="2"/>
+              <text x="32" y="42" fontFamily="Arial, sans-serif" fontSize="28" fontWeight="bold" fill="#ffffff" textAnchor="middle">DB</text>
+              <circle cx="16" cy="50" r="2" fill="#ffffff" opacity="0.8"/>
+              <circle cx="48" cy="50" r="2" fill="#ffffff" opacity="0.8"/>
+              <line x1="18" y1="50" x2="46" y2="50" stroke="#ffffff" strokeWidth="2" opacity="0.6"/>
             </svg>
           )}
         </div>
@@ -475,7 +488,7 @@ function Dashboard({ onNewConversion, onSetupData, onViewRules }: { onNewConvers
                         disabled={interfacing === job.id}
                         style={{
                           padding: '6px 12px',
-                          backgroundColor: interfacing === job.id ? '#666' : '#FF9800',
+                          backgroundColor: interfacing === job.id ? '#666' : theme.primary.main,
                           color: '#fff',
                           border: 'none',
                           borderRadius: '4px',
@@ -653,14 +666,14 @@ const styles = {
   container: {
     display: 'flex',
     height: '100vh',
-    backgroundColor: '#000000',
+    backgroundColor: theme.background.primary,
   },
   sidebar: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: theme.background.secondary,
     padding: '20px',
     display: 'flex',
     flexDirection: 'column' as const,
-    borderRight: '1px solid #2a2a2a',
+    borderRight: `1px solid ${theme.background.quaternary}`,
     overflow: 'hidden',
     position: 'relative' as const,
   },
@@ -669,15 +682,15 @@ const styles = {
     alignItems: 'center',
     marginBottom: '30px',
     paddingBottom: '20px',
-    borderBottom: '1px solid #2a2a2a',
+    borderBottom: `1px solid ${theme.background.quaternary}`,
   },
   toggleButton: {
     position: 'absolute' as const,
     right: '-12px',
     top: '20px',
-    backgroundColor: '#2a2a2a',
-    color: '#ffffff',
-    border: '1px solid #3a3a3a',
+    backgroundColor: theme.background.tertiary,
+    color: theme.text.primary,
+    border: `1px solid ${theme.background.quaternary}`,
     borderRadius: '4px',
     width: '24px',
     height: '48px',
@@ -688,7 +701,7 @@ const styles = {
     justifyContent: 'center',
     transition: 'all 0.2s ease',
     zIndex: 10,
-    boxShadow: '2px 0 4px rgba(0,0,0,0.3)',
+    boxShadow: '2px 0 4px rgba(0,0,0,0.1)',
   },
   logoIcon: {
     flexShrink: 0,
@@ -696,46 +709,42 @@ const styles = {
   logo: {
     fontSize: '18px',
     fontWeight: '700' as const,
-    color: '#ffffff',
+    color: theme.text.primary,
     lineHeight: '1.2',
-    background: 'linear-gradient(135deg, #C8102E 0%, #ff4458 100%)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundClip: 'text',
   },
   accountInfo: {
     padding: '16px',
-    background: 'linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%)',
+    background: `linear-gradient(135deg, ${theme.accent.purpleTintLight} 0%, ${theme.accent.purpleTintMedium} 100%)`,
     borderRadius: '8px',
     marginBottom: '30px',
-    border: '1px solid #3a3a3a',
+    border: `1px solid ${theme.background.quaternary}`,
   },
   greetingText: {
     fontSize: '16px',
     fontWeight: '600' as const,
-    color: '#ffffff',
+    color: theme.text.primary,
     marginBottom: '8px',
   },
   accountDescription: {
     fontSize: '14px',
-    color: '#cccccc',
+    color: theme.text.secondary,
     marginBottom: '8px',
     lineHeight: '1.4',
   },
   highlightText: {
     fontWeight: '600' as const,
-    background: 'linear-gradient(135deg, #C8102E 0%, #ff4458 100%)',
+    background: theme.primary.gradient,
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
     backgroundClip: 'text',
   },
   tenantInfo: {
     fontSize: '13px',
-    color: '#999999',
+    color: theme.text.tertiary,
     marginBottom: '10px',
   },
   tenantLabel: {
-    color: '#cccccc',
+    color: theme.text.secondary,
     fontWeight: '500' as const,
   },
   accountName: {
@@ -757,7 +766,7 @@ const styles = {
   navItem: {
     padding: '12px',
     backgroundColor: 'transparent',
-    color: '#cccccc',
+    color: theme.text.secondary,
     border: 'none',
     borderRadius: '4px',
     textAlign: 'left' as const,
@@ -772,7 +781,7 @@ const styles = {
   },
   navItemActive: {
     padding: '12px',
-    backgroundColor: '#C8102E',
+    backgroundColor: theme.primary.main,
     color: '#ffffff',
     border: 'none',
     borderRadius: '4px',
@@ -794,9 +803,9 @@ const styles = {
   },
   logoutButton: {
     padding: '12px',
-    backgroundColor: '#2a2a2a',
-    color: '#ffffff',
-    border: '1px solid #3a3a3a',
+    backgroundColor: theme.background.tertiary,
+    color: theme.text.primary,
+    border: `1px solid ${theme.background.quaternary}`,
     borderRadius: '4px',
     cursor: 'pointer',
     fontSize: '14px',
@@ -809,6 +818,7 @@ const styles = {
   main: {
     flex: 1,
     overflow: 'auto',
+    backgroundColor: theme.background.primary,
   },
   dashboardContainer: {
     padding: '40px',
@@ -816,7 +826,7 @@ const styles = {
   dashboardTitle: {
     fontSize: '32px',
     fontWeight: '700' as const,
-    color: '#ffffff',
+    color: theme.text.primary,
     marginBottom: '30px',
   },
   quickActions: {
@@ -827,8 +837,8 @@ const styles = {
   },
   actionCard: {
     padding: '30px',
-    backgroundColor: '#1a1a1a',
-    border: '1px solid #2a2a2a',
+    backgroundColor: theme.background.secondary,
+    border: `1px solid ${theme.background.quaternary}`,
     borderRadius: '8px',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
@@ -841,35 +851,35 @@ const styles = {
   actionTitle: {
     fontSize: '18px',
     fontWeight: '600' as const,
-    color: '#ffffff',
+    color: theme.text.primary,
     marginBottom: '8px',
   },
   actionDesc: {
     fontSize: '14px',
-    color: '#999999',
+    color: theme.text.tertiary,
   },
   infoCard: {
     padding: '30px',
-    backgroundColor: '#1a1a1a',
-    border: '1px solid #2a2a2a',
+    backgroundColor: theme.background.secondary,
+    border: `1px solid ${theme.background.quaternary}`,
     borderRadius: '8px',
   },
   infoTitle: {
     fontSize: '24px',
     fontWeight: '600' as const,
-    color: '#ffffff',
+    color: theme.text.primary,
     marginBottom: '20px',
   },
   stepsList: {
-    color: '#cccccc',
+    color: theme.text.secondary,
     fontSize: '16px',
     lineHeight: '1.8',
     paddingLeft: '20px',
   },
   syncInfo: {
     padding: '15px 20px',
-    backgroundColor: '#1a1a1a',
-    border: '1px solid #2a2a2a',
+    backgroundColor: theme.background.secondary,
+    border: `1px solid ${theme.background.quaternary}`,
     borderRadius: '8px',
     marginBottom: '30px',
     display: 'flex',
@@ -877,11 +887,11 @@ const styles = {
     gap: '10px',
   },
   syncLabel: {
-    color: '#999999',
+    color: theme.text.tertiary,
     fontSize: '14px',
   },
   syncValue: {
-    color: '#ffffff',
+    color: theme.text.primary,
     fontSize: '14px',
     fontWeight: '600' as const,
   },
@@ -891,12 +901,12 @@ const styles = {
   sectionTitle: {
     fontSize: '20px',
     fontWeight: '600' as const,
-    color: '#ffffff',
+    color: theme.text.primary,
     marginBottom: '8px',
   },
   sectionSubtitle: {
     fontSize: '14px',
-    color: '#999999',
+    color: theme.text.tertiary,
     marginBottom: '15px',
   },
   jobsTable: {
@@ -1017,15 +1027,15 @@ const styles = {
   },
   systemStatus: {
     padding: '20px',
-    backgroundColor: '#1a1a1a',
-    border: '1px solid #2a2a2a',
+    backgroundColor: theme.background.secondary,
+    border: `1px solid ${theme.background.quaternary}`,
     borderRadius: '8px',
     marginBottom: '30px',
   },
   systemStatusTitle: {
     fontSize: '18px',
     fontWeight: '600' as const,
-    color: '#ffffff',
+    color: theme.text.primary,
     marginBottom: '15px',
   },
   statusGrid: {
@@ -1039,11 +1049,11 @@ const styles = {
     gap: '10px',
   },
   statusLabel: {
-    color: '#999999',
+    color: theme.text.tertiary,
     fontSize: '14px',
   },
   statusValue: {
-    color: '#ffffff',
+    color: theme.text.primary,
     fontSize: '14px',
     fontWeight: '600' as const,
   },

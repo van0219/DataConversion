@@ -32,6 +32,14 @@ class RuleSetService:
         return db.query(ValidationRuleSet).filter(ValidationRuleSet.id == rule_set_id).first()
     
     @staticmethod
+    def get_rule_set_by_name(db: Session, business_class: str, name: str) -> Optional[ValidationRuleSet]:
+        """Get rule set by business class and name"""
+        return db.query(ValidationRuleSet).filter(
+            ValidationRuleSet.business_class == business_class,
+            ValidationRuleSet.name == name
+        ).first()
+    
+    @staticmethod
     def get_common_rule_set(db: Session, business_class: str) -> Optional[ValidationRuleSet]:
         """Get the Common rule set for a business class"""
         return db.query(ValidationRuleSet).filter(

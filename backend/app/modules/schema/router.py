@@ -106,12 +106,18 @@ def list_schemas(
             total_fields = 0
             try:
                 schema_data = json.loads(schema.schema_json)
+                
+                # New format: {"properties": {...}, "required": [...]}
                 if 'properties' in schema_data:
                     total_fields = len(schema_data['properties'])
+                # Old format: {"business_class": "...", "fields": [...], "raw_schema": {...}}
+                elif 'fields' in schema_data and isinstance(schema_data['fields'], list):
+                    total_fields = len(schema_data['fields'])
+                # Fallback: count from required_fields and enum_fields
                 else:
-                    # Fallback to old calculation if properties not found
                     total_fields = len(required_fields) + len(enum_fields)
-            except:
+            except Exception as e:
+                logger.warning(f"Error parsing schema_json for {schema.business_class}: {e}")
                 # Fallback to old calculation on error
                 total_fields = len(required_fields) + len(enum_fields)
             
@@ -145,6 +151,7 @@ async def import_swagger(
 ):
     """
     Import Swagger/OpenAPI JSON file and create schema version.
+    Auto-generates validation rules from schema.
     
     Request:
         - business_class: FSM business class name
@@ -158,6 +165,7 @@ async def import_swagger(
         - required_fields: Number of required fields
         - operations: List of available operations
         - schema_hash: SHA256 hash of schema
+        - rules_generated: Count of auto-generated validation rules
     """
     from fastapi import Form, UploadFile, File
     from app.services.swagger_importer import SwaggerImporter
@@ -167,7 +175,7 @@ async def import_swagger(
         content = await swagger_file.read()
         swagger_content = content.decode('utf-8')
         
-        # Import swagger
+        # Import swagger (now auto-generates rules)
         result = SwaggerImporter.import_swagger(
             db,
             account_id,
@@ -186,4 +194,114 @@ async def import_swagger(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to import swagger: {str(e)}"
+        )
+
+
+@router.post("/{schema_id}/generate-rules")
+def generate_rules_for_schema(
+    schema_id: int,
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """
+    Generate validation rules for an existing schema.
+    Useful for schemas imported before auto-generation was implemented.
+    
+    Returns:
+        Count of generated rules by type
+    """
+    from app.models.schema import Schema
+    from app.services.schema_rule_generator import SchemaRuleGenerator
+    
+    try:
+        # Get schema
+        schema = db.query(Schema).filter(
+            Schema.id == schema_id,
+            Schema.account_id == account_id
+        ).first()
+        
+        if not schema:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Schema {schema_id} not found"
+            )
+        
+        # Generate rules
+        rules_created = SchemaRuleGenerator.generate_rules_for_schema(db, schema)
+        
+        return {
+            "schema_id": schema_id,
+            "business_class": schema.business_class,
+            "rules_generated": rules_created
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate rules: {str(e)}"
+        )
+
+
+@router.delete("/{schema_id}")
+def deactivate_schema(
+    schema_id: int,
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """
+    Deactivate a schema (soft delete).
+    Schema is marked as inactive but not deleted from database.
+    All auto-generated validation rules from this schema are also deactivated.
+    Version numbers continue incrementing for future uploads.
+    
+    Returns:
+        Success message with schema details and rules deactivated count
+    """
+    from app.models.schema import Schema
+    from app.models.rule import ValidationRuleTemplate
+    
+    try:
+        # Get schema
+        schema = db.query(Schema).filter(
+            Schema.id == schema_id,
+            Schema.account_id == account_id
+        ).first()
+        
+        if not schema:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Schema {schema_id} not found"
+            )
+        
+        business_class = schema.business_class
+        version = schema.version_number
+        
+        # Deactivate all schema-generated rules for this schema
+        rules_deactivated = db.query(ValidationRuleTemplate).filter(
+            ValidationRuleTemplate.schema_id == schema_id,
+            ValidationRuleTemplate.source == "schema"
+        ).update({"is_active": False})
+        
+        # Deactivate schema
+        schema.is_active = False
+        db.commit()
+        
+        return {
+            "status": "success",
+            "message": f"Schema {business_class} v{version} deactivated",
+            "schema_id": schema_id,
+            "business_class": business_class,
+            "version": version,
+            "rules_deactivated": rules_deactivated
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to deactivate schema: {str(e)}"
         )

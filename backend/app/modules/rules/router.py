@@ -301,3 +301,117 @@ def get_rules_for_set(
     
     rules = RuleSetService.get_rules_for_set(db, rule_set_id)
     return [RuleTemplateResponse.from_orm(rule) for rule in rules]
+
+@router.get("/rule-sets/{rule_set_id}/fields")
+def get_rule_set_fields(
+    rule_set_id: int,
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """
+    Get all fields from the business class schema with their associated rules.
+    Returns a field-centric view showing which fields have rules and which don't.
+    
+    Returns:
+        - business_class: Business class name
+        - rule_set_name: Rule set name
+        - fields: List of all fields with their rules
+    """
+    from app.models.rule import ValidationRuleSet, ValidationRuleTemplate
+    from app.models.schema import Schema
+    import json
+    
+    try:
+        # Get rule set
+        rule_set = db.query(ValidationRuleSet).filter(
+            ValidationRuleSet.id == rule_set_id
+        ).first()
+        
+        if not rule_set:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Rule set {rule_set_id} not found"
+            )
+        
+        business_class = rule_set.business_class
+        
+        # Get latest active schema for this business class
+        schema = db.query(Schema).filter(
+            Schema.account_id == account_id,
+            Schema.business_class == business_class,
+            Schema.is_active == True
+        ).order_by(Schema.version_number.desc()).first()
+        
+        if not schema:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No active schema found for {business_class}"
+            )
+        
+        # Parse schema to get all fields
+        schema_json = json.loads(schema.schema_json)
+        properties = schema_json.get("properties", {})
+        required_fields = schema_json.get("required", [])
+        
+        # Get all rules for this rule set
+        rules = db.query(ValidationRuleTemplate).filter(
+            ValidationRuleTemplate.rule_set_id == rule_set_id,
+            ValidationRuleTemplate.is_active == True
+        ).all()
+        
+        # Group rules by field name
+        rules_by_field = {}
+        for rule in rules:
+            field_name = rule.field_name
+            if field_name not in rules_by_field:
+                rules_by_field[field_name] = []
+            rules_by_field[field_name].append({
+                "id": rule.id,
+                "name": rule.name,
+                "rule_type": rule.rule_type,
+                "source": rule.source,
+                "is_readonly": rule.is_readonly,
+                "error_message": rule.error_message,
+                "reference_business_class": rule.reference_business_class,
+                "pattern": rule.pattern,
+                "enum_values": json.loads(rule.enum_values) if rule.enum_values else None
+            })
+        
+        # Build field list with rules
+        fields = []
+        for field_name, field_def in properties.items():
+            field_rules = rules_by_field.get(field_name, [])
+            
+            fields.append({
+                "field_name": field_name,
+                "field_type": field_def.get("type", "string"),
+                "required": field_name in required_fields,
+                "description": field_def.get("description"),
+                "enum_values": field_def.get("enum"),
+                "pattern": field_def.get("pattern"),
+                "rules": field_rules,
+                "rule_count": len(field_rules)
+            })
+        
+        # Sort fields: required first, then alphabetically
+        fields.sort(key=lambda x: (not x["required"], x["field_name"]))
+        
+        return {
+            "business_class": business_class,
+            "rule_set_id": rule_set_id,
+            "rule_set_name": rule_set.name,
+            "schema_id": schema.id,
+            "schema_version": schema.version_number,
+            "total_fields": len(fields),
+            "fields_with_rules": len([f for f in fields if f["rule_count"] > 0]),
+            "fields": fields
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get rule set fields: {str(e)}"
+        )
+

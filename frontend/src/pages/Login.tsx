@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../services/api';
 import LoadingScreen from '../components/LoadingScreen';
 import { useLoading } from '../hooks/useLoading';
+import { theme } from '../theme';
 
 interface Account {
   id: number;
@@ -149,11 +150,11 @@ export default function Login() {
         <div style={styles.brandingContent}>
           <div style={styles.logoContainer}>
             <svg width="140" height="140" viewBox="0 0 64 64" style={styles.logoCircle}>
-              <circle cx="32" cy="32" r="32" fill="#000000"/>
-              <text x="32" y="42" fontFamily="Arial, sans-serif" fontSize="32" fontWeight="bold" fill="#C8102E" textAnchor="middle">DB</text>
-              <line x1="16" y1="50" x2="48" y2="50" stroke="#C8102E" strokeWidth="3" strokeLinecap="round"/>
-              <circle cx="16" cy="50" r="3" fill="#FFFFFF"/>
-              <circle cx="48" cy="50" r="3" fill="#FFFFFF"/>
+              <circle cx="32" cy="32" r="32" fill="#FFFFFF"/>
+              <text x="32" y="42" fontFamily="Arial, sans-serif" fontSize="32" fontWeight="bold" fill="#4600AF" textAnchor="middle">DB</text>
+              <line x1="16" y1="50" x2="48" y2="50" stroke="#4600AF" strokeWidth="3" strokeLinecap="round"/>
+              <circle cx="16" cy="50" r="3" fill="#4600AF"/>
+              <circle cx="48" cy="50" r="3" fill="#4600AF"/>
             </svg>
           </div>
           <h2 style={styles.brandTitle}>Data Conversion Workbench</h2>
@@ -393,11 +394,11 @@ function CreateAccount({ onBack, onSuccess }: { onBack: () => void; onSuccess: (
         <div style={styles.brandingContent}>
           <div style={styles.logoContainer}>
             <svg width="140" height="140" viewBox="0 0 64 64" style={styles.logoCircle}>
-              <circle cx="32" cy="32" r="32" fill="#000000"/>
-              <text x="32" y="42" fontFamily="Arial, sans-serif" fontSize="32" fontWeight="bold" fill="#C8102E" textAnchor="middle">DB</text>
-              <line x1="16" y1="50" x2="48" y2="50" stroke="#C8102E" strokeWidth="3" strokeLinecap="round"/>
-              <circle cx="16" cy="50" r="3" fill="#FFFFFF"/>
-              <circle cx="48" cy="50" r="3" fill="#FFFFFF"/>
+              <circle cx="32" cy="32" r="32" fill="#FFFFFF"/>
+              <text x="32" y="42" fontFamily="Arial, sans-serif" fontSize="32" fontWeight="bold" fill="#4600AF" textAnchor="middle">DB</text>
+              <line x1="16" y1="50" x2="48" y2="50" stroke="#4600AF" strokeWidth="3" strokeLinecap="round"/>
+              <circle cx="16" cy="50" r="3" fill="#4600AF"/>
+              <circle cx="48" cy="50" r="3" fill="#4600AF"/>
             </svg>
           </div>
           <h2 style={styles.brandTitle}>Data Conversion Workbench</h2>
@@ -437,7 +438,7 @@ const styles = {
   container: {
     display: 'flex',
     minHeight: '100vh',
-    backgroundColor: '#000000',
+    backgroundColor: theme.background.primary,
     position: 'relative' as const,
   },
   leftPanel: {
@@ -446,25 +447,25 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     padding: '40px',
-    backgroundColor: '#000000',
+    backgroundColor: theme.background.secondary,
   },
   rightPanel: {
     flex: 1,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    background: 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%)',
+    background: `linear-gradient(135deg, ${theme.primary.main} 0%, ${theme.primary.light} 50%, ${theme.primary.main} 100%)`,
     position: 'relative' as const,
     overflow: 'hidden',
   },
   card: {
-    background: 'linear-gradient(135deg, #1a1a1a 0%, #1f1f1f 100%)',
+    background: theme.background.secondary,
     padding: '50px 40px',
     borderRadius: '12px',
     width: '100%',
     maxWidth: '450px',
-    boxShadow: '0 8px 32px rgba(200, 16, 46, 0.2)',
-    border: '1px solid #2a2a2a',
+    boxShadow: `0 8px 32px ${theme.accent.purpleTintMedium}`,
+    border: `1px solid ${theme.background.quaternary}`,
   },
   brandingContent: {
     maxWidth: '600px',
@@ -482,20 +483,18 @@ const styles = {
     alignItems: 'center',
   },
   brandTitle: {
-    background: 'linear-gradient(135deg, #ffffff 0%, #cccccc 100%)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundClip: 'text',
+    color: theme.background.secondary,
     fontSize: '36px',
     fontWeight: '700' as const,
     marginBottom: '16px',
     lineHeight: '1.2',
   },
   brandSubtitle: {
-    color: '#999999',
+    color: theme.background.secondary,
     fontSize: '18px',
     marginBottom: '60px',
     lineHeight: '1.5',
+    opacity: 0.9,
   },
   featureList: {
     textAlign: 'left' as const,
@@ -505,18 +504,18 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     marginBottom: '24px',
-    color: '#cccccc',
+    color: theme.background.secondary,
     transition: 'transform 0.2s ease',
   },
   featureIcon: {
     width: '32px',
     height: '32px',
     borderRadius: '50%',
-    background: 'linear-gradient(135deg, #C8102E 0%, #ff4458 100%)',
+    background: theme.background.secondary,
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: '#ffffff',
+    color: theme.primary.main,
     fontSize: '16px',
     marginRight: '16px',
     fontWeight: '700' as const,
@@ -531,20 +530,19 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     gap: '12px',
-    color: '#666666',
+    color: theme.background.secondary,
     fontSize: '14px',
+    opacity: 0.7,
   },
   versionText: {
-    color: '#666666',
+    color: theme.background.secondary,
   },
   versionDivider: {
-    color: '#444444',
+    color: theme.background.secondary,
+    opacity: 0.5,
   },
   title: {
-    background: 'linear-gradient(135deg, #C8102E 0%, #ff4458 100%)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundClip: 'text',
+    color: theme.primary.main,
     fontSize: '32px',
     fontWeight: '700' as const,
     marginBottom: '40px',
@@ -563,37 +561,37 @@ const styles = {
     gap: '10px',
   },
   label: {
-    color: '#ffffff',
+    color: theme.text.primary,
     fontSize: '14px',
     fontWeight: '600' as const,
   },
   input: {
     padding: '14px 16px',
-    background: 'linear-gradient(135deg, #2a2a2a 0%, #252525 100%)',
-    border: '1px solid #3a3a3a',
+    background: theme.background.secondary,
+    border: `1px solid ${theme.background.quaternary}`,
     borderRadius: '8px',
-    color: '#ffffff',
+    color: theme.text.primary,
     fontSize: '15px',
     transition: 'all 0.3s ease',
   },
   select: {
     padding: '14px 16px',
-    background: 'linear-gradient(135deg, #2a2a2a 0%, #252525 100%)',
-    border: '1px solid #3a3a3a',
+    background: theme.background.secondary,
+    border: `1px solid ${theme.background.quaternary}`,
     borderRadius: '8px',
-    color: '#ffffff',
+    color: theme.text.primary,
     fontSize: '15px',
     transition: 'all 0.3s ease',
   },
   option: {
-    backgroundColor: '#2a2a2a',
-    color: '#ffffff',
+    backgroundColor: theme.background.secondary,
+    color: theme.text.primary,
     padding: '10px',
   },
   button: {
     padding: '16px',
-    background: 'linear-gradient(135deg, #C8102E 0%, #a00d25 100%)',
-    color: '#ffffff',
+    background: theme.primary.main,
+    color: theme.background.secondary,
     border: 'none',
     borderRadius: '8px',
     fontSize: '16px',
@@ -601,12 +599,12 @@ const styles = {
     cursor: 'pointer',
     marginTop: '10px',
     transition: 'all 0.3s ease',
-    boxShadow: '0 4px 12px rgba(200, 16, 46, 0.3)',
+    boxShadow: `0 4px 12px ${theme.accent.purpleTintMedium}`,
   },
   linkButton: {
     padding: '12px',
     backgroundColor: 'transparent',
-    color: '#C8102E',
+    color: theme.primary.main,
     border: 'none',
     fontSize: '14px',
     cursor: 'pointer',
@@ -614,31 +612,31 @@ const styles = {
     fontWeight: '500' as const,
   },
   error: {
-    color: '#ff6b6b',
+    color: theme.status.error,
     fontSize: '14px',
     padding: '12px 16px',
-    background: 'linear-gradient(135deg, rgba(200, 16, 46, 0.15) 0%, rgba(200, 16, 46, 0.1) 100%)',
+    background: '#FEE2E2',
     borderRadius: '8px',
-    border: '1px solid rgba(200, 16, 46, 0.3)',
+    border: `1px solid ${theme.status.error}`,
   },
   fileInput: {
     padding: '14px 16px',
-    background: 'linear-gradient(135deg, #2a2a2a 0%, #252525 100%)',
-    border: '1px solid #3a3a3a',
+    background: theme.background.secondary,
+    border: `1px solid ${theme.background.quaternary}`,
     borderRadius: '8px',
-    color: '#ffffff',
+    color: theme.text.primary,
     fontSize: '15px',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
   },
   fileInfo: {
-    color: '#4ade80',
+    color: theme.status.success,
     fontSize: '13px',
     marginTop: '8px',
     padding: '8px 12px',
-    background: 'rgba(74, 222, 128, 0.1)',
+    background: '#D1FAE5',
     borderRadius: '6px',
-    border: '1px solid rgba(74, 222, 128, 0.2)',
+    border: `1px solid ${theme.status.success}`,
   },
 };
 

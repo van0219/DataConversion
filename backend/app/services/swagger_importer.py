@@ -70,6 +70,10 @@ class SwaggerImporter:
             
             logger.info(f"Created new schema version {new_schema.version_number} for {business_class}")
             
+            # Auto-generate validation rules from schema
+            from app.services.schema_rule_generator import SchemaRuleGenerator
+            rules_created = SchemaRuleGenerator.generate_rules_for_schema(db, new_schema)
+            
             return {
                 "business_class": business_class,
                 "version": new_schema.version_number,
@@ -78,7 +82,8 @@ class SwaggerImporter:
                 "required_fields": len(schema_data["required_fields"]),
                 "operations": schema_data["operations"],
                 "schema_hash": schema_hash,
-                "schema_id": new_schema.id
+                "schema_id": new_schema.id,
+                "rules_generated": rules_created
             }
             
         except json.JSONDecodeError as e:
@@ -183,11 +188,11 @@ class SwaggerImporter:
         
         for path, methods in paths.items():
             for method, details in methods.items():
-                if isinstance(details, dict) and "operationId" in details:
-                    operation_id = details["operationId"]
-                    # Extract operation name (e.g., 'create', 'createUnreleased')
-                    if operation_id not in operations:
-                        operations.append(operation_id)
+                if isinstance(details, dict):
+                    # Try operationId first (standard OpenAPI), then summary (FSM format)
+                    operation_name = details.get("operationId") or details.get("summary")
+                    if operation_name and operation_name not in operations:
+                        operations.append(operation_name)
         
         return operations
     

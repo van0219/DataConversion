@@ -6,12 +6,19 @@ class RuleTemplateBase(BaseModel):
     name: str
     business_class: Optional[str] = None  # NULL for GLOBAL
     rule_set_id: Optional[int] = None  # Rule set assignment
-    rule_type: str  # REFERENCE_EXISTS, REQUIRED_OVERRIDE, etc.
+    rule_type: str  # REFERENCE_EXISTS, REQUIRED_OVERRIDE, PATTERN_MATCH, ENUM_VALIDATION, etc.
     field_name: str
     reference_business_class: Optional[str] = None
     condition_expression: Optional[str] = None
     error_message: str
     is_active: bool = True
+    
+    # Schema-based validation fields
+    source: str = 'custom'  # 'schema' | 'custom'
+    is_readonly: bool = False
+    pattern: Optional[str] = None
+    schema_id: Optional[int] = None
+    enum_values: Optional[str] = None  # JSON array
 
 class RuleTemplateCreate(RuleTemplateBase):
     pass

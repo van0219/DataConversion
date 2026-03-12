@@ -15,7 +15,7 @@ class Schema(Base):
     
     # New fields for schema improvements
     source = Column(String(50), default="local_swagger")  # 'local_swagger' | 'fsm_api' | 'imported'
-    created_at = Column(TIMESTAMP)
+    created_at = Column(TIMESTAMP, server_default=func.now())
     operations_json = Column(Text)  # JSON array of operations
     required_fields_json = Column(Text)  # JSON array of required fields
     enum_fields_json = Column(Text)  # JSON object {field: [values]}

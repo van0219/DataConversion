@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import { theme } from '../theme';
 
 interface ConversionWorkflowProps {
   onBack: () => void;
@@ -974,8 +975,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
   return (
     <div style={{ 
       minHeight: '100vh', 
-      backgroundColor: '#000000', 
-      color: '#ffffff', 
+      backgroundColor: theme.background.primary, 
+      color: theme.text.primary, 
       padding: '20px' 
     }}>
       {/* Header */}
@@ -988,7 +989,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
         <h1 style={{ 
           fontSize: '32px', 
           fontWeight: '700', 
-          color: '#ffffff' 
+          color: theme.text.primary 
         }}>
           Data Conversion Workflow
         </h1>
@@ -1020,9 +1021,9 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           }}
           style={{
             padding: '10px 20px',
-            backgroundColor: '#2a2a2a',
-            color: '#fff',
-            border: 'none',
+            backgroundColor: theme.background.tertiary,
+            color: theme.text.primary,
+            border: `1px solid ${theme.background.quaternary}`,
             borderRadius: '6px',
             cursor: 'pointer',
             fontSize: '14px'
@@ -1046,24 +1047,24 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             onClick={() => handleStepClick('upload')}
             style={{
               padding: '8px 16px',
-              backgroundColor: currentStep === 'upload' ? '#dc2626' : (canNavigateToStep('upload') ? '#4a5568' : '#2a2a2a'),
-              color: '#ffffff',
+              backgroundColor: currentStep === 'upload' ? theme.primary.main : (canNavigateToStep('upload') ? theme.background.tertiary : theme.interactive.disabled),
+              color: currentStep === 'upload' ? '#ffffff' : theme.text.primary,
               borderRadius: '6px',
               fontSize: '14px',
               fontWeight: '500',
               cursor: canNavigateToStep('upload') ? 'pointer' : 'default',
               transition: 'all 0.2s ease',
-              border: canNavigateToStep('upload') ? '1px solid #4a5568' : '1px solid transparent',
+              border: canNavigateToStep('upload') ? `1px solid ${theme.background.quaternary}` : '1px solid transparent',
               opacity: canNavigateToStep('upload') ? 1 : 0.6
             }}
             onMouseEnter={(e) => {
               if (canNavigateToStep('upload') && currentStep !== 'upload') {
-                e.currentTarget.style.backgroundColor = '#5a6578';
+                e.currentTarget.style.backgroundColor = theme.interactive.hover;
               }
             }}
             onMouseLeave={(e) => {
               if (canNavigateToStep('upload') && currentStep !== 'upload') {
-                e.currentTarget.style.backgroundColor = '#4a5568';
+                e.currentTarget.style.backgroundColor = theme.background.tertiary;
               }
             }}
           >
@@ -1073,24 +1074,24 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             onClick={() => handleStepClick('mapping')}
             style={{
               padding: '8px 16px',
-              backgroundColor: currentStep === 'mapping' ? '#dc2626' : (canNavigateToStep('mapping') ? '#4a5568' : '#2a2a2a'),
-              color: '#ffffff',
+              backgroundColor: currentStep === 'mapping' ? theme.primary.main : (canNavigateToStep('mapping') ? theme.background.tertiary : theme.interactive.disabled),
+              color: currentStep === 'mapping' ? '#ffffff' : theme.text.primary,
               borderRadius: '6px',
               fontSize: '14px',
               fontWeight: '500',
               cursor: canNavigateToStep('mapping') ? 'pointer' : 'default',
               transition: 'all 0.2s ease',
-              border: canNavigateToStep('mapping') ? '1px solid #4a5568' : '1px solid transparent',
+              border: canNavigateToStep('mapping') ? `1px solid ${theme.background.quaternary}` : '1px solid transparent',
               opacity: canNavigateToStep('mapping') ? 1 : 0.6
             }}
             onMouseEnter={(e) => {
               if (canNavigateToStep('mapping') && currentStep !== 'mapping') {
-                e.currentTarget.style.backgroundColor = '#5a6578';
+                e.currentTarget.style.backgroundColor = theme.interactive.hover;
               }
             }}
             onMouseLeave={(e) => {
               if (canNavigateToStep('mapping') && currentStep !== 'mapping') {
-                e.currentTarget.style.backgroundColor = '#4a5568';
+                e.currentTarget.style.backgroundColor = theme.background.tertiary;
               }
             }}
           >
@@ -1100,24 +1101,24 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             onClick={() => handleStepClick('validation')}
             style={{
               padding: '8px 16px',
-              backgroundColor: currentStep === 'validation' ? '#dc2626' : (canNavigateToStep('validation') ? '#4a5568' : '#2a2a2a'),
-              color: '#ffffff',
+              backgroundColor: currentStep === 'validation' ? theme.primary.main : (canNavigateToStep('validation') ? theme.background.tertiary : theme.interactive.disabled),
+              color: currentStep === 'validation' ? '#ffffff' : theme.text.primary,
               borderRadius: '6px',
               fontSize: '14px',
               fontWeight: '500',
               cursor: canNavigateToStep('validation') ? 'pointer' : 'default',
               transition: 'all 0.2s ease',
-              border: canNavigateToStep('validation') ? '1px solid #4a5568' : '1px solid transparent',
+              border: canNavigateToStep('validation') ? `1px solid ${theme.background.quaternary}` : '1px solid transparent',
               opacity: canNavigateToStep('validation') ? 1 : 0.6
             }}
             onMouseEnter={(e) => {
               if (canNavigateToStep('validation') && currentStep !== 'validation') {
-                e.currentTarget.style.backgroundColor = '#5a6578';
+                e.currentTarget.style.backgroundColor = theme.interactive.hover;
               }
             }}
             onMouseLeave={(e) => {
               if (canNavigateToStep('validation') && currentStep !== 'validation') {
-                e.currentTarget.style.backgroundColor = '#4a5568';
+                e.currentTarget.style.backgroundColor = theme.background.tertiary;
               }
             }}
           >
@@ -1127,24 +1128,24 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             onClick={() => handleStepClick('load')}
             style={{
               padding: '8px 16px',
-              backgroundColor: currentStep === 'load' || currentStep === 'completed' ? '#dc2626' : (canNavigateToStep('load') ? '#4a5568' : '#2a2a2a'),
-              color: '#ffffff',
+              backgroundColor: currentStep === 'load' || currentStep === 'completed' ? theme.primary.main : (canNavigateToStep('load') ? theme.background.tertiary : theme.interactive.disabled),
+              color: currentStep === 'load' || currentStep === 'completed' ? '#ffffff' : theme.text.primary,
               borderRadius: '6px',
               fontSize: '14px',
               fontWeight: '500',
               cursor: canNavigateToStep('load') ? 'pointer' : 'default',
               transition: 'all 0.2s ease',
-              border: canNavigateToStep('load') ? '1px solid #4a5568' : '1px solid transparent',
+              border: canNavigateToStep('load') ? `1px solid ${theme.background.quaternary}` : '1px solid transparent',
               opacity: canNavigateToStep('load') ? 1 : 0.6
             }}
             onMouseEnter={(e) => {
               if (canNavigateToStep('load') && currentStep !== 'load' && currentStep !== 'completed') {
-                e.currentTarget.style.backgroundColor = '#5a6578';
+                e.currentTarget.style.backgroundColor = theme.interactive.hover;
               }
             }}
             onMouseLeave={(e) => {
               if (canNavigateToStep('load') && currentStep !== 'load' && currentStep !== 'completed') {
-                e.currentTarget.style.backgroundColor = '#4a5568';
+                e.currentTarget.style.backgroundColor = theme.background.tertiary;
               }
             }}
           >
@@ -1180,8 +1181,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       {/* Upload Step */}
       {currentStep === 'upload' && (
         <div className={getAnimationClass()} style={{
-          backgroundColor: '#1a1a1a',
-          border: '2px solid #FF9800',
+          backgroundColor: theme.background.secondary,
+          border: `2px solid ${theme.accent.purpleTintMedium}`,
           borderRadius: '12px',
           padding: '24px',
           marginBottom: '24px'
@@ -1190,13 +1191,13 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             <h3 style={{ 
               fontSize: '18px', 
               fontWeight: '600', 
-              color: '#FF9800',
+              color: theme.primary.main,
               marginBottom: '8px',
               display: 'flex',
               alignItems: 'center',
               gap: '8px'
             }}>
-              📁 Upload CSV File
+              ⬆️ Upload CSV File
             </h3>
             <p style={{ fontSize: '14px', color: '#999' }}>
               Select a CSV file to begin the conversion process
@@ -1209,7 +1210,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               marginBottom: '8px', 
               fontSize: '14px', 
               fontWeight: '500',
-              color: '#ffffff'
+              color: theme.text.primary
             }}>
               Business Class:
             </label>
@@ -1220,10 +1221,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               style={{
                 width: '400px',
                 padding: '12px',
-                backgroundColor: '#1a1a1a',
-                border: '1px solid #3a3a3a',
+                backgroundColor: theme.background.tertiary,
+                border: `1px solid ${theme.background.quaternary}`,
                 borderRadius: '6px',
-                color: '#FF9800',
+                color: theme.primary.main,
                 fontSize: '14px',
                 cursor: 'not-allowed',
                 fontWeight: '500'
@@ -1238,7 +1239,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               marginBottom: '8px', 
               fontSize: '14px', 
               fontWeight: '500',
-              color: '#ffffff'
+              color: theme.text.primary
             }}>
               CSV File:
             </label>
@@ -1286,10 +1287,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               style={{
                 width: '400px',
                 padding: '12px',
-                backgroundColor: '#2a2a2a',
-                border: '1px solid #3a3a3a',
+                backgroundColor: theme.background.secondary,
+                border: `1px solid ${theme.background.quaternary}`,
                 borderRadius: '6px',
-                color: '#fff',
+                color: theme.text.primary,
                 fontSize: '14px'
               }}
             />
@@ -1300,8 +1301,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             disabled={!file || uploading}
             style={{
               padding: '12px 24px',
-              backgroundColor: file && !uploading ? '#FF9800' : '#2a2a2a',
-              color: '#fff',
+              backgroundColor: file && !uploading ? theme.primary.main : theme.interactive.disabled,
+              color: file && !uploading ? '#ffffff' : theme.text.muted,
               border: 'none',
               borderRadius: '6px',
               cursor: file && !uploading ? 'pointer' : 'not-allowed',
@@ -1316,18 +1317,18 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             <div style={{ 
               marginTop: '20px', 
               padding: '16px', 
-              backgroundColor: '#0a0a0a', 
+              backgroundColor: theme.background.tertiary, 
               borderRadius: '6px',
-              border: '1px solid #2a2a2a'
+              border: `1px solid ${theme.background.quaternary}`
             }}>
-              <h4 style={{ color: '#FF9800', marginBottom: '12px' }}>File Information</h4>
-              <p style={{ color: '#fff', marginBottom: '8px' }}>
+              <h4 style={{ color: 'theme.primary.main', marginBottom: '12px' }}>File Information</h4>
+              <p style={{ color: theme.text.primary, marginBottom: '8px' }}>
                 <strong>Filename:</strong> {fileInfo.filename}
               </p>
-              <p style={{ color: '#fff', marginBottom: '8px' }}>
+              <p style={{ color: theme.text.primary, marginBottom: '8px' }}>
                 <strong>Total Records:</strong> {fileInfo.total_records.toLocaleString()}
               </p>
-              <p style={{ color: '#fff' }}>
+              <p style={{ color: theme.text.primary }}>
                 <strong>Headers:</strong> {fileInfo.headers.join(', ')}
               </p>
             </div>
@@ -1338,8 +1339,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       {/* Mapping Step */}
       {currentStep === 'mapping' && (
         <div className={getAnimationClass()} style={{
-          backgroundColor: '#1a1a1a',
-          border: '2px solid #FF9800',
+          backgroundColor: theme.background.secondary,
+          border: `2px solid ${theme.background.quaternary}`,
           borderRadius: '12px',
           padding: '24px',
           marginBottom: '24px'
@@ -1348,7 +1349,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             <h3 style={{ 
               fontSize: '18px', 
               fontWeight: '600', 
-              color: '#FF9800',
+              color: theme.primary.main,
               marginBottom: '8px'
             }}>
               🔗 Field Mapping
@@ -1366,7 +1367,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             <div style={{
               padding: '40px',
               textAlign: 'center',
-              color: '#FF9800'
+              color: 'theme.primary.main'
             }}>
               <div style={{ fontSize: '16px', marginBottom: '8px' }}>
                 {fetchingSchema ? 'Fetching FSM Schema...' : 'Auto-Mapping Fields...'}
@@ -1389,8 +1390,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 disabled={fetchingSchema}
                 style={{
                   padding: '10px 20px',
-                  backgroundColor: fetchingSchema ? '#2a2a2a' : '#FF9800',
-                  color: '#fff',
+                  backgroundColor: fetchingSchema ? theme.background.tertiary : theme.primary.main,
+                  color: '#FFFFFF',
                   border: 'none',
                   borderRadius: '6px',
                   cursor: fetchingSchema ? 'not-allowed' : 'pointer',
@@ -1405,8 +1406,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 disabled={!schema || autoMapping}
                 style={{
                   padding: '10px 20px',
-                  backgroundColor: schema && !autoMapping ? '#dc2626' : '#2a2a2a',
-                  color: '#fff',
+                  backgroundColor: schema && !autoMapping ? theme.primary.main : theme.background.tertiary,
+                  color: '#FFFFFF',
                   border: 'none',
                   borderRadius: '6px',
                   cursor: schema && !autoMapping ? 'pointer' : 'not-allowed',
@@ -1425,8 +1426,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 onClick={() => changeStep('validation')}
                 style={{
                   padding: '12px 24px',
-                  backgroundColor: '#dc2626',
-                  color: '#fff',
+                  backgroundColor: theme.primary.main,
+                  color: '#FFFFFF',
                   border: 'none',
                   borderRadius: '6px',
                   cursor: 'pointer',
@@ -1442,21 +1443,61 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           {/* Mapping Table */}
           {Object.keys(mappingData.mapping || {}).length > 0 && (
             <div style={{
-              backgroundColor: '#0a0a0a',
+              backgroundColor: theme.background.secondary,
               borderRadius: '6px',
-              border: '1px solid #2a2a2a',
+              border: `1px solid ${theme.background.quaternary}`,
               overflow: 'hidden'
             }}>
               <h4 style={{ 
-                color: '#FF9800', 
+                color: theme.primary.main, 
                 marginBottom: '0px',
                 padding: '16px',
-                borderBottom: '1px solid #2a2a2a',
+                borderBottom: `1px solid ${theme.background.quaternary}`,
                 fontSize: '16px',
                 fontWeight: '600'
               }}>
                 Field Mappings ({Object.keys(mappingData.mapping || {}).length} mapped)
               </h4>
+              
+              {/* Mapping Summary Bar */}
+              <div style={{
+                padding: '12px 16px',
+                backgroundColor: '#F7F7FB',
+                borderBottom: `1px solid ${theme.background.quaternary}`,
+                display: 'flex',
+                gap: '24px',
+                fontSize: '13px',
+                fontWeight: '500'
+              }}>
+                {(() => {
+                  const totalFields = Object.keys(mappingData.mapping || {}).length;
+                  const enabledFields = Object.values(mappingData.mapping || {}).filter(m => m.enabled !== false).length;
+                  const mappedFields = Object.values(mappingData.mapping || {}).filter(m => m.fsm_field && m.enabled !== false).length;
+                  const unmappedFields = enabledFields - mappedFields;
+                  const conflictFields = 0; // Could add conflict detection logic here
+                  
+                  return (
+                    <>
+                      <span style={{ color: theme.text.primary }}>
+                        <strong>{mappedFields}</strong> fields mapped
+                      </span>
+                      {unmappedFields > 0 && (
+                        <span style={{ color: '#FF9800' }}>
+                          <strong>{unmappedFields}</strong> unmapped
+                        </span>
+                      )}
+                      {conflictFields > 0 && (
+                        <span style={{ color: '#C8102E' }}>
+                          <strong>{conflictFields}</strong> conflicts
+                        </span>
+                      )}
+                      <span style={{ color: theme.text.secondary }}>
+                        {totalFields - enabledFields} disabled
+                      </span>
+                    </>
+                  );
+                })()}
+              </div>
               
               {/* Table Header */}
               <div style={{
@@ -1464,11 +1505,11 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 gridTemplateColumns: '80px 1fr 1fr 120px',
                 gap: '16px',
                 padding: '12px 16px',
-                backgroundColor: '#1a1a1a',
-                borderBottom: '1px solid #2a2a2a',
+                backgroundColor: '#F1F1F6',
+                borderBottom: `1px solid ${theme.background.quaternary}`,
                 fontSize: '12px',
                 fontWeight: '600',
-                color: '#999',
+                color: theme.text.secondary,
                 textTransform: 'uppercase'
               }}>
                 <div>Enable</div>
@@ -1486,12 +1527,22 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                     display: 'grid',
                     gridTemplateColumns: '80px 1fr 1fr 120px',
                     gap: '16px',
-                    padding: '12px 16px',
-                    borderBottom: index < Object.keys(mappingData.mapping || {}).length - 1 ? '1px solid #2a2a2a' : 'none',
+                    padding: '10px 16px',
+                    borderBottom: index < Object.keys(mappingData.mapping || {}).length - 1 ? `1px solid ${theme.background.quaternary}` : 'none',
                     alignItems: 'center',
                     fontSize: '13px',
                     opacity: isEnabled ? 1 : 0.4,
-                    backgroundColor: isEnabled ? 'transparent' : '#0a0a0a'
+                    backgroundColor: index % 2 === 0 ? theme.background.secondary : '#FAFAFC',
+                    transition: 'background-color 0.2s ease',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (isEnabled) {
+                      e.currentTarget.style.backgroundColor = theme.interactive.hover;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = index % 2 === 0 ? theme.background.secondary : '#FAFAFC';
                   }}>
                     {/* Enable Checkbox */}
                     <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -1520,7 +1571,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
 
                     {/* CSV Field */}
                     <div style={{ 
-                      color: isEnabled ? '#fff' : '#666',
+                      color: isEnabled ? theme.text.primary : theme.text.muted,
                       fontWeight: '500',
                       fontFamily: 'monospace'
                     }}>
@@ -1546,13 +1597,28 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         placeholder="Search FSM field..."
                         style={{
                           width: '100%',
-                          padding: '6px 8px',
-                          backgroundColor: isEnabled ? '#1a1a1a' : '#0a0a0a',
-                          border: `1px solid ${isEnabled ? '#2a2a2a' : '#1a1a1a'}`,
+                          padding: '8px 10px',
+                          backgroundColor: isEnabled ? theme.background.secondary : theme.background.secondary,
+                          border: `1px solid ${isEnabled ? theme.background.quaternary : theme.background.secondary}`,
                           borderRadius: '4px',
-                          color: isEnabled ? '#fff' : '#666',
+                          color: isEnabled ? theme.text.primary : theme.text.muted,
                           fontSize: '12px',
-                          cursor: isEnabled ? 'text' : 'not-allowed'
+                          cursor: isEnabled ? 'text' : 'not-allowed',
+                          transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
+                        }}
+                        onFocus={(e) => {
+                          if (isEnabled) {
+                            e.target.style.borderColor = theme.primary.main;
+                            e.target.style.boxShadow = `0 0 0 2px ${theme.accent.purpleTintMedium}`;
+                            setSearchDropdownOpen(csvColumn);
+                            setSearchQuery(prev => ({ ...prev, [csvColumn]: mappingInfo.fsm_field || '' }));
+                          }
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = isEnabled ? theme.background.quaternary : theme.background.secondary;
+                          e.target.style.boxShadow = 'none';
+                          // Delay closing to allow click on dropdown items
+                          setTimeout(() => setSearchDropdownOpen(null), 150);
                         }}
                       />
                       
@@ -1565,12 +1631,12 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                           right: 0,
                           maxHeight: '200px',
                           overflowY: 'auto',
-                          backgroundColor: '#1a1a1a',
-                          border: '1px solid #2a2a2a',
+                          backgroundColor: theme.background.secondary,
+                          border: `1px solid ${theme.background.quaternary}`,
                           borderRadius: '4px',
                           marginTop: '4px',
                           zIndex: 1000,
-                          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)'
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
                         }}>
                           {(() => {
                             const allFields = Object.keys(schema.properties || {});
@@ -1633,11 +1699,11 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                                   padding: '8px 12px',
                                   cursor: 'pointer',
                                   fontSize: '12px',
-                                  color: '#fff',
-                                  borderBottom: '1px solid #2a2a2a',
+                                  color: theme.text.primary,
+                                  borderBottom: '1px solid theme.background.tertiary',
                                   transition: 'background-color 0.2s'
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2a2a'}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'theme.background.tertiary'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                               >
                                 {field}
@@ -1659,15 +1725,12 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         backgroundColor: 
                           mappingInfo.confidence === 'exact' ? '#1a4d2e' :
                           mappingInfo.confidence === 'fuzzy' ? '#4d2e1a' :
-                          mappingInfo.confidence === 'manual' ? '#1a2e4d' : '#2a2a2a',
-                        color: 
-                          mappingInfo.confidence === 'exact' ? '#4CAF50' :
-                          mappingInfo.confidence === 'fuzzy' ? '#FF9800' :
-                          mappingInfo.confidence === 'manual' ? '#2196F3' : '#999',
+                          mappingInfo.confidence === 'manual' ? '#1a2e4d' : 'theme.background.tertiary',
+                        color: '#FFFFFF',
                         border: `1px solid ${
                           mappingInfo.confidence === 'exact' ? '#4CAF50' :
-                          mappingInfo.confidence === 'fuzzy' ? '#FF9800' :
-                          mappingInfo.confidence === 'manual' ? '#2196F3' : '#2a2a2a'
+                          mappingInfo.confidence === 'fuzzy' ? 'theme.primary.main' :
+                          mappingInfo.confidence === 'manual' ? '#2196F3' : 'theme.background.tertiary'
                         }`
                       }}>
                         {mappingInfo.confidence === 'exact' ? 'Exact' :
@@ -1684,13 +1747,13 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               {((mappingData.unmapped_csv_columns?.length || 0) > 0 || (mappingData.unmapped_fsm_fields?.length || 0) > 0) && (
                 <div style={{
                   padding: '16px',
-                  backgroundColor: '#1a1a1a',
-                  borderTop: '1px solid #2a2a2a',
+                  backgroundColor: 'theme.background.secondary',
+                  borderTop: '1px solid theme.background.tertiary',
                   fontSize: '12px'
                 }}>
                   {(mappingData.unmapped_csv_columns?.length || 0) > 0 && (
                     <div style={{ marginBottom: '8px' }}>
-                      <span style={{ color: '#FF9800', fontWeight: '500' }}>
+                      <span style={{ color: 'theme.primary.main', fontWeight: '500' }}>
                         Unmapped CSV Columns ({mappingData.unmapped_csv_columns?.length || 0}):
                       </span>
                       <span style={{ color: '#999', marginLeft: '8px' }}>
@@ -1700,7 +1763,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                   )}
                   {(mappingData.unmapped_fsm_fields?.length || 0) > 0 && (
                     <div>
-                      <span style={{ color: '#dc2626', fontWeight: '500' }}>
+                      <span style={{ color: 'theme.primary.main', fontWeight: '500' }}>
                         Unmapped FSM Fields ({mappingData.unmapped_fsm_fields?.length || 0}):
                       </span>
                       <span style={{ color: '#999', marginLeft: '8px' }}>
@@ -1717,9 +1780,9 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           {!fetchingSchema && !autoMapping && Object.keys(mappingData.mapping || {}).length === 0 && schema && (
             <div style={{
               padding: '20px',
-              backgroundColor: '#0a0a0a',
+              backgroundColor: 'theme.background.secondary',
               borderRadius: '6px',
-              border: '1px solid #2a2a2a',
+              border: `1px solid ${theme.background.tertiary}`,
               textAlign: 'center'
             }}>
               <p style={{ color: '#999', marginBottom: '16px' }}>
@@ -1730,9 +1793,9 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 onClick={() => changeStep('validation')}
                 style={{
                   padding: '10px 20px',
-                  backgroundColor: '#2a2a2a',
+                  backgroundColor: 'theme.background.tertiary',
                   color: '#fff',
-                  border: '1px solid #3a3a3a',
+                  border: `1px solid ${theme.background.quaternary}`,
                   borderRadius: '6px',
                   cursor: 'pointer',
                   fontSize: '14px'
@@ -1748,8 +1811,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       {/* Validation Step */}
       {currentStep === 'validation' && (
         <div className={getAnimationClass()} style={{
-          backgroundColor: '#1a1a1a',
-          border: '2px solid #FF9800',
+          backgroundColor: 'theme.background.secondary',
+          border: `2px solid ${theme.accent.purpleTintMedium}`,
           borderRadius: '12px',
           padding: '24px',
           marginBottom: '24px'
@@ -1758,7 +1821,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             <h3 style={{ 
               fontSize: '18px', 
               fontWeight: '600', 
-              color: '#FF9800',
+              color: 'theme.primary.main',
               marginBottom: '8px'
             }}>
               ✅ Data Validation
@@ -1779,8 +1842,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               disabled={validating || (validationProgress?.status === 'validated')}
               style={{
                 padding: '12px 24px',
-                backgroundColor: (validating || (validationProgress?.status === 'validated')) ? '#2a2a2a' : '#dc2626',
-                color: '#fff',
+                backgroundColor: (validating || (validationProgress?.status === 'validated')) ? theme.background.tertiary : theme.primary.main,
+                color: '#FFFFFF',
                 border: 'none',
                 borderRadius: '6px',
                 cursor: (validating || (validationProgress?.status === 'validated')) ? 'not-allowed' : 'pointer',
@@ -1801,8 +1864,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       }}
                       style={{
                         padding: '12px 24px',
-                        backgroundColor: '#FF9800',
-                        color: '#fff',
+                        backgroundColor: theme.primary.main,
+                        color: '#FFFFFF',
                         border: 'none',
                         borderRadius: '6px',
                         cursor: 'pointer',
@@ -1855,17 +1918,17 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             <div style={{
               marginBottom: '20px',
               padding: '16px',
-              backgroundColor: '#0a0a0a',
+              backgroundColor: 'theme.background.secondary',
               borderRadius: '6px',
-              border: '1px solid #2a2a2a'
+              border: `1px solid ${theme.background.tertiary}`
             }}>
-              <h4 style={{ color: '#FF9800', marginBottom: '12px' }}>
+              <h4 style={{ color: 'theme.primary.main', marginBottom: '12px' }}>
                 Validation Progress
               </h4>
               <div style={{
                 width: '100%',
                 height: '8px',
-                backgroundColor: '#2a2a2a',
+                backgroundColor: 'theme.background.tertiary',
                 borderRadius: '4px',
                 marginBottom: '12px',
                 overflow: 'hidden',
@@ -1882,7 +1945,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 <div style={{
                   width: `${validationProgress.errors_found / validationProgress.total_records * 100}%`,
                   height: '100%',
-                  backgroundColor: '#dc2626',
+                  backgroundColor: 'theme.primary.main',
                   transition: 'width 0.3s ease'
                 }} />
               </div>
@@ -1911,17 +1974,17 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           {/* Validation Errors Display */}
           {validationErrors.length > 0 && (
             <div style={{
-              backgroundColor: '#0a0a0a',
+              backgroundColor: 'theme.background.secondary',
               borderRadius: '6px',
-              border: '1px solid #2a2a2a',
+              border: `1px solid ${theme.background.tertiary}`,
               overflow: 'hidden',
               marginBottom: '20px'
             }}>
               <h4 style={{ 
-                color: '#dc2626', 
+                color: 'theme.primary.main', 
                 marginBottom: '0px',
                 padding: '16px',
-                borderBottom: '1px solid #2a2a2a',
+                borderBottom: '1px solid theme.background.tertiary',
                 fontSize: '16px',
                 fontWeight: '600'
               }}>
@@ -1931,7 +1994,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               {/* Error Filters */}
               <div style={{
                 padding: '16px',
-                borderBottom: '1px solid #2a2a2a',
+                borderBottom: '1px solid theme.background.tertiary',
                 display: 'flex',
                 gap: '16px',
                 alignItems: 'center'
@@ -1947,11 +2010,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                     placeholder="Field name..."
                     style={{
                       padding: '6px 8px',
-                      backgroundColor: '#1a1a1a',
-                      border: '1px solid #2a2a2a',
+                      backgroundColor: 'theme.background.secondary',
+                      border: `1px solid ${theme.background.tertiary}`,
                       borderRadius: '4px',
-                      color: '#fff',
-                      fontSize: '12px',
+                      color: theme.text.primary, fontSize: '12px',
                       width: '150px'
                     }}
                   />
@@ -1965,11 +2027,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                     onChange={(e) => setErrorTypeFilter(e.target.value)}
                     style={{
                       padding: '6px 8px',
-                      backgroundColor: '#1a1a1a',
-                      border: '1px solid #2a2a2a',
+                      backgroundColor: 'theme.background.secondary',
+                      border: `1px solid ${theme.background.tertiary}`,
                       borderRadius: '4px',
-                      color: '#fff',
-                      fontSize: '12px',
+                      color: theme.text.primary, fontSize: '12px',
                       width: '150px'
                     }}
                   >
@@ -1990,8 +2051,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                   gridTemplateColumns: '80px 120px 1fr 1fr 120px',
                   gap: '12px',
                   padding: '12px 16px',
-                  backgroundColor: '#1a1a1a',
-                  borderBottom: '1px solid #2a2a2a',
+                  backgroundColor: 'theme.background.secondary',
+                  borderBottom: '1px solid theme.background.tertiary',
                   fontSize: '12px',
                   fontWeight: '600',
                   color: '#999',
@@ -2016,14 +2077,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       gridTemplateColumns: '80px 120px 1fr 1fr 120px',
                       gap: '12px',
                       padding: '12px 16px',
-                      borderBottom: '1px solid #2a2a2a',
+                      borderBottom: '1px solid theme.background.tertiary',
                       alignItems: 'center',
                       fontSize: '13px'
                     }}>
-                      <div style={{ color: '#FF9800', fontWeight: '500' }}>
+                      <div style={{ color: 'theme.primary.main', fontWeight: '500' }}>
                         {error.row_number}
                       </div>
-                      <div style={{ color: '#fff', fontFamily: 'monospace' }}>
+                      <div style={{ color: theme.text.primary, fontFamily: 'monospace' }}>
                         {error.field_name}
                       </div>
                       <div style={{ 
@@ -2035,7 +2096,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       }}>
                         {error.field_value || '(empty)'}
                       </div>
-                      <div style={{ color: '#dc2626', fontSize: '12px' }}>
+                      <div style={{ color: 'theme.primary.main', fontSize: '12px' }}>
                         {error.error_message}
                       </div>
                       <div>
@@ -2050,11 +2111,11 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                             error.error_type === 'type' ? '#1a2e4d' :
                             error.error_type === 'enum' ? '#4d2e1a' :
                             error.error_type === 'pattern' ? '#2e1a4d' :
-                            error.error_type === 'reference' ? '#1a4d2e' : '#2a2a2a',
+                            error.error_type === 'reference' ? '#1a4d2e' : 'theme.background.tertiary',
                           color: 
-                            error.error_type === 'required' ? '#dc2626' :
+                            error.error_type === 'required' ? 'theme.primary.main' :
                             error.error_type === 'type' ? '#2196F3' :
-                            error.error_type === 'enum' ? '#FF9800' :
+                            error.error_type === 'enum' ? 'theme.primary.main' :
                             error.error_type === 'pattern' ? '#9C27B0' :
                             error.error_type === 'reference' ? '#4CAF50' : '#999'
                         }}>
@@ -2068,8 +2129,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               {validationErrors.length > 50 && (
                 <div style={{
                   padding: '12px 16px',
-                  backgroundColor: '#1a1a1a',
-                  borderTop: '1px solid #2a2a2a',
+                  backgroundColor: 'theme.background.secondary',
+                  borderTop: '1px solid theme.background.tertiary',
                   fontSize: '12px',
                   color: '#999',
                   textAlign: 'center'
@@ -2085,8 +2146,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       {/* Load Step */}
       {currentStep === 'load' && (
         <div className={getAnimationClass()} style={{
-          backgroundColor: '#1a1a1a',
-          border: '2px solid #FF9800',
+          backgroundColor: 'theme.background.secondary',
+          border: `2px solid ${theme.accent.purpleTintMedium}`,
           borderRadius: '12px',
           padding: '24px',
           marginBottom: '24px'
@@ -2095,7 +2156,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             <h3 style={{ 
               fontSize: '18px', 
               fontWeight: '600', 
-              color: '#FF9800',
+              color: 'theme.primary.main',
               marginBottom: '8px'
             }}>
               ⚡ Load to FSM
@@ -2144,8 +2205,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               {/* Interface Parameters Form - Show when checkbox is checked */}
               {interfaceParams.editAndInterface && (
                 <div style={{
-                  backgroundColor: '#1a1a1a',
-                  border: '2px solid #FF9800',
+                  backgroundColor: 'theme.background.secondary',
+                  border: `2px solid ${theme.accent.purpleTintMedium}`,
                   borderRadius: '12px',
                   padding: '24px',
                   marginBottom: '20px'
@@ -2154,7 +2215,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                     <h3 style={{ 
                       fontSize: '18px', 
                       fontWeight: '600', 
-                      color: '#FF9800',
+                      color: 'theme.primary.main',
                       marginBottom: '8px'
                     }}>
                       ⚙️ Interface Parameters
@@ -2183,8 +2244,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: '#1a1a1a',
-                          border: '1px solid #2a2a2a',
+                          backgroundColor: 'theme.background.secondary',
+                          border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
                           color: '#999',
                           fontSize: '13px',
@@ -2205,8 +2266,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: '#1a1a1a',
-                          border: '1px solid #2a2a2a',
+                          backgroundColor: 'theme.background.secondary',
+                          border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
                           color: '#999',
                           fontSize: '13px',
@@ -2230,11 +2291,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: '#0a0a0a',
-                          border: '1px solid #2a2a2a',
+                          backgroundColor: 'theme.background.secondary',
+                          border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
-                          color: '#fff',
-                          fontSize: '13px'
+                          color: theme.text.primary, fontSize: '13px'
                         }}
                       />
                     </div>
@@ -2254,11 +2314,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: '#0a0a0a',
-                          border: '1px solid #2a2a2a',
+                          backgroundColor: 'theme.background.secondary',
+                          border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
-                          color: '#fff',
-                          fontSize: '13px'
+                          color: theme.text.primary, fontSize: '13px'
                         }}
                       />
                     </div>
@@ -2278,11 +2337,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: '#0a0a0a',
-                          border: '1px solid #2a2a2a',
+                          backgroundColor: 'theme.background.secondary',
+                          border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
-                          color: '#fff',
-                          fontSize: '13px'
+                          color: theme.text.primary, fontSize: '13px'
                         }}
                       />
                     </div>
@@ -2351,14 +2409,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
-                      backgroundColor: '#1a1a1a',
+                      backgroundColor: 'theme.background.secondary',
                       borderRadius: '6px',
-                      border: '1px solid #2a2a2a',
+                      border: `1px solid ${theme.background.tertiary}`,
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.background.secondary}
                     >
                       <input
                         type="checkbox"
@@ -2369,7 +2427,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         }))}
                         style={{ width: '18px', height: '18px' }}
                       />
-                      <span style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>
+                      <span style={{ fontSize: '14px', color: theme.text.primary, fontWeight: '500' }}>
                         Journalize by Entity
                       </span>
                     </label>
@@ -2379,14 +2437,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
-                      backgroundColor: '#1a1a1a',
+                      backgroundColor: 'theme.background.secondary',
                       borderRadius: '6px',
-                      border: '1px solid #2a2a2a',
+                      border: `1px solid ${theme.background.tertiary}`,
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.background.secondary}
                     >
                       <input
                         type="checkbox"
@@ -2397,7 +2455,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         }))}
                         style={{ width: '18px', height: '18px' }}
                       />
-                      <span style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>
+                      <span style={{ fontSize: '14px', color: theme.text.primary, fontWeight: '500' }}>
                         Journal by Journal Code
                       </span>
                     </label>
@@ -2407,14 +2465,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
-                      backgroundColor: '#1a1a1a',
+                      backgroundColor: 'theme.background.secondary',
                       borderRadius: '6px',
-                      border: '1px solid #2a2a2a',
+                      border: `1px solid ${theme.background.tertiary}`,
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.background.secondary}
                     >
                       <input
                         type="checkbox"
@@ -2425,7 +2483,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         }))}
                         style={{ width: '18px', height: '18px' }}
                       />
-                      <span style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>
+                      <span style={{ fontSize: '14px', color: theme.text.primary, fontWeight: '500' }}>
                         Bypass Organization Code
                       </span>
                     </label>
@@ -2435,14 +2493,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
-                      backgroundColor: '#1a1a1a',
+                      backgroundColor: 'theme.background.secondary',
                       borderRadius: '6px',
-                      border: '1px solid #2a2a2a',
+                      border: `1px solid ${theme.background.tertiary}`,
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.background.secondary}
                     >
                       <input
                         type="checkbox"
@@ -2453,7 +2511,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         }))}
                         style={{ width: '18px', height: '18px' }}
                       />
-                      <span style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>
+                      <span style={{ fontSize: '14px', color: theme.text.primary, fontWeight: '500' }}>
                         Bypass Account Code
                       </span>
                     </label>
@@ -2463,14 +2521,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
-                      backgroundColor: '#1a1a1a',
+                      backgroundColor: 'theme.background.secondary',
                       borderRadius: '6px',
-                      border: '1px solid #2a2a2a',
+                      border: `1px solid ${theme.background.tertiary}`,
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.background.secondary}
                     >
                       <input
                         type="checkbox"
@@ -2481,7 +2539,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         }))}
                         style={{ width: '18px', height: '18px' }}
                       />
-                      <span style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>
+                      <span style={{ fontSize: '14px', color: theme.text.primary, fontWeight: '500' }}>
                         Interface in Detail
                       </span>
                     </label>
@@ -2491,14 +2549,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
-                      backgroundColor: '#1a1a1a',
+                      backgroundColor: 'theme.background.secondary',
                       borderRadius: '6px',
-                      border: '1px solid #2a2a2a',
+                      border: `1px solid ${theme.background.tertiary}`,
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.background.secondary}
                     >
                       <input
                         type="checkbox"
@@ -2509,7 +2567,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         }))}
                         style={{ width: '18px', height: '18px' }}
                       />
-                      <span style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>
+                      <span style={{ fontSize: '14px', color: theme.text.primary, fontWeight: '500' }}>
                         Bypass Structure Relation Edit
                       </span>
                     </label>
@@ -2519,14 +2577,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
-                      backgroundColor: '#1a1a1a',
+                      backgroundColor: 'theme.background.secondary',
                       borderRadius: '6px',
-                      border: '1px solid #2a2a2a',
+                      border: `1px solid ${theme.background.tertiary}`,
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.background.secondary}
                     >
                       <input
                         type="checkbox"
@@ -2537,7 +2595,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         }))}
                         style={{ width: '18px', height: '18px' }}
                       />
-                      <span style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>
+                      <span style={{ fontSize: '14px', color: theme.text.primary, fontWeight: '500' }}>
                         Bypass Negative Rate Edit
                       </span>
                     </label>
@@ -2547,14 +2605,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
-                      backgroundColor: '#1a1a1a',
+                      backgroundColor: 'theme.background.secondary',
                       borderRadius: '6px',
-                      border: '1px solid #2a2a2a',
+                      border: `1px solid ${theme.background.tertiary}`,
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.background.secondary}
                     >
                       <input
                         type="checkbox"
@@ -2565,7 +2623,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         }))}
                         style={{ width: '18px', height: '18px' }}
                       />
-                      <span style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>
+                      <span style={{ fontSize: '14px', color: theme.text.primary, fontWeight: '500' }}>
                         Move Errors to New RunGroup
                       </span>
                     </label>
@@ -2588,11 +2646,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         style={{
                           width: '300px',
                           padding: '10px',
-                          backgroundColor: '#0a0a0a',
-                          border: '1px solid #2a2a2a',
+                          backgroundColor: 'theme.background.secondary',
+                          border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
-                          color: '#fff',
-                          fontSize: '13px'
+                          color: theme.text.primary, fontSize: '13px'
                         }}
                       />
                     </div>
@@ -2604,8 +2661,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 onClick={handleStartLoad}
                 style={{
                   padding: '12px 24px',
-                  backgroundColor: '#dc2626',
-                  color: '#fff',
+                  backgroundColor: theme.primary.main,
+                  color: '#FFFFFF',
                   border: 'none',
                   borderRadius: '6px',
                   cursor: 'pointer',
@@ -2621,7 +2678,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           {loading && (
             <div style={{
               padding: '24px',
-              backgroundColor: '#0a0a0a',
+              backgroundColor: theme.background.secondary,
               borderRadius: '8px',
               textAlign: 'center'
             }}>
@@ -2629,14 +2686,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               <div style={{
                 width: '48px',
                 height: '48px',
-                border: '4px solid #2a2a2a',
-                borderTop: '4px solid #FF9800',
+                border: `4px solid ${theme.background.quaternary}`,
+                borderTop: `4px solid ${theme.primary.main}`,
                 borderRadius: '50%',
                 animation: 'spin 1s linear infinite',
                 margin: '0 auto 16px auto'
               }} />
               
-              <div style={{ fontSize: '16px', fontWeight: '600', color: '#FF9800', marginBottom: '8px' }}>
+              <div style={{ fontSize: '16px', fontWeight: '600', color: theme.primary.main, marginBottom: '8px' }}>
                 {interfaceParams.editAndInterface ? 'Loading Records to FSM & Interfacing to GL...' : 'Loading Records to FSM...'}
               </div>
               
@@ -2656,7 +2713,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                   <div style={{
                     width: '100%',
                     height: '8px',
-                    backgroundColor: '#2a2a2a',
+                    backgroundColor: 'theme.background.tertiary',
                     borderRadius: '4px',
                     overflow: 'hidden',
                     marginBottom: '12px'
@@ -2664,7 +2721,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                     <div style={{
                       width: `${Math.min(100, (loadProgress.records_processed / loadProgress.total_records) * 100)}%`,
                       height: '100%',
-                      backgroundColor: '#FF9800',
+                      backgroundColor: 'theme.primary.main',
                       transition: 'width 0.3s ease'
                     }} />
                   </div>
@@ -2698,7 +2755,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           {/* Load Results Display */}
           <div style={{
             backgroundColor: loadResult.total_failure === 0 ? '#1a2e1a' : '#2e1a1a',
-            border: `2px solid ${loadResult.total_failure === 0 ? '#22c55e' : '#dc2626'}`,
+            border: `2px solid ${loadResult.total_failure === 0 ? '#22c55e' : 'theme.primary.main'}`,
             borderRadius: '12px',
             padding: '24px',
             marginBottom: '24px'
@@ -2707,7 +2764,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               <h3 style={{ 
                 fontSize: '18px', 
                 fontWeight: '600', 
-                color: loadResult.total_failure === 0 ? '#22c55e' : '#dc2626',
+                color: loadResult.total_failure === 0 ? '#22c55e' : 'theme.primary.main',
                 marginBottom: '8px'
               }}>
                 {loadResult.total_failure === 0 ? '🎉 Load Completed Successfully' : '❌ Load Failed'}
@@ -2738,44 +2795,44 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             }}>
               <div style={{
                 padding: '16px',
-                backgroundColor: '#0a0a0a',
+                backgroundColor: 'theme.background.secondary',
                 borderRadius: '6px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '24px', fontWeight: '600', color: '#FF9800' }}>
+                <div style={{ fontSize: '24px', fontWeight: '600', color: 'theme.primary.main' }}>
                   {loadResult.success_count.toLocaleString()}
                 </div>
                 <div style={{ fontSize: '12px', color: '#999' }}>Records Loaded</div>
               </div>
               <div style={{
                 padding: '16px',
-                backgroundColor: '#0a0a0a',
+                backgroundColor: 'theme.background.secondary',
                 borderRadius: '6px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '18px', fontWeight: '600', color: '#FF9800' }}>
+                <div style={{ fontSize: '18px', fontWeight: '600', color: 'theme.primary.main' }}>
                   {loadResult.business_class}
                 </div>
                 <div style={{ fontSize: '12px', color: '#999' }}>Business Class</div>
               </div>
               <div style={{
                 padding: '16px',
-                backgroundColor: '#0a0a0a',
+                backgroundColor: 'theme.background.secondary',
                 borderRadius: '6px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '18px', fontWeight: '600', color: '#FF9800' }}>
+                <div style={{ fontSize: '18px', fontWeight: '600', color: 'theme.primary.main' }}>
                   {loadResult.run_group}
                 </div>
                 <div style={{ fontSize: '12px', color: '#999' }}>Run Group</div>
               </div>
               <div style={{
                 padding: '16px',
-                backgroundColor: '#0a0a0a',
+                backgroundColor: 'theme.background.secondary',
                 borderRadius: '6px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '18px', fontWeight: '600', color: '#FF9800' }}>
+                <div style={{ fontSize: '18px', fontWeight: '600', color: 'theme.primary.main' }}>
                   {loadResult.chunks_processed}
                 </div>
                 <div style={{ fontSize: '12px', color: '#999' }}>Chunks Processed</div>
@@ -2786,7 +2843,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             {loadResult.total_failure > 0 && (
               <div style={{
                 backgroundColor: '#1a0a0a',
-                border: '1px solid #dc2626',
+                border: '1px solid theme.primary.main',
                 borderRadius: '8px',
                 padding: '16px',
                 marginBottom: '20px'
@@ -2800,7 +2857,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                   <h4 style={{
                     fontSize: '14px',
                     fontWeight: '600',
-                    color: '#dc2626',
+                    color: 'theme.primary.main',
                     margin: 0
                   }}>
                     ⚠️ Error Details
@@ -2810,14 +2867,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 {loadResult.error_message && (
                   <div style={{
                     padding: '12px',
-                    backgroundColor: '#0a0a0a',
+                    backgroundColor: 'theme.background.secondary',
                     borderRadius: '6px',
                     marginBottom: '12px'
                   }}>
                     <div style={{ fontSize: '12px', color: '#999', marginBottom: '4px' }}>
                       Error Message:
                     </div>
-                    <div style={{ fontSize: '13px', color: '#fff', fontFamily: 'monospace' }}>
+                    <div style={{ fontSize: '13px', color: theme.text.primary, fontFamily: 'monospace' }}>
                       {loadResult.error_message}
                     </div>
                   </div>
@@ -2828,9 +2885,9 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                     <summary style={{
                       cursor: 'pointer',
                       fontSize: '13px',
-                      color: '#FF9800',
+                      color: 'theme.primary.main',
                       padding: '8px',
-                      backgroundColor: '#0a0a0a',
+                      backgroundColor: 'theme.background.secondary',
                       borderRadius: '4px',
                       userSelect: 'none'
                     }}>
@@ -2839,7 +2896,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                     <pre style={{
                       marginTop: '8px',
                       padding: '12px',
-                      backgroundColor: '#0a0a0a',
+                      backgroundColor: 'theme.background.secondary',
                       borderRadius: '6px',
                       fontSize: '11px',
                       color: '#fff',
@@ -2857,12 +2914,12 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 <div style={{
                   marginTop: '12px',
                   padding: '10px',
-                  backgroundColor: '#0a0a0a',
+                  backgroundColor: 'theme.background.secondary',
                   borderRadius: '6px',
                   fontSize: '12px',
                   color: '#999'
                 }}>
-                  💡 <strong style={{ color: '#FF9800' }}>Next Steps:</strong>
+                  💡 <strong style={{ color: 'theme.primary.main' }}>Next Steps:</strong>
                   <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
                     <li>Review the error message above to understand what went wrong</li>
                     <li>Check validation results for data quality issues</li>
@@ -2923,7 +2980,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 onClick={onBack}
                 style={{
                   padding: '12px 16px',
-                  backgroundColor: '#2a2a2a',
+                  backgroundColor: 'theme.background.tertiary',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '6px',
@@ -2940,8 +2997,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           {/* Interface Transactions Section - Only show if interface was NOT selected during load */}
           {loadResult.total_failure === 0 && !interfaceParams.editAndInterface && (
             <div style={{
-              backgroundColor: '#1a1a1a',
-              border: '2px solid #FF9800',
+              backgroundColor: 'theme.background.secondary',
+              border: `2px solid ${theme.accent.purpleTintMedium}`,
               borderRadius: '12px',
               padding: '24px',
               marginBottom: '24px'
@@ -2950,7 +3007,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 <h3 style={{ 
                   fontSize: '18px', 
                   fontWeight: '600', 
-                  color: '#FF9800',
+                  color: 'theme.primary.main',
                   marginBottom: '8px'
                 }}>
                   ⚡ Interface Transactions
@@ -2965,8 +3022,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                   onClick={() => setShowInterfaceForm(true)}
                   style={{
                     padding: '12px 24px',
-                    backgroundColor: '#FF9800',
-                    color: '#fff',
+                    backgroundColor: theme.primary.main,
+                    color: '#FFFFFF',
                     border: 'none',
                     borderRadius: '6px',
                     cursor: 'pointer',
@@ -2996,11 +3053,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: '#0a0a0a',
-                          border: '1px solid #2a2a2a',
+                          backgroundColor: 'theme.background.secondary',
+                          border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
-                          color: '#fff',
-                          fontSize: '14px'
+                          color: theme.text.primary, fontSize: '14px'
                         }}
                       />
                     </div>
@@ -3015,11 +3071,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: '#0a0a0a',
-                          border: '1px solid #2a2a2a',
+                          backgroundColor: 'theme.background.secondary',
+                          border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
-                          color: '#fff',
-                          fontSize: '14px'
+                          color: theme.text.primary, fontSize: '14px'
                         }}
                       />
                     </div>
@@ -3034,11 +3089,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: '#0a0a0a',
-                          border: '1px solid #2a2a2a',
+                          backgroundColor: 'theme.background.secondary',
+                          border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
-                          color: '#fff',
-                          fontSize: '14px'
+                          color: theme.text.primary, fontSize: '14px'
                         }}
                       />
                     </div>
@@ -3053,11 +3107,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: '#0a0a0a',
-                          border: '1px solid #2a2a2a',
+                          backgroundColor: 'theme.background.secondary',
+                          border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
-                          color: '#fff',
-                          fontSize: '14px'
+                          color: theme.text.primary, fontSize: '14px'
                         }}
                       />
                     </div>
@@ -3072,11 +3125,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         style={{
                           width: '100%',
                           padding: '10px',
-                          backgroundColor: '#0a0a0a',
-                          border: '1px solid #2a2a2a',
+                          backgroundColor: 'theme.background.secondary',
+                          border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
-                          color: '#fff',
-                          fontSize: '14px'
+                          color: theme.text.primary, fontSize: '14px'
                         }}
                       />
                     </div>
@@ -3145,14 +3197,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
-                      backgroundColor: '#1a1a1a',
+                      backgroundColor: 'theme.background.secondary',
                       borderRadius: '6px',
-                      border: '1px solid #2a2a2a',
+                      border: `1px solid ${theme.background.tertiary}`,
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.background.secondary}
                     >
                       <input
                         type="checkbox"
@@ -3160,7 +3212,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         onChange={(e) => setInterfaceParams(prev => ({ ...prev, journalizeByEntity: e.target.checked }))}
                         style={{ width: '18px', height: '18px' }}
                       />
-                      <span style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>
+                      <span style={{ fontSize: '14px', color: theme.text.primary, fontWeight: '500' }}>
                         Journalize by Entity
                       </span>
                     </label>
@@ -3170,14 +3222,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
-                      backgroundColor: '#1a1a1a',
+                      backgroundColor: 'theme.background.secondary',
                       borderRadius: '6px',
-                      border: '1px solid #2a2a2a',
+                      border: `1px solid ${theme.background.tertiary}`,
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.background.secondary}
                     >
                       <input
                         type="checkbox"
@@ -3185,7 +3237,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         onChange={(e) => setInterfaceParams(prev => ({ ...prev, journalByJournalCode: e.target.checked }))}
                         style={{ width: '18px', height: '18px' }}
                       />
-                      <span style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>
+                      <span style={{ fontSize: '14px', color: theme.text.primary, fontWeight: '500' }}>
                         Journal by Journal Code
                       </span>
                     </label>
@@ -3195,14 +3247,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
-                      backgroundColor: '#1a1a1a',
+                      backgroundColor: 'theme.background.secondary',
                       borderRadius: '6px',
-                      border: '1px solid #2a2a2a',
+                      border: `1px solid ${theme.background.tertiary}`,
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.background.secondary}
                     >
                       <input
                         type="checkbox"
@@ -3210,7 +3262,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         onChange={(e) => setInterfaceParams(prev => ({ ...prev, bypassOrganizationCode: e.target.checked }))}
                         style={{ width: '18px', height: '18px' }}
                       />
-                      <span style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>
+                      <span style={{ fontSize: '14px', color: theme.text.primary, fontWeight: '500' }}>
                         Bypass Organization Code
                       </span>
                     </label>
@@ -3220,14 +3272,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
-                      backgroundColor: '#1a1a1a',
+                      backgroundColor: 'theme.background.secondary',
                       borderRadius: '6px',
-                      border: '1px solid #2a2a2a',
+                      border: `1px solid ${theme.background.tertiary}`,
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.background.secondary}
                     >
                       <input
                         type="checkbox"
@@ -3235,7 +3287,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         onChange={(e) => setInterfaceParams(prev => ({ ...prev, bypassAccountCode: e.target.checked }))}
                         style={{ width: '18px', height: '18px' }}
                       />
-                      <span style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>
+                      <span style={{ fontSize: '14px', color: theme.text.primary, fontWeight: '500' }}>
                         Bypass Account Code
                       </span>
                     </label>
@@ -3245,14 +3297,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
-                      backgroundColor: '#1a1a1a',
+                      backgroundColor: 'theme.background.secondary',
                       borderRadius: '6px',
-                      border: '1px solid #2a2a2a',
+                      border: `1px solid ${theme.background.tertiary}`,
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.background.secondary}
                     >
                       <input
                         type="checkbox"
@@ -3260,7 +3312,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         onChange={(e) => setInterfaceParams(prev => ({ ...prev, interfaceInDetail: e.target.checked }))}
                         style={{ width: '18px', height: '18px' }}
                       />
-                      <span style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>
+                      <span style={{ fontSize: '14px', color: theme.text.primary, fontWeight: '500' }}>
                         Interface in Detail
                       </span>
                     </label>
@@ -3270,14 +3322,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
-                      backgroundColor: '#1a1a1a',
+                      backgroundColor: 'theme.background.secondary',
                       borderRadius: '6px',
-                      border: '1px solid #2a2a2a',
+                      border: `1px solid ${theme.background.tertiary}`,
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.background.secondary}
                     >
                       <input
                         type="checkbox"
@@ -3285,7 +3337,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         onChange={(e) => setInterfaceParams(prev => ({ ...prev, bypassStructureRelationEdit: e.target.checked }))}
                         style={{ width: '18px', height: '18px' }}
                       />
-                      <span style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>
+                      <span style={{ fontSize: '14px', color: theme.text.primary, fontWeight: '500' }}>
                         Bypass Structure Relation Edit
                       </span>
                     </label>
@@ -3295,14 +3347,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
-                      backgroundColor: '#1a1a1a',
+                      backgroundColor: 'theme.background.secondary',
                       borderRadius: '6px',
-                      border: '1px solid #2a2a2a',
+                      border: `1px solid ${theme.background.tertiary}`,
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.background.secondary}
                     >
                       <input
                         type="checkbox"
@@ -3310,7 +3362,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         onChange={(e) => setInterfaceParams(prev => ({ ...prev, bypassNegativeRateEdit: e.target.checked }))}
                         style={{ width: '18px', height: '18px' }}
                       />
-                      <span style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>
+                      <span style={{ fontSize: '14px', color: theme.text.primary, fontWeight: '500' }}>
                         Bypass Negative Rate Edit
                       </span>
                     </label>
@@ -3320,14 +3372,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
-                      backgroundColor: '#1a1a1a',
+                      backgroundColor: 'theme.background.secondary',
                       borderRadius: '6px',
-                      border: '1px solid #2a2a2a',
+                      border: `1px solid ${theme.background.tertiary}`,
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.background.secondary}
                     >
                       <input
                         type="checkbox"
@@ -3335,7 +3387,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         onChange={(e) => setInterfaceParams(prev => ({ ...prev, moveErrorsToNewRunGroup: e.target.checked }))}
                         style={{ width: '18px', height: '18px' }}
                       />
-                      <span style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>
+                      <span style={{ fontSize: '14px', color: theme.text.primary, fontWeight: '500' }}>
                         Move Errors to New RunGroup
                       </span>
                     </label>
@@ -3355,11 +3407,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         style={{
                           width: '300px',
                           padding: '10px',
-                          backgroundColor: '#0a0a0a',
-                          border: '1px solid #2a2a2a',
+                          backgroundColor: 'theme.background.secondary',
+                          border: `1px solid ${theme.background.tertiary}`,
                           borderRadius: '6px',
-                          color: '#fff',
-                          fontSize: '13px'
+                          color: theme.text.primary, fontSize: '13px'
                         }}
                       />
                     </div>
@@ -3372,8 +3423,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       disabled={interfacing}
                       style={{
                         padding: '12px 24px',
-                        backgroundColor: interfacing ? '#2a2a2a' : '#FF9800',
-                        color: '#fff',
+                        backgroundColor: interfacing ? theme.background.tertiary : theme.primary.main,
+                        color: '#FFFFFF',
                         border: 'none',
                         borderRadius: '6px',
                         cursor: interfacing ? 'not-allowed' : 'pointer',
@@ -3387,8 +3438,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       onClick={() => setShowInterfaceForm(false)}
                       style={{
                         padding: '12px 24px',
-                        backgroundColor: '#2a2a2a',
-                        color: '#fff',
+                        backgroundColor: theme.background.tertiary,
+                        color: '#FFFFFF',
                         border: 'none',
                         borderRadius: '6px',
                         cursor: 'pointer',
@@ -3406,11 +3457,11 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       marginTop: '20px',
                       padding: '16px',
                       backgroundColor: interfaceResult.success ? '#1a2e1a' : '#2e1a1a',
-                      border: `1px solid ${interfaceResult.success ? '#22c55e' : '#dc2626'}`,
+                      border: `1px solid ${interfaceResult.success ? '#22c55e' : 'theme.primary.main'}`,
                       borderRadius: '6px'
                     }}>
                       <p style={{ 
-                        color: interfaceResult.success ? '#22c55e' : '#dc2626', 
+                        color: interfaceResult.success ? '#22c55e' : 'theme.primary.main', 
                         fontSize: '14px', 
                         margin: '0 0 12px 0',
                         fontWeight: '600'
@@ -3430,13 +3481,13 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                             Interface Verification Results:
                           </div>
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', color: '#ccc' }}>
-                            <div>Status: <span style={{ color: interfaceResult.verification.status_label === 'Complete' ? '#22c55e' : '#dc2626', fontWeight: '500' }}>
+                            <div>Status: <span style={{ color: interfaceResult.verification.status_label === 'Complete' ? '#22c55e' : 'theme.primary.main', fontWeight: '500' }}>
                               {interfaceResult.verification.status_label || 'Unknown'}
                             </span></div>
                             <div>Result Sequence: {interfaceResult.verification.result_sequence}</div>
                             <div>Total Records: {interfaceResult.verification.total_records.toLocaleString()}</div>
                             <div>Successfully Imported: <span style={{ color: '#22c55e' }}>{interfaceResult.verification.successfully_imported.toLocaleString()}</span></div>
-                            <div>Records with Error: <span style={{ color: interfaceResult.verification.records_with_error > 0 ? '#dc2626' : '#22c55e' }}>
+                            <div>Records with Error: <span style={{ color: interfaceResult.verification.records_with_error > 0 ? 'theme.primary.main' : '#22c55e' }}>
                               {interfaceResult.verification.records_with_error.toLocaleString()}
                             </span></div>
                             <div>RunGroup: {interfaceResult.verification.run_group}</div>
@@ -3450,10 +3501,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                           marginTop: '12px',
                           padding: '8px',
                           backgroundColor: 'rgba(220, 38, 38, 0.1)',
-                          border: '1px solid #dc2626',
+                          border: '1px solid theme.primary.main',
                           borderRadius: '4px',
                           fontSize: '13px',
-                          color: '#dc2626'
+                          color: 'theme.primary.main'
                         }}>
                           Error: {interfaceResult.error}
                         </div>
@@ -3468,8 +3519,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           {/* Delete RunGroup Section */}
           {loadResult.total_failure === 0 && (
             <div style={{
-              backgroundColor: '#1a1a1a',
-              border: '2px solid #dc2626',
+              backgroundColor: 'theme.background.secondary',
+              border: `2px solid ${theme.accent.purpleTintMedium}`,
               borderRadius: '12px',
               padding: '24px',
               marginBottom: '24px'
@@ -3478,7 +3529,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 <h3 style={{ 
                   fontSize: '18px', 
                   fontWeight: '600', 
-                  color: '#dc2626',
+                  color: 'theme.primary.main',
                   marginBottom: '8px'
                 }}>
                   🗑️ Delete RunGroup
@@ -3492,7 +3543,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 onClick={handleDeleteRunGroup}
                 style={{
                   padding: '12px 24px',
-                  backgroundColor: '#dc2626',
+                  backgroundColor: 'theme.primary.main',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '6px',
@@ -3524,8 +3575,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           zIndex: 1000
         }}>
           <div style={{
-            backgroundColor: '#1a1a1a',
-            border: '2px solid #dc2626',
+            backgroundColor: 'theme.background.secondary',
+            border: `2px solid ${theme.accent.purpleTintMedium}`,
             borderRadius: '12px',
             padding: '32px',
             maxWidth: '500px',
@@ -3537,7 +3588,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               <h3 style={{ 
                 fontSize: '20px', 
                 fontWeight: '600', 
-                color: '#dc2626',
+                color: 'theme.primary.main',
                 marginBottom: '8px'
               }}>
                 Delete RunGroup
@@ -3545,10 +3596,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               <p style={{ fontSize: '14px', color: '#999', marginBottom: '16px' }}>
                 This will permanently delete all transactions for RunGroup:
               </p>
-              <p style={{ fontSize: '16px', color: '#dc2626', fontWeight: '600', marginBottom: '16px' }}>
+              <p style={{ fontSize: '16px', color: 'theme.primary.main', fontWeight: '600', marginBottom: '16px' }}>
                 {loadResult?.run_group}
               </p>
-              <p style={{ fontSize: '12px', color: '#dc2626' }}>
+              <p style={{ fontSize: '12px', color: 'theme.primary.main' }}>
                 ⚠️ This action cannot be undone!
               </p>
             </div>
@@ -3565,11 +3616,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 style={{
                   width: '100%',
                   padding: '12px',
-                  backgroundColor: '#0a0a0a',
-                  border: '1px solid #dc2626',
+                  backgroundColor: 'theme.background.secondary',
+                  border: '1px solid theme.primary.main',
                   borderRadius: '6px',
-                  color: '#fff',
-                  fontSize: '14px'
+                  color: theme.text.primary, fontSize: '14px'
                 }}
               />
             </div>
@@ -3584,7 +3634,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 style={{
                   flex: 1,
                   padding: '14px 20px',
-                  backgroundColor: deleting || deleteConfirmation !== loadResult?.run_group ? '#2a2a2a' : '#dc2626',
+                  backgroundColor: deleting || deleteConfirmation !== loadResult?.run_group ? 'theme.background.tertiary' : 'theme.primary.main',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '8px',
@@ -3603,7 +3653,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 style={{
                   flex: 1,
                   padding: '14px 20px',
-                  backgroundColor: '#2a2a2a',
+                  backgroundColor: 'theme.background.tertiary',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '8px',
@@ -3623,3 +3673,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
 };
 
 export default ConversionWorkflow;
+
+
+
+
