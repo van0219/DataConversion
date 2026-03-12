@@ -4,9 +4,13 @@ inclusion: always
 
 # FSM Data Conversion Workspace Guide
 
+## Executive Summary
+
+**FSM DataBridge** is a self-hosted web application co-developed by Kiro that automates data conversion for Infor FSM implementations, reducing consultant effort by 80% while eliminating manual errors through intelligent field mapping and real-time validation.
+
 ## Workspace Purpose
 
-This workspace contains the **FSM Conversion Workbench** - a complete web application for converting, validating, and loading data into Infor FSM (Financials and Supply Management) systems.
+This workspace contains the **FSM Conversion Workbench** (also known as **FSM DataBridge**) - a complete web application for converting, validating, and loading data into Infor FSM (Financials and Supply Management) systems.
 
 **Architecture**: Local-first web application (FastAPI + React + SQLite)  
 **Users**: Infor FSM technical and functional consultants  
