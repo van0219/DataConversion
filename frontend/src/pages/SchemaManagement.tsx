@@ -23,6 +23,7 @@ interface ImportResult {
   operations: string[];
   schema_hash: string;
   schema_id: number;
+  reactivated?: boolean;  // Flag to indicate schema was reactivated
 }
 
 const SchemaManagement: React.FC = () => {
@@ -389,7 +390,12 @@ const SchemaManagement: React.FC = () => {
                 {importResult.new_schema ? '✅' : 'ℹ️'}
               </span>
               <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: theme.text.primary }}>
-                {importResult.new_schema ? 'New Schema Version Created' : 'Schema Already Exists'}
+                {importResult.reactivated 
+                  ? 'Schema Reactivated' 
+                  : importResult.new_schema 
+                    ? 'New Schema Version Created' 
+                    : 'Schema Already Exists'
+                }
               </h3>
             </div>
 

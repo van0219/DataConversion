@@ -86,16 +86,18 @@ class WorkflowOrchestrator:
             steps_completed.append("upload")
             logger.info(f"✓ Upload complete. Job ID: {job_id}")
             
-            # Step 2: Fetch schema
-            logger.info("Step 2: Fetching schema...")
-            schema = await SchemaService.fetch_and_store_schema(
-                db,
-                account_id,
-                business_class,
-                force_refresh=False
-            )
+            # Step 2: Get existing schema (no auto-fetch)
+            logger.info("Step 2: Getting existing schema...")
+            schema = SchemaService.get_latest_schema(db, account_id, business_class)
+            
+            if not schema:
+                raise ValueError(
+                    f"No schema found for business class '{business_class}'. "
+                    f"Please upload a schema via the Schema Management page first."
+                )
+            
             steps_completed.append("schema")
-            logger.info(f"✓ Schema fetched. Version: {schema.version_number}")
+            logger.info(f"✓ Using existing schema. Version: {schema.version_number}")
             
             # Step 3: Auto-map fields or apply template
             logger.info("Step 3: Mapping fields...")

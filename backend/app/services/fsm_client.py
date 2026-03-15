@@ -643,6 +643,123 @@ class FSMClient:
                 logger.error(f"Query error: {str(e)}")
                 raise Exception(f"Query error: {str(e)}")
     
+    async def query_gl_transaction_interface_errors(
+        self,
+        run_group: str
+    ) -> List[Dict]:
+        """
+        Query GLTransactionInterface records to get detailed error information for failed records.
+        Returns list of records with their error messages.
+        
+        URL format:
+        {base_url}/{tenant_id}/FSM/fsm/soap/classes/GLTransactionInterface/lists/_generic?
+        _fields=GLTransactionInterface.SequenceNumber,GLTransactionInterface.RunGroup,GLTransactionInterface.ErrorMessage,GLTransactionInterface.Description,GLTransactionInterface.TransactionAmount,GLTransactionInterface.AccountCode
+        &_limit=1000
+        &_lplFilter=GLTransactionInterface.RunGroup = "{run_group}" AND GLTransactionInterface.ErrorMessage <> ""
+        &_links=false&_pageNav=true&_out=JSON&_flatten=false&_omitCountValue=false
+        """
+        await self._ensure_authenticated()
+        
+        # Build URL
+        url = f"{self.base_url}/{self.tenant_id}/FSM/fsm/soap/classes/GLTransactionInterface/lists/_generic"
+        
+        # Build query parameters - get records with error messages
+        params = {
+            "_fields": "GLTransactionInterface.SequenceNumber,GLTransactionInterface.RunGroup,GLTransactionInterface.ErrorMessage,GLTransactionInterface.Description,GLTransactionInterface.TransactionAmount,GLTransactionInterface.AccountCode,GLTransactionInterface.PostingDate,GLTransactionInterface.FinanceEnterpriseGroup,GLTransactionInterface.AccountingEntity",
+            "_limit": "1000",
+            "_lplFilter": f'GLTransactionInterface.RunGroup = "{run_group}" AND GLTransactionInterface.ErrorMessage <> ""',
+            "_links": "false",
+            "_pageNav": "true",
+            "_out": "JSON",
+            "_flatten": "false",
+            "_omitCountValue": "false"
+        }
+        
+        logger.info(f"Querying GLTransactionInterface errors for RunGroup: {run_group}")
+        
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            try:
+                response = await client.get(
+                    url,
+                    headers={"Authorization": f"Bearer {self.access_token}"},
+                    params=params
+                )
+                response.raise_for_status()
+                
+                result = response.json()
+                logger.info(f"Error query completed successfully")
+                
+                # Response format: [metadata, record1, record2, ...]
+                # Extract error records (skip first element which is metadata)
+                error_records = []
+                if isinstance(result, list) and len(result) > 1:
+                    for i in range(1, len(result)):  # Skip metadata at index 0
+                        if isinstance(result[i], dict) and "_fields" in result[i]:
+                            fields = result[i]["_fields"]
+                            error_records.append({
+                                "sequence_number": fields.get("GLTransactionInterface.SequenceNumber", ""),
+                                "run_group": fields.get("GLTransactionInterface.RunGroup", ""),
+                                "error_message": fields.get("GLTransactionInterface.ErrorMessage", ""),
+                                "description": fields.get("GLTransactionInterface.Description", ""),
+                                "transaction_amount": fields.get("GLTransactionInterface.TransactionAmount", ""),
+                                "account_code": fields.get("GLTransactionInterface.AccountCode", ""),
+                                "posting_date": fields.get("GLTransactionInterface.PostingDate", ""),
+                                "finance_enterprise_group": fields.get("GLTransactionInterface.FinanceEnterpriseGroup", ""),
+                                "accounting_entity": fields.get("GLTransactionInterface.AccountingEntity", "")
+                            })
+                
+                logger.info(f"Found {len(error_records)} records with interface errors")
+                return error_records
+                
+            except httpx.HTTPStatusError as e:
+                logger.error(f"Error query failed: {e.response.status_code} - {e.response.text}")
+                # Try with simpler filter if complex filter fails
+                if "ConditionNode tree failed" in e.response.text:
+                    logger.warning(f"Complex filter failed, trying simpler approach...")
+                    # Get all records for RunGroup and filter client-side
+                    simple_params = {
+                        "_fields": "GLTransactionInterface.SequenceNumber,GLTransactionInterface.RunGroup,GLTransactionInterface.ErrorMessage,GLTransactionInterface.Description,GLTransactionInterface.TransactionAmount,GLTransactionInterface.AccountCode,GLTransactionInterface.PostingDate,GLTransactionInterface.FinanceEnterpriseGroup,GLTransactionInterface.AccountingEntity",
+                        "_limit": "1000",
+                        "_lplFilter": f'GLTransactionInterface.RunGroup = "{run_group}"',
+                        "_links": "false",
+                        "_pageNav": "true",
+                        "_out": "JSON",
+                        "_flatten": "false",
+                        "_omitCountValue": "false"
+                    }
+                    
+                    retry_response = await client.get(url, headers={"Authorization": f"Bearer {self.access_token}"}, params=simple_params)
+                    retry_response.raise_for_status()
+                    
+                    result = retry_response.json()
+                    error_records = []
+                    if isinstance(result, list) and len(result) > 1:
+                        for i in range(1, len(result)):
+                            if isinstance(result[i], dict) and "_fields" in result[i]:
+                                fields = result[i]["_fields"]
+                                error_msg = fields.get("GLTransactionInterface.ErrorMessage", "")
+                                # Filter client-side for non-empty error messages
+                                if error_msg and error_msg.strip():
+                                    error_records.append({
+                                        "sequence_number": fields.get("GLTransactionInterface.SequenceNumber", ""),
+                                        "run_group": fields.get("GLTransactionInterface.RunGroup", ""),
+                                        "error_message": error_msg,
+                                        "description": fields.get("GLTransactionInterface.Description", ""),
+                                        "transaction_amount": fields.get("GLTransactionInterface.TransactionAmount", ""),
+                                        "account_code": fields.get("GLTransactionInterface.AccountCode", ""),
+                                        "posting_date": fields.get("GLTransactionInterface.PostingDate", ""),
+                                        "finance_enterprise_group": fields.get("GLTransactionInterface.FinanceEnterpriseGroup", ""),
+                                        "accounting_entity": fields.get("GLTransactionInterface.AccountingEntity", "")
+                                    })
+                    
+                    logger.info(f"Found {len(error_records)} records with interface errors (client-side filtered)")
+                    return error_records
+                else:
+                    raise Exception(f"Error query failed: {e.response.status_code} - {e.response.text}")
+            except Exception as e:
+                logger.error(f"Error query error: {str(e)}")
+                raise Exception(f"Error query error: {str(e)}")
+
     async def check_run_group_exists(
         self,
         run_group: str

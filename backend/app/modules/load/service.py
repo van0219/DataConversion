@@ -436,6 +436,7 @@ class LoadService:
         
         # Query interface results with retry logic (interface may take time to complete)
         summary = None
+        error_details = []
         max_retries = 3
         retry_delay = 3
         
@@ -443,6 +444,10 @@ class LoadService:
             try:
                 summary = await fsm_client.query_gl_transaction_interface_result(run_group)
                 if summary:
+                    # If there are errors, get detailed error information
+                    if summary.get('records_with_error', 0) > 0:
+                        logger.info(f"Interface has {summary['records_with_error']} errors, fetching detailed error information...")
+                        error_details = await fsm_client.query_gl_transaction_interface_errors(run_group)
                     break
                 else:
                     logger.info(f"No interface result found yet (attempt {attempt + 1}/{max_retries}), retrying in {retry_delay} seconds...")
@@ -470,7 +475,8 @@ class LoadService:
                     "successfully_imported": summary["successfully_imported"],
                     "records_with_error": summary["records_with_error"],
                     "run_group": summary["run_group"]
-                }
+                },
+                "error_details": error_details  # Include detailed error information
             }
         else:
             logger.warning(f"No interface result found for RunGroup: {run_group} after {max_retries} attempts")
@@ -478,6 +484,7 @@ class LoadService:
                 "api_response": result,
                 "interface_successful": False,
                 "verification": None,
+                "error_details": [],
                 "error": "Could not verify interface results - no GLTransactionInterfaceResult found"
             }
     

@@ -154,9 +154,14 @@ const RulesManagement = () => {
   const loadRuleSets = async () => {
     try {
       const businessClass = selectedBusinessClass === 'all' || selectedBusinessClass === '' ? null : selectedBusinessClass;
-      const response = await api.get('/rules/rule-sets', {
-        params: { business_class: businessClass }
-      });
+      
+      // Build params object, excluding null values
+      const params: any = {};
+      if (businessClass !== null) {
+        params.business_class = businessClass;
+      }
+      
+      const response = await api.get('/rules/rule-sets', { params });
       setRuleSets(response.data);
       
       // Auto-select Default rule set if available

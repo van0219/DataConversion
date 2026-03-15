@@ -50,6 +50,35 @@ class RuleExecutor:
                 row_number
             )
         
+        # IMPLEMENTED: Pattern matching validation
+        elif rule_type == "PATTERN_MATCH":
+            return self._validate_pattern_match(
+                field_name,
+                field_value,
+                rule.get("condition_expression") or rule.get("pattern"),
+                rule["error_message"],
+                row_number
+            )
+        
+        # IMPLEMENTED: Enum validation
+        elif rule_type == "ENUM_VALIDATION":
+            return self._validate_enum_validation(
+                field_name,
+                field_value,
+                rule.get("enum_values"),
+                rule["error_message"],
+                row_number
+            )
+        
+        # IMPLEMENTED: Required field validation
+        elif rule_type == "REQUIRED_FIELD":
+            return self._validate_required_override(
+                field_name,
+                field_value,
+                rule["error_message"],
+                row_number
+            )
+        
         # IMPLEMENTED: Regex pattern validation
         elif rule_type == "REGEX_OVERRIDE":
             return self._validate_regex_override(rule, record, row_number)
@@ -141,6 +170,79 @@ class RuleExecutor:
                 value,
                 "rule",
                 error_message or f"Field '{field_name}' is required"
+            )
+        
+        return None
+    
+    def _validate_pattern_match(
+        self,
+        field_name: str,
+        field_value: any,
+        pattern: str,
+        error_message: str,
+        row_number: int
+    ) -> Optional[ValidationError]:
+        """
+        Validate field value matches regex pattern.
+        FULLY IMPLEMENTED - validates using regex pattern.
+        """
+        # Skip validation if field is empty (unless required by another rule)
+        if not field_value or str(field_value).strip() == "":
+            return None
+        
+        value_str = str(field_value).strip()
+        
+        if not pattern:
+            logger.warning(f"PATTERN_MATCH rule for {field_name} has no pattern")
+            return None
+        
+        try:
+            if not re.match(pattern, value_str):
+                return ValidationError(
+                    row_number,
+                    field_name,
+                    field_value,
+                    "rule",
+                    error_message or f"Field '{field_name}' does not match required pattern"
+                )
+        except re.error as e:
+            logger.error(f"Invalid regex pattern '{pattern}': {e}")
+            return None
+        
+        return None
+    
+    def _validate_enum_validation(
+        self,
+        field_name: str,
+        field_value: any,
+        enum_values: str,
+        error_message: str,
+        row_number: int
+    ) -> Optional[ValidationError]:
+        """
+        Validate field value is in allowed enum values.
+        FULLY IMPLEMENTED - validates against comma-separated enum values.
+        """
+        # Skip validation if field is empty (unless required by another rule)
+        if not field_value or str(field_value).strip() == "":
+            return None
+        
+        value_str = str(field_value).strip()
+        
+        if not enum_values:
+            logger.warning(f"ENUM_VALIDATION rule for {field_name} has no enum values")
+            return None
+        
+        # Parse enum values (comma-separated)
+        allowed_values = [v.strip() for v in enum_values.split(',')]
+        
+        if value_str not in allowed_values:
+            return ValidationError(
+                row_number,
+                field_name,
+                field_value,
+                "rule",
+                error_message or f"Field '{field_name}' must be one of: {', '.join(allowed_values)}"
             )
         
         return None

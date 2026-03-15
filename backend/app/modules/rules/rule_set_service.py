@@ -15,7 +15,8 @@ class RuleSetService:
         """
         query = db.query(ValidationRuleSet)
         
-        if business_class:
+        # Filter by business class if provided and not empty
+        if business_class is not None and business_class.strip():
             query = query.filter(ValidationRuleSet.business_class == business_class)
         
         # Order: Common first, then by name

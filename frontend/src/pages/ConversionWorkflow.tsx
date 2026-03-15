@@ -115,18 +115,20 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       }
     `;
     document.head.appendChild(style);
-    return () => document.head.removeChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
   }, []);
 
   // Step management
-  const [currentStep, setCurrentStep] = useState<'upload' | 'mapping' | 'validation' | 'load' | 'completed'>('upload');
-  const [previousStep, setPreviousStep] = useState<'upload' | 'mapping' | 'validation' | 'load' | 'completed'>('upload');
+  const [currentStep, setCurrentStep] = useState<'upload' | 'mapping' | 'validation' | 'load' | 'postValidation' | 'completed'>('upload');
+  const [previousStep, setPreviousStep] = useState<'upload' | 'mapping' | 'validation' | 'load' | 'postValidation' | 'completed'>('upload');
   const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward'>('forward');
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set(['upload'])); // Track completed steps
 
   // Helper function to change steps with animation
-  const changeStep = (newStep: 'upload' | 'mapping' | 'validation' | 'load' | 'completed') => {
-    const stepOrder = ['upload', 'mapping', 'validation', 'load', 'completed'];
+  const changeStep = (newStep: 'upload' | 'mapping' | 'validation' | 'load' | 'postValidation' | 'completed') => {
+    const stepOrder = ['upload', 'mapping', 'validation', 'load', 'postValidation', 'completed'];
     const currentIndex = stepOrder.indexOf(currentStep);
     const newIndex = stepOrder.indexOf(newStep);
     
@@ -146,7 +148,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
   };
 
   // Helper function to handle step click
-  const handleStepClick = (step: 'upload' | 'mapping' | 'validation' | 'load' | 'completed') => {
+  const handleStepClick = (step: 'upload' | 'mapping' | 'validation' | 'load' | 'postValidation' | 'completed') => {
     if (canNavigateToStep(step) && step !== currentStep) {
       changeStep(step);
     }
@@ -379,13 +381,33 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       interface_successful: boolean;
     } | null;
     error?: string;
+    error_details?: Array<{
+      sequence_number: string;
+      run_group: string;
+      error_message: string;
+      description: string;
+      transaction_amount: string;
+      account_code: string;
+      posting_date: string;
+      finance_enterprise_group: string;
+      accounting_entity: string;
+    }>;
   } | null>(null);
   const [showInterfaceForm, setShowInterfaceForm] = useState(false);
+
+  // Reset error table pagination when interface result changes
+  useEffect(() => {
+    setErrorTableCurrentPage(1);
+  }, [interfaceResult]);
 
   // Delete RunGroup state
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [deleting, setDeleting] = useState(false);
+
+  // Interface error table pagination state
+  const [errorTableCurrentPage, setErrorTableCurrentPage] = useState(1);
+  const errorTablePageSize = 10;
   // File upload handler
   const handleFileUpload = async () => {
     if (!file) return;
@@ -416,12 +438,9 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
   // Automatic mapping after upload
   const performAutomaticMapping = async (uploadJobId: number) => {
     try {
-      // First fetch schema
+      // Get existing schema (no auto-fetch)
       setFetchingSchema(true);
-      const schemaResponse = await api.post('/schema/fetch', {
-        business_class: businessClass,
-        force_refresh: false
-      });
+      const schemaResponse = await api.get(`/schema/${businessClass}/latest`);
       
       // Parse schema_json string to object
       const schemaData = schemaResponse.data;
@@ -472,6 +491,15 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
     } catch (error: any) {
       console.error('Automatic mapping failed:', error);
       
+      // Check if it's a schema not found error
+      if (error.response?.status === 404) {
+        alert(
+          `No schema found for business class '${businessClass}'.\n\n` +
+          `Please upload a schema via the Schema Management page first, then try again.`
+        );
+        return;
+      }
+      
       // If automatic mapping fails, still show the mapping step but without mappings
       // User can manually map fields
       setMappingData({
@@ -493,10 +521,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
   const fetchSchema = async () => {
     setFetchingSchema(true);
     try {
-      const response = await api.post('/schema/fetch', {
-        business_class: businessClass,
-        force_refresh: false
-      });
+      const response = await api.get(`/schema/${businessClass}/latest`);
       
       // Parse schema_json string to object
       const schemaData = response.data;
@@ -542,7 +567,16 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       setSchema(parsedSchema);
     } catch (error: any) {
       console.error('Schema fetch failed:', error);
-      alert(`Schema fetch failed: ${error.response?.data?.detail || error.message}`);
+      
+      // Check if it's a schema not found error
+      if (error.response?.status === 404) {
+        alert(
+          `No schema found for business class '${businessClass}'.\n\n` +
+          `Please upload a schema via the Schema Management page first.`
+        );
+      } else {
+        alert(`Schema fetch failed: ${error.response?.data?.detail || error.message}`);
+      }
     } finally {
       setFetchingSchema(false);
     }
@@ -849,7 +883,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       console.log('proceedWithLoad: Sending load request with enabled mapping');
       
       // Start progress polling for large files
-      let progressInterval: NodeJS.Timeout | null = null;
+      let progressInterval: number | null = null;
       if ((fileInfo?.total_records || 0) > 1000) {
         progressInterval = setInterval(async () => {
           try {
@@ -970,14 +1004,16 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           setInterfaceResult({
             success: true,
             message: `Interface completed successfully for RunGroup: ${interfaceParams.runGroup}`,
-            verification: verification
+            verification: verification,
+            error_details: result.error_details || []
           });
         } else {
           setInterfaceResult({
             success: false,
             message: `Interface failed for RunGroup: ${interfaceParams.runGroup}`,
             verification: verification,
-            error: result.error || 'Interface verification failed - records were not successfully posted to GL'
+            error: result.error || 'Interface verification failed - records were not successfully posted to GL',
+            error_details: result.error_details || []
           });
         }
       } else {
@@ -985,7 +1021,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
         setInterfaceResult({
           success: true,
           message: `Interface API call completed for RunGroup: ${interfaceParams.runGroup} (verification unavailable)`,
-          verification: null
+          verification: null,
+          error_details: []
         });
       }
       
@@ -1206,7 +1243,34 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               }
             }}
           >
-            4. Load {canNavigateToStep('load') && currentStep !== 'load' && currentStep !== 'completed' && '✓'}
+            4. Load {canNavigateToStep('load') && currentStep !== 'load' && currentStep !== 'postValidation' && currentStep !== 'completed' && '✓'}
+          </div>
+          <div 
+            onClick={() => handleStepClick('postValidation')}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: currentStep === 'postValidation' ? theme.primary.main : (canNavigateToStep('postValidation') ? theme.background.tertiary : theme.interactive.disabled),
+              color: currentStep === 'postValidation' ? '#ffffff' : theme.text.primary,
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: canNavigateToStep('postValidation') ? 'pointer' : 'default',
+              transition: 'all 0.2s ease',
+              border: canNavigateToStep('postValidation') ? `1px solid ${theme.background.quaternary}` : '1px solid transparent',
+              opacity: canNavigateToStep('postValidation') ? 1 : 0.6
+            }}
+            onMouseEnter={(e) => {
+              if (canNavigateToStep('postValidation') && currentStep !== 'postValidation') {
+                e.currentTarget.style.backgroundColor = theme.interactive.hover;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (canNavigateToStep('postValidation') && currentStep !== 'postValidation') {
+                e.currentTarget.style.backgroundColor = theme.background.tertiary;
+              }
+            }}
+          >
+            5. Post Validation {canNavigateToStep('postValidation') && currentStep !== 'postValidation' && '✓'}
           </div>
         </div>
         
@@ -1228,6 +1292,9 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           )}
           {currentStep === 'load' && (
             <p>Load validated records to FSM system with automatic error handling</p>
+          )}
+          {currentStep === 'postValidation' && (
+            <p>Post-load validation and reconciliation features (coming soon)</p>
           )}
           {currentStep === 'completed' && (
             <p>Review load results and optionally interface transactions to General Ledger</p>
@@ -1641,12 +1708,6 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         type="text"
                         value={searchQuery[csvColumn] !== undefined ? searchQuery[csvColumn] : (mappingInfo.fsm_field || '')}
                         disabled={!isEnabled}
-                        onFocus={() => {
-                          if (isEnabled) {
-                            setSearchDropdownOpen(csvColumn);
-                            setSearchQuery(prev => ({ ...prev, [csvColumn]: mappingInfo.fsm_field || '' }));
-                          }
-                        }}
                         onChange={(e) => {
                           if (!isEnabled) return;
                           setSearchQuery(prev => ({ ...prev, [csvColumn]: e.target.value }));
@@ -2898,6 +2959,53 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
         </div>
       )}
 
+      {/* Post Validation Step */}
+      {currentStep === 'postValidation' && (
+        <div className={getAnimationClass()} style={{
+          backgroundColor: theme.background.secondary,
+          border: `2px solid ${theme.accent.purpleTintMedium}`,
+          borderRadius: '12px',
+          padding: '24px',
+          marginBottom: '24px'
+        }}>
+          <div style={{ 
+            textAlign: 'center',
+            padding: '60px 20px'
+          }}>
+            <div style={{
+              fontSize: '64px',
+              marginBottom: '24px'
+            }}>
+              🚧
+            </div>
+            <h3 style={{ 
+              fontSize: '24px', 
+              fontWeight: '600', 
+              color: theme.primary.main,
+              marginBottom: '12px'
+            }}>
+              Post Validation
+            </h3>
+            <p style={{
+              fontSize: '16px',
+              color: theme.text.secondary,
+              marginBottom: '8px'
+            }}>
+              Coming Soon
+            </p>
+            <p style={{
+              fontSize: '14px',
+              color: theme.text.tertiary,
+              maxWidth: '600px',
+              margin: '0 auto',
+              lineHeight: '1.6'
+            }}>
+              This feature will provide post-load validation and reconciliation capabilities to verify data integrity after loading to FSM.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Completed Step */}
       {currentStep === 'completed' && loadResult && (
         <div className={getAnimationClass()}>
@@ -2942,55 +3050,325 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               gap: '16px',
               marginBottom: '20px'
             }}>
-              <div style={{
-                padding: '16px',
-                backgroundColor: '#FFFFFF',
-                border: `2px solid ${theme.background.quaternary}`,
-                borderRadius: '8px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '24px', fontWeight: '600', color: theme.primary.main }}>
-                  {loadResult.success_count.toLocaleString()}
-                </div>
-                <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Records Loaded</div>
-              </div>
-              <div style={{
-                padding: '16px',
-                backgroundColor: '#FFFFFF',
-                border: `2px solid ${theme.background.quaternary}`,
-                borderRadius: '8px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '18px', fontWeight: '600', color: theme.primary.main }}>
-                  {loadResult.business_class}
-                </div>
-                <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Business Class</div>
-              </div>
-              <div style={{
-                padding: '16px',
-                backgroundColor: '#FFFFFF',
-                border: `2px solid ${theme.background.quaternary}`,
-                borderRadius: '8px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '18px', fontWeight: '600', color: theme.primary.main }}>
-                  {loadResult.run_group}
-                </div>
-                <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Run Group</div>
-              </div>
-              <div style={{
-                padding: '16px',
-                backgroundColor: '#FFFFFF',
-                border: `2px solid ${theme.background.quaternary}`,
-                borderRadius: '8px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '18px', fontWeight: '600', color: theme.primary.main }}>
-                  {loadResult.chunks_processed}
-                </div>
-                <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Chunks Processed</div>
-              </div>
+              {/* Show interface metrics ONLY if interface was triggered AND has verification results */}
+              {loadResult.interface_result && loadResult.interface_result.verification ? (
+                /* Interface KPIs - Show interface-specific metrics */
+                <>
+                  <div style={{
+                    padding: '16px',
+                    backgroundColor: '#FFFFFF',
+                    border: `2px solid ${theme.background.quaternary}`,
+                    borderRadius: '8px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '24px', fontWeight: '600', color: theme.primary.main }}>
+                      {loadResult.interface_result.verification.total_records.toLocaleString()}
+                    </div>
+                    <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Records Processed</div>
+                  </div>
+                  <div style={{
+                    padding: '16px',
+                    backgroundColor: '#FFFFFF',
+                    border: `2px solid ${theme.background.quaternary}`,
+                    borderRadius: '8px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '24px', fontWeight: '600', color: '#22c55e' }}>
+                      {loadResult.interface_result.verification.successfully_imported.toLocaleString()}
+                    </div>
+                    <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Successfully Interfaced</div>
+                  </div>
+                  <div style={{
+                    padding: '16px',
+                    backgroundColor: '#FFFFFF',
+                    border: `2px solid ${theme.background.quaternary}`,
+                    borderRadius: '8px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '24px', fontWeight: '600', color: loadResult.interface_result.verification.records_with_error > 0 ? '#dc2626' : '#22c55e' }}>
+                      {loadResult.interface_result.verification.records_with_error.toLocaleString()}
+                    </div>
+                    <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Records with Errors</div>
+                  </div>
+                  <div style={{
+                    padding: '16px',
+                    backgroundColor: '#FFFFFF',
+                    border: `2px solid ${theme.background.quaternary}`,
+                    borderRadius: '8px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '18px', fontWeight: '600', color: loadResult.interface_result.verification.status_label === 'Complete' ? '#22c55e' : '#dc2626' }}>
+                      {loadResult.interface_result.verification.status_label}
+                    </div>
+                    <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Interface Status</div>
+                  </div>
+                </>
+              ) : (
+                /* Import Only KPIs - Show original load metrics */
+                <>
+                  <div style={{
+                    padding: '16px',
+                    backgroundColor: '#FFFFFF',
+                    border: `2px solid ${theme.background.quaternary}`,
+                    borderRadius: '8px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '24px', fontWeight: '600', color: theme.primary.main }}>
+                      {loadResult.success_count.toLocaleString()}
+                    </div>
+                    <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Records Loaded</div>
+                  </div>
+                  <div style={{
+                    padding: '16px',
+                    backgroundColor: '#FFFFFF',
+                    border: `2px solid ${theme.background.quaternary}`,
+                    borderRadius: '8px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '18px', fontWeight: '600', color: theme.primary.main }}>
+                      {loadResult.business_class}
+                    </div>
+                    <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Business Class</div>
+                  </div>
+                  <div style={{
+                    padding: '16px',
+                    backgroundColor: '#FFFFFF',
+                    border: `2px solid ${theme.background.quaternary}`,
+                    borderRadius: '8px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '18px', fontWeight: '600', color: theme.primary.main }}>
+                      {loadResult.run_group}
+                    </div>
+                    <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Run Group</div>
+                  </div>
+                  <div style={{
+                    padding: '16px',
+                    backgroundColor: '#FFFFFF',
+                    border: `2px solid ${theme.background.quaternary}`,
+                    borderRadius: '8px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '18px', fontWeight: '600', color: theme.primary.main }}>
+                      {loadResult.chunks_processed}
+                    </div>
+                    <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Chunks Processed</div>
+                  </div>
+                </>
+              )}
             </div>
+
+            {/* Interface Error Records Table - Show only if interface has errors */}
+            {loadResult.interface_result && loadResult.interface_result.verification && 
+             loadResult.interface_result.verification.records_with_error > 0 && 
+             loadResult.interface_result.error_details && loadResult.interface_result.error_details.length > 0 && (
+              <div style={{
+                backgroundColor: '#FFFFFF',
+                border: `2px solid #dc2626`,
+                borderRadius: '8px',
+                padding: '20px',
+                marginBottom: '20px'
+              }}>
+                <div style={{ 
+                  marginBottom: '16px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <h4 style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#dc2626',
+                    margin: 0
+                  }}>
+                    ⚠️ Interface Error Records ({(loadResult.interface_result.error_details?.length || 0)} total) for RunGroup: {loadResult.interface_result.verification?.run_group || 'Unknown'}
+                  </h4>
+                  
+                  {/* Pagination Controls */}
+                  {(loadResult.interface_result.error_details?.length || 0) > errorTablePageSize && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontSize: '12px',
+                      color: theme.text.secondary
+                    }}>
+                      <button
+                        onClick={() => setErrorTableCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={errorTableCurrentPage === 1}
+                        style={{
+                          padding: '4px 8px',
+                          backgroundColor: errorTableCurrentPage === 1 ? theme.background.tertiary : theme.primary.main,
+                          color: errorTableCurrentPage === 1 ? theme.text.muted : '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: errorTableCurrentPage === 1 ? 'not-allowed' : 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        ← Prev
+                      </button>
+                      
+                      <span style={{ color: theme.text.primary, fontWeight: '500' }}>
+                        Page {errorTableCurrentPage} of {Math.ceil((loadResult.interface_result.error_details?.length || 0) / errorTablePageSize)}
+                      </span>
+                      
+                      <button
+                        onClick={() => setErrorTableCurrentPage(prev => 
+                          Math.min(Math.ceil((loadResult.interface_result.error_details?.length || 0) / errorTablePageSize), prev + 1)
+                        )}
+                        disabled={errorTableCurrentPage >= Math.ceil((loadResult.interface_result.error_details?.length || 0) / errorTablePageSize)}
+                        style={{
+                          padding: '4px 8px',
+                          backgroundColor: errorTableCurrentPage >= Math.ceil(loadResult.interface_result.error_details.length / errorTablePageSize) ? theme.background.tertiary : theme.primary.main,
+                          color: errorTableCurrentPage >= Math.ceil(loadResult.interface_result.error_details.length / errorTablePageSize) ? theme.text.muted : '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: errorTableCurrentPage >= Math.ceil(loadResult.interface_result.error_details.length / errorTablePageSize) ? 'not-allowed' : 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        Next →
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Error Records Table */}
+                <div style={{
+                  border: '1px solid #e5e5e5',
+                  borderRadius: '6px',
+                  overflow: 'hidden'
+                }}>
+                  {/* Table Header */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '80px 100px 80px 100px 120px 1fr 2fr',
+                    backgroundColor: '#f8f9fa',
+                    borderBottom: '1px solid #e5e5e5',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    color: '#374151'
+                  }}>
+                    <div style={{ padding: '12px 8px', borderRight: '1px solid #e5e5e5' }}>Sequence</div>
+                    <div style={{ padding: '12px 8px', borderRight: '1px solid #e5e5e5' }}>Account</div>
+                    <div style={{ padding: '12px 8px', borderRight: '1px solid #e5e5e5' }}>Entity</div>
+                    <div style={{ padding: '12px 8px', borderRight: '1px solid #e5e5e5' }}>Posting Date</div>
+                    <div style={{ padding: '12px 8px', borderRight: '1px solid #e5e5e5' }}>Amount</div>
+                    <div style={{ padding: '12px 8px', borderRight: '1px solid #e5e5e5' }}>Description</div>
+                    <div style={{ padding: '12px 8px' }}>Error Message</div>
+                  </div>
+
+                  {/* Table Rows */}
+                  {(() => {
+                    const errorDetails = loadResult.interface_result.error_details || [];
+                    const startIndex = (errorTableCurrentPage - 1) * errorTablePageSize;
+                    const endIndex = startIndex + errorTablePageSize;
+                    const pageErrors = errorDetails.slice(startIndex, endIndex);
+                    
+                    return pageErrors.map((error: any, index: number) => (
+                      <div 
+                        key={startIndex + index}
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '80px 100px 80px 100px 120px 1fr 2fr',
+                          borderBottom: index < pageErrors.length - 1 ? '1px solid #e5e5e5' : 'none',
+                          fontSize: '12px',
+                          color: '#374151',
+                          backgroundColor: index % 2 === 0 ? '#ffffff' : '#f9fafb'
+                        }}
+                      >
+                        <div style={{ 
+                          padding: '12px 8px', 
+                          borderRight: '1px solid #e5e5e5',
+                          fontFamily: 'monospace',
+                          fontWeight: '500'
+                        }}>
+                          {error.sequence_number || '-'}
+                        </div>
+                        <div style={{ 
+                          padding: '12px 8px', 
+                          borderRight: '1px solid #e5e5e5',
+                          fontFamily: 'monospace'
+                        }}>
+                          {error.account_code || '-'}
+                        </div>
+                        <div style={{ 
+                          padding: '12px 8px', 
+                          borderRight: '1px solid #e5e5e5',
+                          fontFamily: 'monospace'
+                        }}>
+                          {error.accounting_entity || '-'}
+                        </div>
+                        <div style={{ 
+                          padding: '12px 8px', 
+                          borderRight: '1px solid #e5e5e5',
+                          fontFamily: 'monospace'
+                        }}>
+                          {error.posting_date || '-'}
+                        </div>
+                        <div style={{ 
+                          padding: '12px 8px', 
+                          borderRight: '1px solid #e5e5e5',
+                          textAlign: 'right',
+                          fontFamily: 'monospace'
+                        }}>
+                          {error.transaction_amount ? parseFloat(error.transaction_amount).toLocaleString('en-US', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                          }) : '-'}
+                        </div>
+                        <div style={{ 
+                          padding: '12px 8px', 
+                          borderRight: '1px solid #e5e5e5',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          <span title={error.description || '-'}>
+                            {error.description || '-'}
+                          </span>
+                        </div>
+                        <div style={{ 
+                          padding: '12px 8px',
+                          color: '#dc2626',
+                          fontWeight: '500',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          <span title={error.error_message || '-'}>
+                            {error.error_message || '-'}
+                          </span>
+                        </div>
+                      </div>
+                    ));
+                  })()}
+                </div>
+
+                {/* Table Footer with Summary */}
+                <div style={{
+                  marginTop: '12px',
+                  padding: '8px 12px',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  color: theme.text.secondary,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <span>
+                    Showing {Math.min(errorTablePageSize, (loadResult.interface_result.error_details?.length || 0) - (errorTableCurrentPage - 1) * errorTablePageSize)} of {loadResult.interface_result.error_details?.length || 0} error records
+                  </span>
+                  {(loadResult.interface_result.error_details?.length || 0) > errorTablePageSize && (
+                    <span>
+                      Use pagination controls above to view all errors
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Error Details (only show if load failed) */}
             {loadResult.total_failure > 0 && (
@@ -3313,7 +3691,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         gap: '8px',
                         cursor: 'pointer',
                         fontSize: '13px',
-                        color: '#fff'
+                        color: theme.text.primary
                       }}>
                         <input
                           type="radio"
@@ -3334,7 +3712,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         gap: '8px',
                         cursor: 'pointer',
                         fontSize: '13px',
-                        color: '#fff'
+                        color: theme.text.primary
                       }}>
                         <input
                           type="radio"
@@ -3605,9 +3983,9 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       onClick={() => setShowInterfaceForm(false)}
                       style={{
                         padding: '12px 24px',
-                        backgroundColor: theme.background.tertiary,
-                        color: '#FFFFFF',
-                        border: 'none',
+                        backgroundColor: theme.background.secondary,
+                        color: theme.text.primary,
+                        border: `1px solid ${theme.background.quaternary}`,
                         borderRadius: '6px',
                         cursor: 'pointer',
                         fontSize: '14px',
@@ -3659,6 +4037,82 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                             </span></div>
                             <div>RunGroup: {interfaceResult.verification.run_group}</div>
                           </div>
+                        </div>
+                      )}
+                      
+                      {/* Detailed Error Information */}
+                      {interfaceResult.error_details && interfaceResult.error_details.length > 0 && (
+                        <div style={{
+                          marginTop: '16px',
+                          backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                          border: '1px solid #dc2626',
+                          borderRadius: '6px',
+                          padding: '16px'
+                        }}>
+                          <div style={{ 
+                            marginBottom: '12px', 
+                            fontWeight: '600', 
+                            color: '#dc2626',
+                            fontSize: '14px'
+                          }}>
+                            Interface Error Details ({interfaceResult.error_details?.length || 0} records with errors):
+                          </div>
+                          
+                          <div style={{
+                            maxHeight: '300px',
+                            overflowY: 'auto',
+                            backgroundColor: 'rgba(0,0,0,0.2)',
+                            borderRadius: '4px',
+                            padding: '12px'
+                          }}>
+                            {(interfaceResult.error_details || []).slice(0, 10).map((error: any, index: number) => (
+                              <div key={index} style={{
+                                marginBottom: '12px',
+                                paddingBottom: '12px',
+                                borderBottom: index < Math.min((interfaceResult.error_details?.length || 0), 10) - 1 ? '1px solid rgba(255,255,255,0.1)' : 'none'
+                              }}>
+                                <div style={{ 
+                                  display: 'grid', 
+                                  gridTemplateColumns: 'auto 1fr', 
+                                  gap: '8px 16px',
+                                  fontSize: '12px',
+                                  color: theme.text.secondary
+                                }}>
+                                  <strong style={{ color: '#fff' }}>Sequence:</strong>
+                                  <span>{error.sequence_number}</span>
+                                  
+                                  <strong style={{ color: '#fff' }}>Account:</strong>
+                                  <span>{error.account_code}</span>
+                                  
+                                  <strong style={{ color: '#fff' }}>Entity:</strong>
+                                  <span>{error.accounting_entity}</span>
+                                  
+                                  <strong style={{ color: '#fff' }}>Date:</strong>
+                                  <span>{error.posting_date}</span>
+                                  
+                                  <strong style={{ color: '#fff' }}>Amount:</strong>
+                                  <span>{error.transaction_amount}</span>
+                                  
+                                  <strong style={{ color: '#fff' }}>Description:</strong>
+                                  <span>{error.description}</span>
+                                  
+                                  <strong style={{ color: '#dc2626' }}>Error:</strong>
+                                  <span style={{ color: '#dc2626', fontWeight: '500' }}>{error.error_message}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          
+                          {(interfaceResult.error_details?.length || 0) > 10 && (
+                            <div style={{
+                              marginTop: '12px',
+                              fontSize: '12px',
+                              color: theme.text.secondary,
+                              fontStyle: 'italic'
+                            }}>
+                              Showing first 10 errors. Total errors: {interfaceResult.error_details?.length || 0}
+                            </div>
+                          )}
                         </div>
                       )}
                       

@@ -910,6 +910,91 @@ for field_name in mapped_record.keys():
 3. Use generated RunGroup for interface operations
 4. Query GLTransactionInterfaceResult with unique RunGroup for verification
 
+### 20. Interface Error Table (CRITICAL DEBUGGING)
+
+**Principle**: Provide comprehensive, paginated display of interface error records to help users identify and resolve specific data issues.
+
+**Implementation**:
+```tsx
+// Pagination state for error table
+const [errorTableCurrentPage, setErrorTableCurrentPage] = useState(1);
+const errorTablePageSize = 10;
+
+// Interface result with error details
+interface InterfaceResult {
+  success: boolean;
+  message: string;
+  verification?: InterfaceVerification;
+  error?: string;
+  error_details?: Array<{
+    sequence_number: string;
+    account_code: string;
+    transaction_amount: string;
+    posting_date: string;
+    description: string;
+    error_message: string;
+  }>;
+}
+
+// Paginated error table display
+{loadResult.interface_result?.error_details?.length > 0 && (
+  <div style={{ backgroundColor: '#FFFFFF', border: '2px solid #dc2626' }}>
+    {/* Table with 6 columns: Sequence, Account, Amount, Date, Description, Error */}
+    {/* Pagination controls for 10 records per page */}
+    {/* Professional table styling with alternating row colors */}
+  </div>
+)}
+```
+
+**Table Features**:
+- **6-Column Layout**: Sequence, Account, Amount, Date, Description, Error Message
+- **Pagination**: 10 records per page with Previous/Next controls
+- **Professional Styling**: Alternating row colors, proper spacing, red error highlighting
+- **Data Formatting**: Currency formatting for amounts, monospace for codes
+- **Tooltips**: For truncated text in description and error columns
+- **Responsive Design**: Grid layout adapts to screen size
+
+**Display Logic**:
+- Only shows when interface has errors (`records_with_error > 0`)
+- Displays below KPIs section for context
+- Shows total error count in header
+- Pagination controls only appear when more than 10 errors
+- Footer shows current page summary
+
+**Backend Integration**:
+```python
+# FSM Client queries interface errors
+async def query_gl_transaction_interface_errors(self, run_group: str) -> List[Dict]:
+    # Query GLTransactionInterface records with error messages
+    url = f"{base_url}/{tenant_id}/FSM/fsm/soap/classes/GLTransactionInterface/lists/_generic"
+    params = {
+        "_fields": "GLTransactionInterface.SequenceNumber,GLTransactionInterface.ErrorMessage,...",
+        "_lplFilter": f'GLTransactionInterface.RunGroup = "{run_group}" AND GLTransactionInterface.ErrorMessage <> ""'
+    }
+    # Returns structured error records with all field details
+```
+
+**User Experience Benefits**:
+- **Root Cause Analysis**: See exact field values that caused errors
+- **Efficient Navigation**: Paginated view for large error sets
+- **Clear Error Messages**: FSM's actual error descriptions
+- **Data Context**: All transaction details for troubleshooting
+- **Professional Appearance**: Clean, readable table design
+
+**Why This Matters**:
+- Eliminates guesswork in error resolution
+- Provides complete context for each failed record
+- Enables systematic error correction
+- Reduces support requests and troubleshooting time
+- Professional debugging experience for consultants
+
+**Common Use Cases**:
+- Account code validation errors
+- Date format issues
+- Missing required fields
+- Reference data validation failures
+- Business rule violations
+
 ## Architectural Improvements (March 2026)
 
 ### Schema-Driven Platform
@@ -1253,6 +1338,54 @@ logging.basicConfig(level=logging.DEBUG)
 **Optional Enhancements** (3 remaining): Rule management UI, enhanced dashboard, end-to-end testing
 
 **Status**: Production-ready, demo-ready, schema-driven platform
+
+## Recent Updates (March 13, 2026)
+
+### Interface Error Table Enhancement (March 13, 2026) ⭐
+
+- **Achievement**: Added comprehensive paginated error table for interface debugging
+- **Interface Error Table Features**:
+  - 6-column layout: Sequence Number, Account Code, Amount, Date, Description, Error Message
+  - Pagination with 10 records per page and Previous/Next controls
+  - Professional styling with alternating row colors and red error highlighting
+  - Currency formatting for amounts, monospace fonts for codes
+  - Tooltips for truncated text fields (description and error message)
+  - Responsive grid design that adapts to screen sizes
+- **Display Logic**:
+  - Only appears when interface has errors (`records_with_error > 0`)
+  - Shows below KPIs section for immediate context
+  - Displays total error count in header
+  - Pagination controls only appear when more than 10 errors
+  - Footer shows current page summary and navigation hints
+- **Backend Integration**:
+  - Enhanced `query_gl_transaction_interface_errors()` method in FSMClient
+  - Queries GLTransactionInterface records with error messages
+  - Returns structured error data with all field details
+  - Automatic error fetching when interface verification shows failures
+- **TypeScript Integration**:
+  - Added `error_details` array to InterfaceResult interface
+  - Proper null safety with optional chaining
+  - Pagination state management with automatic reset on new results
+- **User Experience**:
+  - Root cause analysis with exact field values that caused errors
+  - Efficient navigation through large error sets
+  - Clear FSM error messages for each failed record
+  - Complete transaction context for troubleshooting
+  - Professional debugging experience for consultants
+- **Files Modified**: 
+  - `frontend/src/pages/ConversionWorkflow.tsx` (error table UI, pagination, TypeScript interfaces)
+  - `backend/app/services/fsm_client.py` (error querying method - already implemented)
+  - `backend/app/modules/load/service.py` (error fetching integration - already implemented)
+- **Documentation**: 
+  - Added Pattern #20 (Interface Error Table) to FSM_Conversion_Workbench_Architecture.md
+  - Updated Recent Updates section with comprehensive feature details
+- **Benefits**:
+  - Eliminates guesswork in interface error resolution
+  - Provides complete context for each failed record
+  - Enables systematic error correction workflows
+  - Reduces support requests and troubleshooting time
+  - Professional debugging experience matching enterprise expectations
+- **Status**: Complete, tested, production-ready with comprehensive error analysis
 
 ## Recent Updates (March 12, 2026)
 

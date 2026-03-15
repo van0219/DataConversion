@@ -77,6 +77,9 @@ async def start_load(
                 if isinstance(fsm_resp, dict):
                     error_message = fsm_resp.get("error") or fsm_resp.get("message") or "FSM API returned errors"
         
+        # Include interface result if it was triggered
+        interface_result = result.get("interface_result")
+        
         return {
             "status": "completed" if result["total_failure"] == 0 else "failed",
             "total_records": result["total_success"] + result["total_failure"],
@@ -88,7 +91,8 @@ async def start_load(
             "business_class": request.business_class,
             "timestamp": datetime.now().isoformat(),
             "error_details": result.get("error_details"),
-            "error_message": error_message
+            "error_message": error_message,
+            "interface_result": interface_result  # Include interface verification data
         }
     except ValueError as e:
         raise HTTPException(

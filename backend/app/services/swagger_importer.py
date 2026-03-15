@@ -45,23 +45,57 @@ class SwaggerImporter:
             # Compute hash
             schema_hash = SwaggerImporter.compute_schema_hash(schema_data["schema_json"])
             
-            # Check if schema already exists
+            # Check if schema already exists (active or inactive)
             existing_schema = SwaggerImporter.find_existing_schema(
                 db, account_id, business_class, schema_hash
             )
             
             if existing_schema:
-                logger.info(f"Schema already exists for {business_class} with hash {schema_hash}")
-                return {
-                    "business_class": business_class,
-                    "version": existing_schema.version_number,
-                    "new_schema": False,
-                    "fields_count": len(schema_data["fields"]),
-                    "required_fields": len(schema_data["required_fields"]),
-                    "operations": schema_data["operations"],
-                    "schema_hash": schema_hash,
-                    "schema_id": existing_schema.id
-                }
+                # If schema exists and is active, return "already exists"
+                if existing_schema.is_active:
+                    logger.info(f"Active schema already exists for {business_class} with hash {schema_hash}")
+                    return {
+                        "business_class": business_class,
+                        "version": existing_schema.version_number,
+                        "new_schema": False,
+                        "fields_count": len(schema_data["fields"]),
+                        "required_fields": len(schema_data["required_fields"]),
+                        "operations": schema_data["operations"],
+                        "schema_hash": schema_hash,
+                        "schema_id": existing_schema.id
+                    }
+                else:
+                    # If schema exists but is deactivated, reactivate it
+                    logger.info(f"Reactivating deactivated schema for {business_class} with hash {schema_hash}")
+                    
+                    # Deactivate all other schemas for this business class
+                    db.query(Schema).filter(
+                        Schema.account_id == account_id,
+                        Schema.business_class == business_class,
+                        Schema.id != existing_schema.id
+                    ).update({"is_active": False})
+                    
+                    # Reactivate this schema
+                    existing_schema.is_active = True
+                    db.commit()
+                    db.refresh(existing_schema)
+                    
+                    # Auto-generate validation rules from schema (if not already generated)
+                    from app.services.schema_rule_generator import SchemaRuleGenerator
+                    rules_created = SchemaRuleGenerator.generate_rules_for_schema(db, existing_schema)
+                    
+                    return {
+                        "business_class": business_class,
+                        "version": existing_schema.version_number,
+                        "new_schema": True,  # Treat reactivation as "new" for UI purposes
+                        "fields_count": len(schema_data["fields"]),
+                        "required_fields": len(schema_data["required_fields"]),
+                        "operations": schema_data["operations"],
+                        "schema_hash": schema_hash,
+                        "schema_id": existing_schema.id,
+                        "rules_generated": rules_created,
+                        "reactivated": True  # Flag to indicate this was a reactivation
+                    }
             
             # Create new schema version
             new_schema = SwaggerImporter.create_schema_version(

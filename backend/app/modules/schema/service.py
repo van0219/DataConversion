@@ -48,8 +48,8 @@ class SchemaService:
     @staticmethod
     def _parse_local_swagger(swagger_json: Dict, business_class: str) -> Dict:
         """
-        Parse local swagger file to extract schema fields.
-        Looks for components.schemas.createAllFieldsMultipart.
+        Parse local swagger file to extract schema fields and operations.
+        Looks for components.schemas.createAllFieldsMultipart and paths.
         Returns format compatible with OpenAPIParser.parse_schema().
         """
         try:
@@ -89,13 +89,18 @@ class SchemaService:
                 }
                 fields.append(field_info)
             
+            # Extract operations from paths section
+            from app.services.swagger_importer import SwaggerImporter
+            operations = SwaggerImporter.extract_operations(swagger_json.get("paths", {}))
+            
             parsed_schema = {
                 "business_class": business_class,
                 "fields": fields,
+                "operations": operations,
                 "raw_schema": schema
             }
             
-            logger.info(f"Parsed schema: {len(fields)} fields, {len(required_fields)} required")
+            logger.info(f"Parsed schema: {len(fields)} fields, {len(required_fields)} required, {len(operations)} operations")
             return parsed_schema
             
         except Exception as e:
@@ -185,7 +190,12 @@ class SchemaService:
             schema_json=json.dumps(parsed_schema),
             schema_hash=schema_hash,
             version_number=new_version,
-            is_active=True
+            is_active=True,
+            source="local_swagger" if openapi_json else "fsm_api",
+            operations_json=json.dumps(parsed_schema.get("operations", [])),
+            required_fields_json=json.dumps(parsed_schema.get("required_fields", [])),
+            enum_fields_json=json.dumps(parsed_schema.get("enum_fields", {})),
+            date_fields_json=json.dumps(parsed_schema.get("date_fields", []))
         )
         
         db.add(schema)
