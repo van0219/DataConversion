@@ -74,6 +74,18 @@ const RulesManagement = () => {
   const [loadingReferenceFields, setLoadingReferenceFields] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState<number | null>(null);
 
+  // Edit rule state
+  const [showEditRuleModal, setShowEditRuleModal] = useState(false);
+  const [editingRule, setEditingRule] = useState<any>(null);
+  const [editRuleForm, setEditRuleForm] = useState({
+    rule_type: '',
+    error_message: '',
+    reference_business_class: '',
+    reference_field_name: '',
+    pattern: '',
+    enum_values: ''
+  });
+
   const account = JSON.parse(localStorage.getItem('account') || '{}');
 
   useEffect(() => {
@@ -94,11 +106,6 @@ const RulesManagement = () => {
       // Extract unique business classes from schemas
       const businessClasses = [...new Set(schemas.map((s: any) => s.business_class))];
       setAvailableBusinessClasses(businessClasses);
-      
-      // If no business class selected and we have schemas, select the first one
-      if (selectedBusinessClass === 'all' && businessClasses.length > 0) {
-        setSelectedBusinessClass(businessClasses[0]);
-      }
     } catch (error) {
       console.error('Failed to load business classes:', error);
     }
@@ -155,11 +162,8 @@ const RulesManagement = () => {
     try {
       const businessClass = selectedBusinessClass === 'all' || selectedBusinessClass === '' ? null : selectedBusinessClass;
       
-      // Build params object, excluding null values
       const params: any = {};
-      if (businessClass !== null) {
-        params.business_class = businessClass;
-      }
+      if (businessClass) params.business_class = businessClass;
       
       const response = await api.get('/rules/rule-sets', { params });
       setRuleSets(response.data);
@@ -310,7 +314,7 @@ const RulesManagement = () => {
       const rulesResponse = await api.get(`/rules/rule-sets/${ruleSet.id}/rules`);
       const rules = rulesResponse.data;
 
-      // Duplicate each rule to the new rule set
+      // Duplicate each rule to the new rule set (mark as readonly - copied from Default)
       for (const rule of rules) {
         await api.post('/rules/templates', {
           name: rule.name,
@@ -324,7 +328,8 @@ const RulesManagement = () => {
           error_message: rule.error_message,
           is_active: rule.is_active,
           pattern: rule.pattern,
-          enum_values: rule.enum_values
+          enum_values: rule.enum_values,
+          is_readonly: true  // Copied from Default - not user-added, cannot be edited/deleted
         });
       }
 
@@ -440,6 +445,55 @@ const RulesManagement = () => {
     }
   };
 
+  const handleDeleteFieldRule = async (ruleId: number) => {
+    if (!confirm('Delete this rule?')) return;
+    try {
+      await api.delete(`/rules/templates/${ruleId}`);
+      await loadRuleSetFields(fieldViewData.rule_set_id);
+    } catch (error: any) {
+      alert(`Failed to delete rule: ${error.response?.data?.detail || error.message}`);
+    }
+  };
+
+  const handleOpenEditRule = (rule: any) => {
+    setEditingRule(rule);
+    setEditRuleForm({
+      rule_type: rule.rule_type,
+      error_message: rule.error_message || '',
+      reference_business_class: rule.reference_business_class || '',
+      reference_field_name: rule.reference_field_name || '',
+      pattern: rule.pattern || rule.condition_expression || '',
+      enum_values: rule.enum_values || ''
+    });
+    // Pre-load reference fields so the dropdown is populated when modal opens
+    if (rule.rule_type === 'REFERENCE_EXISTS' && rule.reference_business_class) {
+      loadReferenceFields(rule.reference_business_class);
+    } else {
+      setAvailableReferenceFields([]);
+    }
+    setShowEditRuleModal(true);
+  };
+
+  const handleUpdateRule = async () => {
+    if (!editingRule) return;
+    try {
+      await api.put(`/rules/templates/${editingRule.id}`, {
+        rule_type: editRuleForm.rule_type,
+        error_message: editRuleForm.error_message,
+        reference_business_class: editRuleForm.reference_business_class || null,
+        reference_field_name: editRuleForm.reference_field_name || null,
+        condition_expression: editRuleForm.rule_type === 'PATTERN_MATCH' ? editRuleForm.pattern : null,
+        pattern: editRuleForm.pattern || null,
+        enum_values: editRuleForm.enum_values || null
+      });
+      setShowEditRuleModal(false);
+      setEditingRule(null);
+      await loadRuleSetFields(fieldViewData.rule_set_id);
+    } catch (error: any) {
+      alert(`Failed to update rule: ${error.response?.data?.detail || error.message}`);
+    }
+  };
+
   const getRuleTypeColor = (ruleType: string) => {
     const colors: Record<string, string> = {
       'REFERENCE_EXISTS': '#2196F3',
@@ -484,7 +538,6 @@ const RulesManagement = () => {
             style={styles.filterSelect}
           >
             <option value="all">All Classes</option>
-            <option value="">GLOBAL</option>
             {availableBusinessClasses.map((businessClass) => (
               <option key={businessClass} value={businessClass}>
                 {businessClass}
@@ -495,20 +548,9 @@ const RulesManagement = () => {
       </div>
 
       {/* Rule Sets Section */}
-      {selectedBusinessClass !== 'all' && (
-        <div style={styles.ruleSetsSection}>
+      <div style={styles.ruleSetsSection}>
           <div style={styles.ruleSetsHeader}>
             <h3 style={styles.sectionTitle}>Rule Sets</h3>
-            <button 
-              onClick={() => {
-                setEditingRuleSet(null);
-                setRuleSetFormData({ name: '', description: '', is_active: true });
-                setShowRuleSetModal(true);
-              }} 
-              style={styles.createRuleSetButton}
-            >
-              + Create Rule Set
-            </button>
           </div>
 
           {ruleSets.length === 0 ? (
@@ -537,10 +579,23 @@ const RulesManagement = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                           <span style={styles.ruleSetName}>{ruleSet.name}</span>
                           {ruleSet.is_common && (
-                            <span style={styles.commonBadge}>Always Applied</span>
+                            <span style={styles.commonBadge}>{ruleSet.business_class}</span>
                           )}
                         </div>
-                        <span style={styles.ruleCount}>{ruleSet.rule_count} rules</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                          <span style={styles.ruleCount}>{ruleSet.rule_count} rules</span>
+                          <span style={{
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            fontWeight: '600' as const,
+                            backgroundColor: ruleSet.is_active ? '#e6f4ea' : '#fce8e6',
+                            color: ruleSet.is_active ? '#1e7e34' : '#c0392b',
+                            border: `1px solid ${ruleSet.is_active ? '#a8d5b5' : '#f5c6c2'}`
+                          }}>
+                            {ruleSet.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -655,7 +710,6 @@ const RulesManagement = () => {
             </div>
           )}
         </div>
-      )}
 
       {/* Create/Edit Rule Set Modal */}
       {showRuleSetModal && (
@@ -866,16 +920,32 @@ const RulesManagement = () => {
                                 key={rule.id}
                                 title={rule.error_message}
                                 style={{
-                                  padding: '2px 8px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '2px 6px',
                                   backgroundColor: rule.source === 'schema' ? theme.accent.purpleTintLight : theme.background.tertiary,
                                   border: `1px solid ${rule.source === 'schema' ? theme.primary.main : theme.background.quaternary}`,
                                   borderRadius: '4px',
                                   fontSize: '11px',
                                   color: rule.source === 'schema' ? theme.primary.main : theme.text.primary,
-                                  cursor: 'help'
                                 }}
                               >
                                 {rule.rule_type}
+                                {!fieldViewData.is_common && !rule.is_readonly && (
+                                  <>
+                                    <button
+                                      onClick={() => handleOpenEditRule(rule)}
+                                      title="Edit rule"
+                                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 1px', fontSize: '10px', color: theme.primary.main, lineHeight: 1 }}
+                                    >✏️</button>
+                                    <button
+                                      onClick={() => handleDeleteFieldRule(rule.id)}
+                                      title="Delete rule"
+                                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 1px', fontSize: '10px', color: theme.status.error, lineHeight: 1 }}
+                                    >✕</button>
+                                  </>
+                                )}
                               </span>
                             ))}
                           </div>
@@ -974,41 +1044,32 @@ const RulesManagement = () => {
 
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Reference Field Name</label>
-                  <input
-                    type="text"
-                    list="reference-fields"
+                  <select
                     value={newRule.reference_field_name}
                     onChange={(e) => setNewRule({ ...newRule, reference_field_name: e.target.value })}
                     style={{
                       ...styles.input,
-                      backgroundColor: !newRule.reference_business_class ? '#f5f5f5' : styles.input.backgroundColor,
-                      cursor: !newRule.reference_business_class ? 'not-allowed' : 'text'
+                      cursor: !newRule.reference_business_class || loadingReferenceFields ? 'not-allowed' : 'pointer'
                     }}
-                    placeholder={
-                      !newRule.reference_business_class 
-                        ? "Select a Reference Business Class first" 
-                        : loadingReferenceFields
-                        ? "Loading fields..."
-                        : "Type to search... (e.g., Account, Vendor)"
-                    }
                     disabled={!newRule.reference_business_class || loadingReferenceFields}
-                  />
-                  <datalist id="reference-fields">
-                    {availableReferenceFields
-                      .filter(field => 
-                        field.toLowerCase().includes((newRule.reference_field_name || '').toLowerCase())
-                      )
-                      .map(field => (
-                        <option key={field} value={field} />
-                      ))
-                    }
-                  </datalist>
+                  >
+                    <option value="">
+                      {!newRule.reference_business_class
+                        ? 'Select a Reference Business Class first'
+                        : loadingReferenceFields
+                        ? 'Loading fields...'
+                        : '-- Select field --'}
+                    </option>
+                    {availableReferenceFields.map(field => (
+                      <option key={field} value={field}>{field}</option>
+                    ))}
+                  </select>
                   <div style={styles.helpText}>
-                    {!newRule.reference_business_class 
-                      ? "Select a Reference Business Class to see available fields"
+                    {!newRule.reference_business_class
+                      ? 'Select a Reference Business Class to see available fields'
                       : loadingReferenceFields
-                      ? "Loading fields from schema..."
-                      : `The key field name in the ${newRule.reference_business_class} class. Example: "AccountCode" in GLTransactionInterface checks against "Account" field in Account class.`
+                      ? 'Loading fields from schema...'
+                      : `The key field in the ${newRule.reference_business_class} class to validate against.`
                     }
                   </div>
                 </div>
@@ -1077,6 +1138,93 @@ const RulesManagement = () => {
               <button onClick={handleAddRuleToField} style={styles.saveButton}>
                 Add Rule
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Rule Modal */}
+      {showEditRuleModal && editingRule && (
+        <div style={styles.modalOverlay} onClick={() => setShowEditRuleModal(false)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h2 style={styles.modalTitle}>Edit Rule: {editingRule.rule_type} on {editingRule.field_name}</h2>
+
+            {editRuleForm.rule_type === 'REFERENCE_EXISTS' && (
+              <>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Reference Business Class</label>
+                  <input
+                    type="text"
+                    list="edit-reference-classes"
+                    value={editRuleForm.reference_business_class}
+                    onChange={(e) => {
+                      setEditRuleForm({ ...editRuleForm, reference_business_class: e.target.value, reference_field_name: '' });
+                      if (e.target.value) loadReferenceFields(e.target.value);
+                    }}
+                    style={styles.input}
+                  />
+                  <datalist id="edit-reference-classes">
+                    {availableReferenceClasses.map(cls => <option key={cls} value={cls} />)}
+                  </datalist>
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Reference Field Name</label>
+                  <select
+                    value={editRuleForm.reference_field_name}
+                    onChange={(e) => setEditRuleForm({ ...editRuleForm, reference_field_name: e.target.value })}
+                    style={{
+                      ...styles.input,
+                      cursor: !editRuleForm.reference_business_class || loadingReferenceFields ? 'not-allowed' : 'pointer'
+                    }}
+                    disabled={!editRuleForm.reference_business_class || loadingReferenceFields}
+                  >
+                    <option value="">
+                      {loadingReferenceFields ? 'Loading fields...' : '-- Select field --'}
+                    </option>
+                    {availableReferenceFields.map(f => (
+                      <option key={f} value={f}>{f}</option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            )}
+
+            {editRuleForm.rule_type === 'PATTERN_MATCH' && (
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Regex Pattern</label>
+                <input
+                  type="text"
+                  value={editRuleForm.pattern}
+                  onChange={(e) => setEditRuleForm({ ...editRuleForm, pattern: e.target.value })}
+                  style={styles.input}
+                />
+              </div>
+            )}
+
+            {editRuleForm.rule_type === 'ENUM_VALIDATION' && (
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Allowed Values (comma-separated)</label>
+                <input
+                  type="text"
+                  value={editRuleForm.enum_values}
+                  onChange={(e) => setEditRuleForm({ ...editRuleForm, enum_values: e.target.value })}
+                  style={styles.input}
+                />
+              </div>
+            )}
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Error Message</label>
+              <textarea
+                value={editRuleForm.error_message}
+                onChange={(e) => setEditRuleForm({ ...editRuleForm, error_message: e.target.value })}
+                style={{ ...styles.input, minHeight: '80px' }}
+              />
+            </div>
+
+            <div style={styles.modalActions}>
+              <button onClick={() => setShowEditRuleModal(false)} style={styles.cancelButton}>Cancel</button>
+              <button onClick={handleUpdateRule} style={styles.saveButton}>Save Changes</button>
             </div>
           </div>
         </div>

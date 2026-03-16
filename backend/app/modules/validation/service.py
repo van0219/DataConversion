@@ -3,11 +3,10 @@ from sqlalchemy import func
 from typing import Dict, List, Optional
 from app.models.job import ConversionJob, ValidationError as ValidationErrorModel
 from app.models.rule import ValidationRuleTemplate, ValidationRuleAssignment
-from app.services.schema_validator import SchemaValidator, ValidationError
 from app.services.rule_executor import RuleExecutor
 from app.services.streaming_engine import StreamingEngine
 from app.services.mapping_engine import MappingEngine
-from app.modules.schema.service import SchemaService
+
 from app.modules.upload.service import UploadService
 from app.core.logging import logger
 import csv
@@ -52,25 +51,13 @@ class ValidationService:
             
             logger.info(f"Starting validation for job {job_id}")
             
-            # Get schema
-            schema = SchemaService.get_latest_schema(db, account_id, business_class)
-            if not schema:
-                job.status = "failed"
-                db.commit()
-                logger.error(f"No schema found for {business_class}")
-                return
-            
-            parsed_schema = SchemaService.get_parsed_schema(schema)
-            
-            # Get validation rules
-            rules = []
-            if enable_rules:
-                rules = ValidationService._get_active_rules(
-                    db, 
-                    account_id, 
-                    business_class,
-                    selected_rule_set_id
-                )
+            # Get validation rules from the selected Rule Set
+            rules = ValidationService._get_active_rules(
+                db,
+                account_id,
+                business_class,
+                selected_rule_set_id
+            )
             
             # Initialize rule executor
             rule_executor = RuleExecutor(db, account_id)
@@ -78,32 +65,59 @@ class ValidationService:
             # Get file path
             file_path = UploadService.get_file_path(job_id)
             
-            # TEMPORARY: Skip actual validation, just count records and mark as valid
             total_valid = 0
             total_invalid = 0
             chunk_num = 0
             
             for chunk in StreamingEngine.stream_csv(file_path, chunk_size=1000):
                 chunk_num += 1
+                chunk_errors = []
                 
-                # Count all records as valid (skip actual validation)
                 for record in chunk:
-                    total_valid += 1
+                    row_number = int(record.get("_row_number", 0))
+                    
+                    # Apply field mapping: CSV columns → FSM field names
+                    mapped_record = MappingEngine.apply_mapping(record, mapping)
+                    
+                    # Validate only against the selected Rule Set
+                    rule_errors = []
+                    for rule in rules:
+                        error = await rule_executor.execute_rule(rule, mapped_record, row_number)
+                        if error:
+                            rule_errors.append(error)
+                    
+                    if rule_errors:
+                        total_invalid += 1
+                        for err in rule_errors:
+                            chunk_errors.append({
+                                "conversion_job_id": job_id,
+                                "row_number": err.row_number,
+                                "field_name": err.field_name,
+                                "invalid_value": err.invalid_value,
+                                "error_type": err.error_type,
+                                "error_message": err.error_message
+                            })
+                    else:
+                        total_valid += 1
+                
+                # Persist errors for this chunk incrementally
+                if chunk_errors:
+                    ValidationService._persist_errors(db, job_id, chunk_errors)
                 
                 # Update progress after each chunk
                 job.valid_records = total_valid
                 job.invalid_records = total_invalid
                 db.commit()
                 
-                logger.info(f"Processed chunk {chunk_num}: {total_valid} valid, {total_invalid} invalid (validation skipped)")
+                logger.info(f"Chunk {chunk_num}: {total_valid} valid, {total_invalid} invalid so far")
             
-            # Update final job status - mark as validated so Load can proceed
+            # Update final job status
             job.status = "validated"
             job.valid_records = total_valid
             job.invalid_records = total_invalid
             db.commit()
             
-            logger.info(f"Validation complete for job {job_id}: {total_valid} valid, {total_invalid} invalid (validation skipped for testing)")
+            logger.info(f"Validation complete for job {job_id}: {total_valid} valid, {total_invalid} invalid")
             
         except Exception as e:
             logger.error(f"Validation failed for job {job_id}: {str(e)}")

@@ -1130,7 +1130,7 @@ axios.post('http://localhost:8000/validation/start', data);  // Don't do this
 
 1. **Upload**: Save CSV with `job_id` as filename → Extract headers/samples → Create `conversion_job`
 2. **Auto-Map**: Fetch FSM schema → Exact match + fuzzy match (Levenshtein) → Return confidence scores
-3. **Validate** (streaming): Stream chunks (1000 records) → Schema validation → Rule validation → Persist errors incrementally
+3. **Validate** (streaming): Stream chunks (1000 records) → Apply field mapping → Rule Set validation only → Persist errors incrementally
 4. **Review**: Display errors → Filter by type/field → Export CSV
 5. **Load** (optional): Skip invalid rows → Batch create (100 records) → Store results
 
@@ -1160,9 +1160,17 @@ axios.post('http://localhost:8000/validation/start', data);  // Don't do this
 
 ### Validation Types
 
-**Schema Validation**: required, type, enum, pattern, length, date format
+**Rule Set Validation (ONLY source during Step 3)**:
+- Driven exclusively by the Rule Set selected in the Validation step dropdown
+- Rule types: REFERENCE_EXISTS, REQUIRED_OVERRIDE, PATTERN_MATCH, ENUM_VALIDATION, REGEX_OVERRIDE
+- Schema is NOT used for validation — only for field mapping (Step 2)
+- All rules run on every record regardless of other failures (full error list per record)
 
-**Rule Validation**: REFERENCE_EXISTS, REQUIRED_OVERRIDE (extensible for NUMERIC_COMPARISON, DATE_COMPARISON)
+**Rule Set Hierarchy**:
+- Default rule set (`is_common=True`): read-only, cannot be edited or deleted
+- Custom rule sets: duplicated from Default, user can add new rules via `+` button
+- Copied rules (`is_readonly=True`): locked, no edit/delete
+- User-added rules (`is_readonly=False`): fully editable and deletable
 
 ### Batch Sizes
 
@@ -1338,6 +1346,46 @@ logging.basicConfig(level=logging.DEBUG)
 **Optional Enhancements** (3 remaining): Rule management UI, enhanced dashboard, end-to-end testing
 
 **Status**: Production-ready, demo-ready, schema-driven platform
+
+## Recent Updates (March 15, 2026)
+
+### Validation Pipeline Overhaul & Rule Management Improvements (March 15, 2026) ⭐
+
+- **Validation Pipeline — Rule-Set-Only Validation**:
+  - Removed `SchemaValidator` from the validation loop entirely
+  - Validation is now driven **exclusively** by the selected Rule Set from the dropdown
+  - Schema is used only for field mapping, not for validation
+  - This prevents confusing schema-level errors that the user never configured
+  - `enable_rules` parameter retained in signature for backward compatibility but rules always run
+
+- **Validation Pipeline — Real Pipeline Enabled**:
+  - Replaced the temporary stub (all records counted as valid) with the real pipeline
+  - Per-record flow: `MappingEngine.apply_mapping()` → `RuleExecutor.execute_rule()` per rule
+  - Errors collected per chunk and bulk-inserted incrementally (Pattern #5 compliance)
+  - `valid_records` / `invalid_records` counts committed after each chunk for accurate progress
+  - Removed unused `SchemaValidator`, `SchemaService` imports from validation service
+
+- **Rule Management — Edit/Delete User-Added Rules**:
+  - Rule badges in the Field Rules panel now show ✏️ and ✕ buttons for user-added rules
+  - Edit modal pre-fills current values; supports updating error message, reference class/field, pattern, enum values
+  - Delete prompts for confirmation before removing
+  - Both actions reload the field view after completion
+
+- **Rule Management — Readonly Protection for Duplicated Rules**:
+  - When duplicating a Default rule set, all copied rules are now created with `is_readonly: true`
+  - Edit/delete buttons are hidden for readonly rules (`!rule.is_readonly` condition)
+  - Only rules personally added via the `+` button (`is_readonly: false`) show action buttons
+  - Applies to both the Default rule set (via `fieldViewData.is_common`) and copied-but-locked rules
+
+- **Key Design Decision — Validation Source of Truth**:
+  - The Rule Set selected at validation time is the **sole** source of validation rules
+  - Schema validation (required, type, enum, pattern checks) does NOT run during Step 3
+  - Users control exactly what gets flagged by configuring their Rule Set
+  - All errors in one pass — no stopping on first error, full error list returned for batch fixing
+
+- **Files Modified**:
+  - `backend/app/modules/validation/service.py` — real pipeline, rule-set-only validation
+  - `frontend/src/pages/RulesManagement.tsx` — edit/delete buttons, readonly protection, edit modal
 
 ## Recent Updates (March 13, 2026)
 

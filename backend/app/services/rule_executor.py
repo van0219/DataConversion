@@ -233,8 +233,12 @@ class RuleExecutor:
             logger.warning(f"ENUM_VALIDATION rule for {field_name} has no enum values")
             return None
         
-        # Parse enum values (comma-separated)
-        allowed_values = [v.strip() for v in enum_values.split(',')]
+        # Parse enum values — stored as JSON array or comma-separated string
+        import json
+        try:
+            allowed_values = [str(v).strip() for v in json.loads(enum_values)]
+        except (json.JSONDecodeError, TypeError):
+            allowed_values = [v.strip() for v in enum_values.split(',')]
         
         if value_str not in allowed_values:
             return ValidationError(

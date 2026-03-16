@@ -36,18 +36,9 @@ class SchemaRuleGenerator:
         schema_id = schema.id
         
         # Get or create default rule set for this business class
-        rule_set_name = f"{business_class}_Default"
-        rule_set = RuleSetService.get_rule_set_by_name(db, business_class, rule_set_name)
-        
-        if not rule_set:
-            logger.info(f"Creating default rule set: {rule_set_name}")
-            rule_set = RuleSetService.create_rule_set(
-                db=db,
-                name=rule_set_name,
-                business_class=business_class,
-                description=f"Auto-generated schema validation rules for {business_class}",
-                is_active=True
-            )
+        # is_common=True ensures it's protected (no delete/edit buttons in UI)
+        rule_set = RuleSetService.get_or_create_common_rule_set(db, business_class)
+        rule_set_name = rule_set.name
         
         rule_set_id = rule_set.id
         
@@ -75,15 +66,20 @@ class SchemaRuleGenerator:
             pattern = field_def.get("pattern")
             
             if pattern:
-                # Check if rule already exists
+                # Check if rule already exists in this rule set
                 existing = db.query(ValidationRuleTemplate).filter(
-                    ValidationRuleTemplate.business_class == business_class,
+                    ValidationRuleTemplate.rule_set_id == rule_set_id,
                     ValidationRuleTemplate.field_name == field_name,
                     ValidationRuleTemplate.rule_type == "PATTERN_MATCH",
                     ValidationRuleTemplate.source == "schema"
                 ).first()
                 
-                if not existing:
+                if existing:
+                    if not existing.is_active:
+                        existing.is_active = True
+                        existing.schema_id = schema_id
+                        rules_created["pattern"] += 1
+                else:
                     description = field_def.get("description", "")
                     rule = ValidationRuleTemplate(
                         name=f"{field_name} Pattern Validation",
@@ -103,15 +99,20 @@ class SchemaRuleGenerator:
         
         # 2. Generate ENUM_VALIDATION rules for enum fields
         for field_name, enum_values in enum_fields.items():
-            # Check if rule already exists
+            # Check if rule already exists in this rule set
             existing = db.query(ValidationRuleTemplate).filter(
-                ValidationRuleTemplate.business_class == business_class,
+                ValidationRuleTemplate.rule_set_id == rule_set_id,
                 ValidationRuleTemplate.field_name == field_name,
                 ValidationRuleTemplate.rule_type == "ENUM_VALIDATION",
                 ValidationRuleTemplate.source == "schema"
             ).first()
             
-            if not existing:
+            if existing:
+                    if not existing.is_active:
+                        existing.is_active = True
+                        existing.schema_id = schema_id
+                        rules_created["enum"] += 1
+            else:
                 rule = ValidationRuleTemplate(
                     name=f"{field_name} Enum Validation",
                     business_class=business_class,
@@ -130,15 +131,20 @@ class SchemaRuleGenerator:
         
         # 3. Generate REQUIRED_FIELD rules
         for field_name in required_fields:
-            # Check if rule already exists
+            # Check if rule already exists in this rule set
             existing = db.query(ValidationRuleTemplate).filter(
-                ValidationRuleTemplate.business_class == business_class,
+                ValidationRuleTemplate.rule_set_id == rule_set_id,
                 ValidationRuleTemplate.field_name == field_name,
                 ValidationRuleTemplate.rule_type == "REQUIRED_FIELD",
                 ValidationRuleTemplate.source == "schema"
             ).first()
             
-            if not existing:
+            if existing:
+                if not existing.is_active:
+                    existing.is_active = True
+                    existing.schema_id = schema_id
+                    rules_created["required"] += 1
+            else:
                 rule = ValidationRuleTemplate(
                     name=f"{field_name} Required",
                     business_class=business_class,

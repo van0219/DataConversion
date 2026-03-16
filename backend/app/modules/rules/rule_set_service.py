@@ -60,7 +60,7 @@ class RuleSetService:
             default_set = ValidationRuleSet(
                 name="Default",
                 business_class=business_class,
-                description=f"Default validation rules for {business_class}. These rules always apply to all conversions.",
+                description=f"Default validation rules for {business_class}.",
                 is_common=True,
                 is_active=True
             )
@@ -68,6 +68,15 @@ class RuleSetService:
             db.commit()
             db.refresh(default_set)
             logger.info(f"Created Default rule set for {business_class}")
+        elif not default_set.is_active:
+            # Reactivate Default + all custom rule sets for this business class
+            # (they were deactivated when the schema was soft-deleted)
+            db.query(ValidationRuleSet).filter(
+                ValidationRuleSet.business_class == business_class
+            ).update({"is_active": True})
+            db.commit()
+            db.refresh(default_set)
+            logger.info(f"Reactivated all rule sets for {business_class}")
         
         return default_set
     

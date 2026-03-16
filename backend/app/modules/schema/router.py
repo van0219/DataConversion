@@ -435,6 +435,22 @@ def deactivate_schema(
         schema.is_active = False
         db.commit()
         
+        # Deactivate ALL rule sets for this business class if no other
+        # active schemas exist for it (Default and all custom rule sets)
+        from app.models.validation_rule_set import ValidationRuleSet
+        other_active_schemas = db.query(Schema).filter(
+            Schema.account_id == account_id,
+            Schema.business_class == business_class,
+            Schema.is_active == True,
+            Schema.id != schema_id
+        ).count()
+        
+        if other_active_schemas == 0:
+            db.query(ValidationRuleSet).filter(
+                ValidationRuleSet.business_class == business_class
+            ).update({"is_active": False})
+            db.commit()
+        
         return {
             "status": "success",
             "message": f"Schema {business_class} v{version} deactivated",

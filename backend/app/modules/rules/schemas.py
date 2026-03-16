@@ -30,6 +30,10 @@ class RuleTemplateUpdate(BaseModel):
     is_active: Optional[bool] = None
     error_message: Optional[str] = None
     condition_expression: Optional[str] = None
+    reference_business_class: Optional[str] = None
+    reference_field_name: Optional[str] = None
+    pattern: Optional[str] = None
+    enum_values: Optional[str] = None
 
 class RuleTemplateResponse(RuleTemplateBase):
     id: int
