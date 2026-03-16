@@ -145,8 +145,8 @@ class MappingEngine:
         mapped_record = {}
         
         for csv_col, value in record.items():
-            # Skip internal fields
-            if csv_col.startswith('_'):
+            # Skip internal fields and None keys (from trailing commas in CSV)
+            if csv_col is None or csv_col.startswith('_'):
                 mapped_record[csv_col] = value
                 continue
             

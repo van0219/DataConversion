@@ -202,7 +202,7 @@ class RuleExecutor:
                     row_number,
                     field_name,
                     field_value,
-                    "rule",
+                    "pattern",
                     error_message or f"Field '{field_name}' does not match required pattern"
                 )
         except re.error as e:
@@ -245,7 +245,7 @@ class RuleExecutor:
                 row_number,
                 field_name,
                 field_value,
-                "rule",
+                "enum",
                 error_message or f"Field '{field_name}' must be one of: {', '.join(allowed_values)}"
             )
         
@@ -286,7 +286,7 @@ class RuleExecutor:
                     row_number,
                     field_name,
                     field_value,
-                    "rule",
+                    "pattern",
                     error_message
                 )
         except re.error as e:

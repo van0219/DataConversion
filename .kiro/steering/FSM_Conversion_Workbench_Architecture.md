@@ -1727,3 +1727,115 @@ python verify_github_ready.py
 **Version**: 2.5 (March 2026) | **Authors**: Van Anthony Silleza (FSM Consultant), Kiro AI Assistant
 
 **Latest Update**: Load to FSM Complete - Fixed batch API endpoint, payload format, response parsing, and automatic rollback on failures
+
+## Recent Updates (March 17, 2026)
+
+### CSV Handling & Validation Pipeline Fixes (March 17, 2026) ⭐
+
+- **Root Cause**: Validation was silently failing with `'NoneType' object has no attribute 'startswith'`
+- **Problem 1 — None keys from trailing commas**: CSV rows with trailing commas cause `csv.DictReader` to produce a `None` key in the record dict. `MappingEngine.apply_mapping()` iterated over all keys and called `csv_col.startswith('_')` without a None guard, crashing the entire validation job.
+- **Fix**: Added `csv_col is None` check before `startswith` in `apply_mapping()`:
+  ```python
+  if csv_col is None or csv_col.startswith('_'):
+      continue
+  ```
+- **Problem 2 — Leading/trailing blank lines**: CSV files with blank lines at the start or end caused `csv.DictReader` to misparse headers or produce empty records.
+- **Fix**: `StreamingEngine.stream_csv()` now reads the full file content, strips leading and trailing blank lines only (middle blank lines preserved), then feeds cleaned content into `csv.DictReader` via `io.StringIO`:
+  ```python
+  lines = raw.splitlines(keepends=True)
+  while lines and not lines[0].strip():
+      lines.pop(0)
+  while lines and not lines[-1].strip():
+      lines.pop()
+  reader = csv.DictReader(io.StringIO(''.join(lines)))
+  ```
+- **Files Modified**:
+  - `backend/app/services/mapping_engine.py` — None key guard in `apply_mapping()`
+  - `backend/app/services/streaming_engine.py` — leading/trailing blank line trim in `stream_csv()`
+- **Impact**: Validation now correctly processes all records and fires all configured rules (PATTERN_MATCH, REFERENCE_EXISTS, ENUM_VALIDATION, REQUIRED_FIELD)
+
+### Interface Transactions Post-Load Fix (March 17, 2026) ⭐
+
+- **Problem**: Triggering "Interface Transactions" after a successful load (without pre-checking the interface option) showed only a disabled button with "..." — no loading screen, and no result report after completion.
+- **Root Cause 1 — No loading screen**: The form ternary only had two states (`showInterfaceForm ? form : button`). Added a third state for `interfacing === true` that shows the same spinner used during the load process.
+- **Root Cause 2 — Result not displayed**: The `interfaceResult` state was rendered inside the `showInterfaceForm` conditional block. When `handleInterfaceTransactions` completed and called `setShowInterfaceForm(false)`, the entire form including the result was hidden.
+- **Fix**: Instead of a separate `interfaceResult` state, the handler now merges the result directly into `loadResult`:
+  ```typescript
+  setLoadResult(prev => prev ? { ...prev, interface_result: result } : prev);
+  ```
+  This causes the existing KPI cards (Records Processed, Successfully Interfaced, Records with Errors, Interface Status) and paginated error table to automatically display — identical to the auto-interface flow.
+- **Files Modified**: `frontend/src/pages/ConversionWorkflow.tsx`
+- **Pattern**: Always merge post-action results into the parent result state rather than maintaining separate display state.
+
+### Key Debugging Patterns Learned
+
+**Validation silently fails with status=failed, valid=0, invalid=0**:
+- Check backend logs for the actual exception
+- Most common cause: `None` key in CSV record dict from trailing commas
+- Fix: Guard `csv_col is None` before any string operations in `apply_mapping()`
+
+**CSV parsing produces None keys**:
+- Caused by trailing commas in data rows (e.g., `value1,value2,`)
+- `csv.DictReader` maps the extra empty field to `None` key
+- Always guard against `None` keys when iterating record dicts
+
+**Interface result not showing after form closes**:
+- Never render result state inside a conditional block that gets hidden on completion
+- Merge results into parent state so existing display components pick them up automatically
+
+## Recent Updates (March 17, 2026 — continued)
+
+### Validation Error Report Format (March 17, 2026) ⭐
+
+- **Change**: "Download Error Report" now exports errors-only CSV with 4 columns: `Row`, `Field`, `Value`, `Error`
+- **Previous behavior**: Exported the full original CSV (all rows including valid ones) with an appended `Error Message` column
+- **New behavior**: Exports only rows that failed validation, one row per field error, with clean minimal columns
+- **Columns**:
+  - `Row` — CSV row number of the failing record
+  - `Field` — FSM field name that failed validation
+  - `Value` — The invalid value that was found
+  - `Error` — The full error message (including trailing-comma hint if applicable)
+- **Why**: Valid records are irrelevant in an error report; consultants only need to see what failed and why
+- **File Modified**: `backend/app/modules/validation/service.py` — `export_errors_csv()` method rewritten
+- **UI**: No frontend changes needed; button and download logic unchanged
+
+### Validation UI Improvements (March 17, 2026) ⭐
+
+- **Zero-errors success state**: When `status === 'validated' && errors_found === 0`, shows a green success banner ("All N records passed validation") instead of an empty table area
+- **Continue to Load warning**: When `errors_found > 0`, clicking "Continue to Load" shows a `confirm()` dialog warning that errored records will be skipped, before proceeding
+- **Dynamic filter dropdown**: "Filter by type" dropdown now derives options from `[...new Set(validationErrors.map(e => e.error_type))]` — only shows types actually present in current results, not a hardcoded static list
+- **Comma-split field hint**: When a CSV row has a trailing comma (`_has_trailing_comma` flag set by `StreamingEngine`), all error messages on that row append: "Note: this row has a trailing comma in the CSV — the last field value may be truncated"
+- **Files Modified**: `frontend/src/pages/ConversionWorkflow.tsx`, `backend/app/services/streaming_engine.py`, `backend/app/modules/validation/service.py`
+
+### Validation Error Count Discrepancy Fix (March 17, 2026) ⭐
+
+- **Problem**: Banner showed "100 Validation Errors Found" while Validation Progress showed 16,634 errors
+- **Root Cause**: Two different data sources were being used for the same concept
+  - `validationProgress.errors_found` = real total from `job.invalid_records` (backend, authoritative)
+  - `validationErrors.length` = count of records fetched from `GET /validation/{job_id}/errors` (capped at 100 by default)
+- **Fix 1**: Banner now uses `validationProgress.errors_found` (the authoritative count) instead of `validationErrors.length`
+- **Fix 2**: Frontend now fetches up to 500 errors (`params: { limit: 500 }`) instead of the default 100
+- **Fix 3**: Footer note dynamically shows "Showing first N of M total" when fetched count < real total
+- **Rule**: Always use `validationProgress.errors_found` for displaying total error counts in UI. `validationErrors` array is only for rendering the table rows.
+- **Files Modified**: `frontend/src/pages/ConversionWorkflow.tsx`
+
+### Validation UI Error Styling (March 17, 2026) ⭐
+
+- **Change**: Validation step now visually communicates errors with red theme when errors exist
+- **Container**: Border switches from purple (`theme.accent.purpleTintMedium`) to red (`#dc2626`) when `errors_found > 0`
+- **Header**: Switches from `✅ Data Validation` → `❌ Data Validation — N Errors Found` in red
+- **Progress bar**: Error segment uses `#dc2626` red (was using theme purple)
+- **Errors stat**: Bold red when non-zero
+- **Error banner**: Dark red (`#3b0a0a`) banner above error table with warning icon, real total count, and guidance message
+- **Zero-errors state**: Green success banner when `status === 'validated' && errors_found === 0`
+- **Files Modified**: `frontend/src/pages/ConversionWorkflow.tsx`
+
+### Test Data File — 100K Records (March 17, 2026)
+
+- **File**: `Import_Files/GLTransactionInterface_100K.csv`
+- **Size**: 100,000 records, ~7 MB
+- **Errors**: 20 intentional errors spread across the file at random row positions
+- **Error types**: Bad account codes, invalid amount formats, wrong date formats, empty required fields, special characters
+- **Generator**: `generate_100k.py` in workspace root (re-run to regenerate with new random positions)
+- **Purpose**: Performance testing of streaming validation pipeline and error report download
+- **Note**: REFERENCE rules will fire on account codes not in the synced snapshot — this is expected behavior, not a bug. The 20 injected errors are in addition to any reference validation failures.

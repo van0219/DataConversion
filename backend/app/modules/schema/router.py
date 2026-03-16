@@ -155,7 +155,7 @@ def get_schema_fields(
         
         if sample_record:
             # Parse record data to get field names
-            record_data = json.loads(sample_record.record_data)
+            record_data = json.loads(sample_record.raw_json)
             field_names = list(record_data.keys())
             
             return {

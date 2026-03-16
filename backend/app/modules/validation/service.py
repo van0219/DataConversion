@@ -42,10 +42,13 @@ class ValidationService:
                 logger.error(f"Job {job_id} not found for account {account_id}")
                 return
             
-            # Set status to validating
+            # Set status to validating and clear previous errors
             job.status = "validating"
             job.valid_records = 0
             job.invalid_records = 0
+            db.query(ValidationErrorModel).filter(
+                ValidationErrorModel.conversion_job_id == job_id
+            ).delete()
             db.commit()
             logger.info(f"Job {job_id} status set to validating")
             
@@ -75,6 +78,7 @@ class ValidationService:
                 
                 for record in chunk:
                     row_number = int(record.get("_row_number", 0))
+                    has_trailing_comma = bool(record.get("_has_trailing_comma", False))
                     
                     # Apply field mapping: CSV columns → FSM field names
                     mapped_record = MappingEngine.apply_mapping(record, mapping)
@@ -89,13 +93,18 @@ class ValidationService:
                     if rule_errors:
                         total_invalid += 1
                         for err in rule_errors:
+                            msg = err.error_message
+                            # If this row had a trailing comma, the last CSV field's value was
+                            # truncated by the parser splitting on the comma. Add a hint.
+                            if has_trailing_comma:
+                                msg += " (Note: this row has a trailing comma in the CSV — the last field value may be truncated)"
                             chunk_errors.append({
                                 "conversion_job_id": job_id,
                                 "row_number": err.row_number,
                                 "field_name": err.field_name,
                                 "invalid_value": err.invalid_value,
                                 "error_type": err.error_type,
-                                "error_message": err.error_message
+                                "error_message": msg
                             })
                     else:
                         total_valid += 1
@@ -346,75 +355,31 @@ class ValidationService:
     @staticmethod
     def export_errors_csv(db: Session, account_id: int, job_id: int) -> Optional[str]:
         """
-        Export original CSV file with added 'Error Message' column.
-        Returns the original file with all columns plus error messages for invalid rows.
+        Export validation errors only (no passing records).
+        Columns: Row, Field, Value, Error
+        One row per field error.
         """
-        # Get errors
         errors = db.query(ValidationErrorModel).filter(
             ValidationErrorModel.conversion_job_id == job_id
-        ).order_by(ValidationErrorModel.row_number).all()
-        
+        ).order_by(ValidationErrorModel.row_number, ValidationErrorModel.field_name).all()
+
         if not errors:
             return None
-        
-        # Group errors by row number
-        grouped_errors = {}
-        for error in errors:
-            row_num = error.row_number
-            if row_num not in grouped_errors:
-                grouped_errors[row_num] = []
-            grouped_errors[row_num].append(error)
-        
-        # Get original file path
-        file_path = UploadService.get_file_path(job_id)
-        if not file_path.exists():
-            logger.error(f"Original file not found for job {job_id}")
-            return None
-        
-        # Read original CSV and add error messages
+
         output = io.StringIO()
-        
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                
-                # Get original headers and add 'Error Message' column
-                original_headers = reader.fieldnames
-                if not original_headers:
-                    return None
-                
-                new_headers = list(original_headers) + ['Error Message']
-                
-                writer = csv.DictWriter(output, fieldnames=new_headers)
-                writer.writeheader()
-                
-                # Process each row
-                row_number = 1  # CSV row numbers start at 1 (after header)
-                for row in reader:
-                    row_number += 1
-                    
-                    # Check if this row has errors
-                    if row_number in grouped_errors:
-                        row_errors = grouped_errors[row_number]
-                        
-                        # Combine all error messages for this row
-                        error_messages = []
-                        for e in row_errors:
-                            # Format: [Field] Error message
-                            error_messages.append(f"[{e.field_name}] {e.error_message}")
-                        
-                        # Join with semicolon separator
-                        row['Error Message'] = '; '.join(error_messages)
-                    else:
-                        # No errors for this row
-                        row['Error Message'] = ''
-                    
-                    writer.writerow(row)
-                
-                logger.info(f"Exported {row_number} rows with error messages for job {job_id}")
-                
+            writer = csv.DictWriter(output, fieldnames=["Row", "Field", "Value", "Error"])
+            writer.writeheader()
+            for e in errors:
+                writer.writerow({
+                    "Row": e.row_number,
+                    "Field": e.field_name,
+                    "Value": e.invalid_value or "",
+                    "Error": e.error_message
+                })
+            logger.info(f"Exported {len(errors)} error rows for job {job_id}")
         except Exception as e:
-            logger.error(f"Error exporting CSV with errors: {e}")
+            logger.error(f"Error exporting errors CSV: {e}")
             return None
-        
+
         return output.getvalue()

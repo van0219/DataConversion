@@ -1,4 +1,5 @@
 import csv
+import io
 from typing import Generator, Dict, List, Callable, Optional
 from pathlib import Path
 from app.core.logging import logger
@@ -31,29 +32,41 @@ class StreamingEngine:
         
         try:
             with open(file_path, 'r', encoding='utf-8-sig', newline='') as f:
-                reader = csv.DictReader(f)
+                raw = f.read()
+            
+            # Strip leading and trailing blank lines only
+            lines = raw.splitlines(keepends=True)
+            while lines and not lines[0].strip():
+                lines.pop(0)
+            while lines and not lines[-1].strip():
+                lines.pop()
+            
+            reader = csv.DictReader(io.StringIO(''.join(lines)))
+            
+            chunk = []
+            row_number = 1
+            
+            for row in reader:
+                # Add row number for error tracking
+                row['_row_number'] = row_number
+                # Flag rows with trailing commas (csv.DictReader produces None key)
+                if None in row:
+                    row['_has_trailing_comma'] = True
+                chunk.append(row)
+                row_number += 1
                 
-                chunk = []
-                row_number = 1
-                
-                for row in reader:
-                    # Add row number for error tracking
-                    row['_row_number'] = row_number
-                    chunk.append(row)
-                    row_number += 1
-                    
-                    # Yield chunk when full
-                    if len(chunk) >= chunk_size:
-                        logger.debug(f"Yielding chunk: rows {row_number - chunk_size} to {row_number - 1}")
-                        yield chunk
-                        chunk = []
-                
-                # Yield remaining records
-                if chunk:
-                    logger.debug(f"Yielding final chunk: {len(chunk)} records")
+                # Yield chunk when full
+                if len(chunk) >= chunk_size:
+                    logger.debug(f"Yielding chunk: rows {row_number - chunk_size} to {row_number - 1}")
                     yield chunk
-                
-                logger.info(f"CSV stream complete: {row_number - 1} total records")
+                    chunk = []
+            
+            # Yield remaining records
+            if chunk:
+                logger.debug(f"Yielding final chunk: {len(chunk)} records")
+                yield chunk
+            
+            logger.info(f"CSV stream complete: {row_number - 1} total records")
                 
         except FileNotFoundError:
             logger.error(f"File not found: {file_path}")

@@ -357,37 +357,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       }));
     }
   };
-  const [interfaceResult, setInterfaceResult] = useState<{
-    success: boolean;
-    message: string;
-    verification?: {
-      result_sequence: string;
-      status: string;
-      status_label: string;
-      total_records: number;
-      successfully_imported: number;
-      records_with_error: number;
-      run_group: string;
-      interface_successful: boolean;
-    } | null;
-    error?: string;
-    error_details?: Array<{
-      sequence_number: string;
-      run_group: string;
-      error_message: string;
-      description: string;
-      transaction_amount: string;
-      account_code: string;
-      posting_date: string;
-      finance_enterprise_group: string;
-      accounting_entity: string;
-    }>;
-  } | null>(null);
-
   // Reset error table pagination when interface result changes
   useEffect(() => {
     setErrorTableCurrentPage(1);
-  }, [interfaceResult]);
+  }, [loadResult?.interface_result]);
 
   // Delete RunGroup state
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -799,7 +772,9 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
     if (!jobId) return;
 
     try {
-      const response = await api.get(`/validation/${jobId}/errors`);
+      const response = await api.get(`/validation/${jobId}/errors`, {
+        params: { limit: 500 }
+      });
       setValidationErrors(response.data || []);
     } catch (error: any) {
       console.error('Failed to load errors:', error);
@@ -983,38 +958,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
         error_run_group_prefix: interfaceParams.errorRunGroupPrefix
       });
 
-      // Parse interface result with verification data
+      // Merge interface result into loadResult so the existing KPI cards and error table display it
       const result = response.data.result;
-      if (result && result.verification) {
-        const verification = result.verification;
-        const success = result.interface_successful; // Use backend verification flag
-        
-        if (success) {
-          setInterfaceResult({
-            success: true,
-            message: `Interface completed successfully for RunGroup: ${interfaceParams.runGroup}`,
-            verification: verification,
-            error_details: result.error_details || []
-          });
-        } else {
-          setInterfaceResult({
-            success: false,
-            message: `Interface failed for RunGroup: ${interfaceParams.runGroup}`,
-            verification: verification,
-            error: result.error || 'Interface verification failed - records were not successfully posted to GL',
-            error_details: result.error_details || []
-          });
-        }
-      } else {
-        // Fallback for old format - assume success if no verification data
-        setInterfaceResult({
-          success: true,
-          message: `Interface API call completed for RunGroup: ${interfaceParams.runGroup} (verification unavailable)`,
-          verification: null,
-          error_details: []
-        });
-      }
-      
+      setLoadResult(prev => prev ? { ...prev, interface_result: result } : prev);
+
       setShowInterfaceForm(false);
     } catch (error: any) {
       console.error('Interface failed:', error);
@@ -1919,19 +1866,21 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       {currentStep === 'validation' && (
         <div className={getAnimationClass()} style={{
           backgroundColor: 'theme.background.secondary',
-          border: `2px solid ${theme.accent.purpleTintMedium}`,
+          border: `2px solid ${validationProgress?.errors_found ? '#dc2626' : theme.accent.purpleTintMedium}`,
           borderRadius: '12px',
           padding: '24px',
-          marginBottom: '24px'
+          marginBottom: '24px',
+          transition: 'border-color 0.3s ease'
         }}>
           <div style={{ marginBottom: '20px' }}>
             <h3 style={{ 
               fontSize: '18px', 
               fontWeight: '600', 
-              color: 'theme.primary.main',
+              color: validationProgress?.errors_found ? '#dc2626' : 'theme.primary.main',
               marginBottom: '8px'
             }}>
-              ✅ Data Validation
+              {validationProgress?.errors_found ? '❌' : '✅'} Data Validation
+              {validationProgress?.errors_found ? ` — ${validationProgress.errors_found} Error${validationProgress.errors_found !== 1 ? 's' : ''} Found` : ''}
             </h3>
             <p style={{ fontSize: '13px', color: '#999' }}>
               Validate data against FSM schema and business rules
@@ -2027,24 +1976,6 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 {validationProgress.errors_found > 0 && (
                   <>
                     <button
-                      onClick={async () => {
-                        await loadValidationErrors();
-                      }}
-                      style={{
-                        padding: '12px 24px',
-                        backgroundColor: theme.primary.main,
-                        color: '#FFFFFF',
-                        border: 'none',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        fontWeight: '500'
-                      }}
-                    >
-                      📋 View Errors ({validationProgress.errors_found})
-                    </button>
-
-                    <button
                       onClick={exportErrors}
                       style={{
                         padding: '12px 24px',
@@ -2063,7 +1994,17 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 )}
 
                 <button
-                  onClick={() => changeStep('load')}
+                  onClick={() => {
+                    if (validationProgress && validationProgress.errors_found > 0) {
+                      const confirmed = window.confirm(
+                        `⚠️ Warning: ${validationProgress.errors_found.toLocaleString()} validation error(s) found.\n\n` +
+                        `Records with errors will be skipped during load. Only valid records will be sent to FSM.\n\n` +
+                        `Do you want to continue to the Load step?`
+                      );
+                      if (!confirmed) return;
+                    }
+                    changeStep('load');
+                  }}
                   style={{
                     padding: '12px 24px',
                     backgroundColor: '#2196F3',
@@ -2143,7 +2084,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 <div style={{
                   width: `${validationProgress.errors_found / validationProgress.total_records * 100}%`,
                   height: '100%',
-                  backgroundColor: 'theme.primary.main',
+                  backgroundColor: '#dc2626',
                   transition: 'width 0.3s ease'
                 }} />
               </div>
@@ -2163,7 +2104,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                   <strong>Records:</strong> {validationProgress.records_processed.toLocaleString()} / {validationProgress.total_records.toLocaleString()}
                 </div>
                 <div>
-                  <strong>Errors:</strong> {validationProgress.errors_found.toLocaleString()}
+                  <strong>Errors:</strong> <span style={{ color: validationProgress.errors_found > 0 ? '#dc2626' : 'inherit', fontWeight: validationProgress.errors_found > 0 ? '700' : 'normal' }}>{validationProgress.errors_found.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -2178,16 +2119,25 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               overflow: 'hidden',
               marginBottom: '20px'
             }}>
-              <h4 style={{ 
-                color: 'theme.primary.main', 
-                marginBottom: '0px',
-                padding: '16px',
-                borderBottom: '1px solid theme.background.tertiary',
-                fontSize: '16px',
-                fontWeight: '600'
+              {/* Red error summary banner */}
+              <div style={{
+                backgroundColor: '#3b0a0a',
+                borderBottom: '1px solid #dc2626',
+                padding: '14px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
               }}>
-                Validation Errors ({validationErrors.length} found)
-              </h4>
+                <span style={{ fontSize: '20px' }}>⚠️</span>
+                <div>
+                  <div style={{ fontSize: '15px', fontWeight: '700', color: '#f87171' }}>
+                    {(validationProgress?.errors_found ?? validationErrors.length).toLocaleString()} Validation Error{(validationProgress?.errors_found ?? validationErrors.length) !== 1 ? 's' : ''} Found
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#fca5a5', marginTop: '2px' }}>
+                    Records with errors will be skipped during load. Fix the source data and re-run validation.
+                  </div>
+                </div>
+              </div>
               
               {/* Error Filters */}
               <div style={{
@@ -2233,11 +2183,9 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                     }}
                   >
                     <option value="">All types</option>
-                    <option value="required">Required</option>
-                    <option value="type">Type</option>
-                    <option value="enum">Enum</option>
-                    <option value="pattern">Pattern</option>
-                    <option value="reference">Reference</option>
+                    {[...new Set(validationErrors.map(e => e.error_type))].sort().map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -2351,9 +2299,33 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                   color: '#999',
                   textAlign: 'center'
                 }}>
-                  Showing first 50 errors. Export CSV to see all {validationErrors.length} errors.
+                  Showing first {validationErrors.length.toLocaleString()} errors
+                  {validationProgress && validationProgress.errors_found > validationErrors.length
+                    ? ` of ${validationProgress.errors_found.toLocaleString()} total`
+                    : ''
+                  }. Export CSV to see all errors.
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Zero-errors success state */}
+          {validationProgress?.status === 'validated' && validationProgress.errors_found === 0 && (
+            <div style={{
+              backgroundColor: '#0d2e1a',
+              border: '2px solid #22c55e',
+              borderRadius: '8px',
+              padding: '24px',
+              marginBottom: '20px',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '40px', marginBottom: '12px' }}>✅</div>
+              <div style={{ fontSize: '18px', fontWeight: '600', color: '#22c55e', marginBottom: '8px' }}>
+                All {validationProgress.records_processed.toLocaleString()} records passed validation
+              </div>
+              <div style={{ fontSize: '13px', color: '#86efac' }}>
+                No errors found. Your data is ready to load to FSM.
+              </div>
             </div>
           )}
         </div>
@@ -3003,7 +2975,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                   ? 'All records have been loaded to FSM successfully'
                   : 'Load failed and all records have been rolled back'
                 }
-                {loadResult.interface_result && loadResult.interface_result.interface_successful && (
+                {(loadResult.interface_result?.interface_successful) && (
                   <span style={{ color: '#22c55e', marginLeft: '8px' }}>
                     • Interface to GL completed successfully
                   </span>
@@ -3520,7 +3492,28 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 </p>
               </div>
 
-              {!showInterfaceForm ? (
+              {interfacing ? (
+                <div style={{
+                  padding: '24px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    border: `4px solid ${theme.background.quaternary}`,
+                    borderTop: `4px solid ${theme.primary.main}`,
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                    margin: '0 auto 16px auto'
+                  }} />
+                  <div style={{ fontSize: '16px', fontWeight: '600', color: theme.primary.main, marginBottom: '8px' }}>
+                    Interfacing Transactions to GL...
+                  </div>
+                  <div style={{ fontSize: '13px', color: theme.text.secondary }}>
+                    Please wait while we process your data...
+                  </div>
+                </div>
+              ) : !showInterfaceForm ? (
                 <button
                   onClick={() => {
                     setShowInterfaceForm(true);
@@ -3968,144 +3961,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                     </button>
                   </div>
 
-                  {/* Interface Result */}
-                  {interfaceResult && (
-                    <div style={{
-                      marginTop: '20px',
-                      padding: '16px',
-                      backgroundColor: interfaceResult.success ? '#1a2e1a' : '#2e1a1a',
-                      border: `1px solid ${interfaceResult.success ? '#22c55e' : 'theme.primary.main'}`,
-                      borderRadius: '6px'
-                    }}>
-                      <p style={{ 
-                        color: interfaceResult.success ? '#22c55e' : 'theme.primary.main', 
-                        fontSize: '14px', 
-                        margin: '0 0 12px 0',
-                        fontWeight: '600'
-                      }}>
-                        {interfaceResult.message}
-                      </p>
-                      
-                      {/* Verification Details */}
-                      {interfaceResult.verification && (
-                        <div style={{
-                          backgroundColor: 'rgba(0,0,0,0.3)',
-                          padding: '12px',
-                          borderRadius: '4px',
-                          fontSize: '13px'
-                        }}>
-                          <div style={{ marginBottom: '8px', fontWeight: '600', color: '#fff' }}>
-                            Interface Verification Results:
-                          </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', color: theme.text.secondary }}>
-                            <div>Status: <span style={{ color: interfaceResult.verification.status_label === 'Complete' ? '#22c55e' : 'theme.primary.main', fontWeight: '500' }}>
-                              {interfaceResult.verification.status_label || 'Unknown'}
-                            </span></div>
-                            <div>Result Sequence: {interfaceResult.verification.result_sequence}</div>
-                            <div>Total Records: {interfaceResult.verification.total_records.toLocaleString()}</div>
-                            <div>Successfully Imported: <span style={{ color: '#22c55e' }}>{interfaceResult.verification.successfully_imported.toLocaleString()}</span></div>
-                            <div>Records with Error: <span style={{ color: interfaceResult.verification.records_with_error > 0 ? 'theme.primary.main' : '#22c55e' }}>
-                              {interfaceResult.verification.records_with_error.toLocaleString()}
-                            </span></div>
-                            <div>RunGroup: {interfaceResult.verification.run_group}</div>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Detailed Error Information */}
-                      {interfaceResult.error_details && interfaceResult.error_details.length > 0 && (
-                        <div style={{
-                          marginTop: '16px',
-                          backgroundColor: 'rgba(220, 38, 38, 0.1)',
-                          border: '1px solid #dc2626',
-                          borderRadius: '6px',
-                          padding: '16px'
-                        }}>
-                          <div style={{ 
-                            marginBottom: '12px', 
-                            fontWeight: '600', 
-                            color: '#dc2626',
-                            fontSize: '14px'
-                          }}>
-                            Interface Error Details ({interfaceResult.error_details?.length || 0} records with errors):
-                          </div>
-                          
-                          <div style={{
-                            maxHeight: '300px',
-                            overflowY: 'auto',
-                            backgroundColor: 'rgba(0,0,0,0.2)',
-                            borderRadius: '4px',
-                            padding: '12px'
-                          }}>
-                            {(interfaceResult.error_details || []).slice(0, 10).map((error: any, index: number) => (
-                              <div key={index} style={{
-                                marginBottom: '12px',
-                                paddingBottom: '12px',
-                                borderBottom: index < Math.min((interfaceResult.error_details?.length || 0), 10) - 1 ? '1px solid rgba(255,255,255,0.1)' : 'none'
-                              }}>
-                                <div style={{ 
-                                  display: 'grid', 
-                                  gridTemplateColumns: 'auto 1fr', 
-                                  gap: '8px 16px',
-                                  fontSize: '12px',
-                                  color: theme.text.secondary
-                                }}>
-                                  <strong style={{ color: '#fff' }}>Sequence:</strong>
-                                  <span>{error.sequence_number}</span>
-                                  
-                                  <strong style={{ color: '#fff' }}>Account:</strong>
-                                  <span>{error.account_code}</span>
-                                  
-                                  <strong style={{ color: '#fff' }}>Entity:</strong>
-                                  <span>{error.accounting_entity}</span>
-                                  
-                                  <strong style={{ color: '#fff' }}>Date:</strong>
-                                  <span>{error.posting_date}</span>
-                                  
-                                  <strong style={{ color: '#fff' }}>Amount:</strong>
-                                  <span>{error.transaction_amount}</span>
-                                  
-                                  <strong style={{ color: '#fff' }}>Description:</strong>
-                                  <span>{error.description}</span>
-                                  
-                                  <strong style={{ color: '#dc2626' }}>Error:</strong>
-                                  <span style={{ color: '#dc2626', fontWeight: '500' }}>{error.error_message}</span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                          
-                          {(interfaceResult.error_details?.length || 0) > 10 && (
-                            <div style={{
-                              marginTop: '12px',
-                              fontSize: '12px',
-                              color: theme.text.secondary,
-                              fontStyle: 'italic'
-                            }}>
-                              Showing first 10 errors. Total errors: {interfaceResult.error_details?.length || 0}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      
-                      {/* Error Details */}
-                      {interfaceResult.error && (
-                        <div style={{
-                          marginTop: '12px',
-                          padding: '8px',
-                          backgroundColor: 'rgba(220, 38, 38, 0.1)',
-                          border: '1px solid theme.primary.main',
-                          borderRadius: '4px',
-                          fontSize: '13px',
-                          color: 'theme.primary.main'
-                        }}>
-                          Error: {interfaceResult.error}
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               )}
+
+
             </div>
           )}
 
