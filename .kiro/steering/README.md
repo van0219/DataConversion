@@ -14,7 +14,7 @@ This workspace contains the **FSM Conversion Workbench** (also known as **FSM Da
 
 **Architecture**: Local-first web application (FastAPI + React + SQLite)  
 **Users**: Infor FSM technical and functional consultants  
-**Status**: Production-ready (87% complete, demo-ready, GitHub-ready)
+**Status**: Production-ready (100% complete, demo-ready, GitHub-ready)
 
 ## Workspace Evolution
 
@@ -682,3 +682,61 @@ Architecture, implementation, testing, documentation
 - ✅ Workspace cleanup and organization (temp/ directories)
 - ✅ GitHub preparation (security verified, 7/7 checks passed)
 - ✅ Comprehensive .gitignore and security documentation
+
+### March 26, 2026 - Advanced Validation Rule Engine & UI Overhaul ⭐⭐⭐
+
+- **New Rule Types**: `FIELD_MUST_BE_EMPTY`, `DATE_RANGE_FROM_REFERENCE`, `OPEN_PERIOD_CHECK`, `BALANCE_CHECK`, enhanced `REFERENCE_EXISTS` with status filter
+- **File-Level Rule Architecture**: `BALANCE_CHECK` runs as a pre-validation pass over the entire file; stored with `_file_level_` sentinel field name; separate UI section in field view panel
+- **Snapshot Upsert Fix**: Replaced SELECT+INSERT with SQLite `INSERT OR REPLACE` — re-syncing any setup class no longer throws UNIQUE constraint errors
+- **Dynamic Rule Form UI**: Add/Edit modals now show context-aware config fields per rule type — no raw JSON required from consultants
+- **Setup Classes**: Added `Project` and `GeneralLedgerClosePeriod` to support date-range and open-period validation rules
+- **Files Changed**: `rule_executor.py`, `validation/service.py`, `snapshot/service.py`, `rules/router.py`, `RulesManagement.tsx`
+
+---
+
+## Tomorrow's Session — Actual FSM Data Conversion Testing (March 27, 2026)
+
+### What We're Doing
+End-to-end data conversion test using real FSM data (GLTransactionInterface). This is the first live test of all the new validation rule types built on March 26.
+
+### Pre-Test Checklist
+
+**Before starting the app:**
+1. Run backend: `cd backend && python -m uvicorn app.main:app --reload`
+2. Run frontend: `cd frontend && npm run dev`
+3. Open http://localhost:5173
+
+**Before uploading the file:**
+1. Go to Setup Data → verify `Project` and `GeneralLedgerClosePeriod` are in the list
+2. Sync all active setup classes (especially `AccountingEntity`, `GeneralLedgerClosePeriod`, `Project`, `GeneralLedgerChartAccount`)
+3. Go to Validation Rules → select `GLTransactionInterface` business class
+4. Open the Custom rule set → verify the new rules are configured:
+   - `BALANCE_CHECK` in the File-Level Rules section (group by `RunGroup`, amount field `TransactionAmount`)
+   - `FIELD_MUST_BE_EMPTY` on `AutoReverse` and `AutoReverseDate`
+   - `OPEN_PERIOD_CHECK` on `PostingDate`
+   - `REFERENCE_EXISTS` on `AccountCode` (with Status = Active filter if applicable)
+
+### What to Watch For During Testing
+
+**Validation results to verify:**
+- Balance Check: does it correctly flag RunGroups that don't net to zero?
+- Open Period Check: does it correctly flag PostingDates outside the current period?
+- Field Must Be Empty: does it only fire when AutoReverse/AutoReverseDate have values?
+- Reference Exists: are account codes, accounting entities, currencies all validating against synced data?
+
+**Known things to watch:**
+- Date formats in the actual FSM file — FSM uses `YYYYMMDD`. The `_parse_date()` helper supports this format but confirm it works end-to-end
+- `GeneralLedgerClosePeriod` key field — confirm the synced records use `GeneralLedgerCalendarPeriod` as the primary key (matches what `OPEN_PERIOD_CHECK` looks up)
+- `AccountingEntity.CurrentPeriod` field name — confirm the actual field name in the synced snapshot matches what the rule config expects
+- If any rule fires unexpectedly, check the error report CSV (Row, Field, Value, Error columns) for the exact failing value
+
+**If sync fails for new classes:**
+- Check the endpoint URL format in Setup Data Management
+- Verify the list name is correct (e.g. `GeneralLedgerClosePeriod` may use a different list name)
+- Check backend logs for OAuth or API errors
+
+### Things That May Need Fixing Based on Test Results
+- Field name mismatches between what FSM returns in snapshot vs what rule config expects
+- Date format variations in `GeneralLedgerClosePeriod.DerivedBeginDate` / `DerivedEndDate`
+- `CurrentPeriod` field in `AccountingEntity` may be named differently in actual data
+- Balance Check tolerance — currently uses `abs(round(net_total, 2)) != 0.0`; floating point edge cases possible with large amounts

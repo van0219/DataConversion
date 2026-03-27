@@ -30,6 +30,266 @@ interface RuleSet {
   rule_count: number;
 }
 
+const RULE_TYPE_OPTIONS = [
+  { value: 'REFERENCE_EXISTS',          label: 'Reference Exists',         description: 'Value must exist in a setup class' },
+  { value: 'REQUIRED_OVERRIDE',         label: 'Required Field',           description: 'Field must not be empty' },
+  { value: 'FIELD_MUST_BE_EMPTY',       label: 'Must Be Empty',            description: 'Field must be blank/null' },
+  { value: 'PATTERN_MATCH',             label: 'Pattern Match',            description: 'Value must match a regex pattern' },
+  { value: 'ENUM_VALIDATION',           label: 'Allowed Values',           description: 'Value must be from a fixed list' },
+  { value: 'DATE_RANGE_FROM_REFERENCE', label: 'Date Range (Reference)',   description: 'Date must fall within a referenced record\'s date range' },
+  { value: 'OPEN_PERIOD_CHECK',         label: 'Open Period Check',        description: 'Date must fall within the current open GL period' },
+];
+
+// File-level rules operate on the entire file, not on individual fields
+const FILE_LEVEL_RULE_OPTIONS = [
+  { value: 'BALANCE_CHECK', label: 'Balance Check', description: 'Group of records must net to zero (e.g. debits = credits per RunGroup)' },
+];
+
+const getDefaultErrorMessage = (ruleType: string, fieldName: string): string => {
+  const map: Record<string, string> = {
+    REFERENCE_EXISTS:          `${fieldName} does not exist in FSM`,
+    REQUIRED_OVERRIDE:         `${fieldName} is required`,
+    FIELD_MUST_BE_EMPTY:       `${fieldName} must be empty for this transaction type`,
+    PATTERN_MATCH:             `${fieldName} does not match the required format`,
+    ENUM_VALIDATION:           `${fieldName} must be one of the allowed values`,
+    DATE_RANGE_FROM_REFERENCE: `${fieldName} is outside the allowed date range`,
+    OPEN_PERIOD_CHECK:         `${fieldName} is not within the current open accounting period`,
+    BALANCE_CHECK:             `Transactions in this group do not net to zero`,
+  };
+  return map[ruleType] || `Validation failed for ${fieldName}`;
+};
+
+// Shared dynamic config form rendered inside both Add and Edit modals
+const RuleTypeConfig = ({
+  form, setForm, availableReferenceClasses, availableReferenceFields,
+  loadingReferenceFields, loadReferenceFields, fieldName
+}: any) => {
+  const inputStyle = {
+    width: '100%', padding: '9px 12px', backgroundColor: theme.background.primary,
+    color: theme.text.primary, border: `1px solid ${theme.background.quaternary}`,
+    borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box' as const,
+  };
+  const labelStyle = { display: 'block', fontSize: '12px', fontWeight: 600 as const, color: theme.text.secondary, marginBottom: '5px', textTransform: 'uppercase' as const, letterSpacing: '0.5px' };
+  const helpStyle = { fontSize: '11px', color: theme.text.muted, marginTop: '4px' };
+  const sectionStyle = { backgroundColor: theme.background.tertiary, border: `1px solid ${theme.background.quaternary}`, borderRadius: '8px', padding: '16px', marginBottom: '16px' };
+  const gridStyle = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' };
+
+  if (form.rule_type === 'REFERENCE_EXISTS') return (
+    <div style={sectionStyle}>
+      <div style={{ fontSize: '13px', fontWeight: 600, color: theme.text.primary, marginBottom: '12px' }}>Reference Configuration</div>
+      <div style={gridStyle}>
+        <div>
+          <label style={labelStyle}>Reference Class</label>
+          <input type="text" list="ref-classes-list" value={form.reference_business_class}
+            onChange={(e) => { setForm({ ...form, reference_business_class: e.target.value, reference_field_name: '' }); loadReferenceFields(e.target.value); }}
+            style={inputStyle} placeholder="e.g., Account, Vendor" />
+          <datalist id="ref-classes-list">{availableReferenceClasses.map((c: string) => <option key={c} value={c} />)}</datalist>
+          <div style={helpStyle}>Must be synced in Setup Data</div>
+        </div>
+        <div>
+          <label style={labelStyle}>Reference Field</label>
+          <select value={form.reference_field_name} onChange={(e) => setForm({ ...form, reference_field_name: e.target.value })}
+            style={{ ...inputStyle, cursor: !form.reference_business_class ? 'not-allowed' : 'pointer' }}
+            disabled={!form.reference_business_class || loadingReferenceFields}>
+            <option value="">{loadingReferenceFields ? 'Loading...' : !form.reference_business_class ? 'Select class first' : '-- Select field --'}</option>
+            {availableReferenceFields.map((f: string) => <option key={f} value={f}>{f}</option>)}
+          </select>
+          <div style={helpStyle}>Key field to match against</div>
+        </div>
+      </div>
+      <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: `1px solid ${theme.background.quaternary}` }}>
+        <div style={{ fontSize: '12px', fontWeight: 600, color: theme.text.tertiary, marginBottom: '8px' }}>Optional: Status Filter</div>
+        <div style={gridStyle}>
+          <div>
+            <label style={labelStyle}>Filter Field</label>
+            <input type="text" value={form.condition_filter_field}
+              onChange={(e) => setForm({ ...form, condition_filter_field: e.target.value })}
+              style={inputStyle} placeholder="e.g., Status" />
+            <div style={helpStyle}>Field in the reference record to filter by</div>
+          </div>
+          <div>
+            <label style={labelStyle}>Filter Value</label>
+            <input type="text" value={form.condition_filter_value}
+              onChange={(e) => setForm({ ...form, condition_filter_value: e.target.value })}
+              style={inputStyle} placeholder="e.g., Active" />
+            <div style={helpStyle}>Only match records with this value</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (form.rule_type === 'PATTERN_MATCH') return (
+    <div style={sectionStyle}>
+      <label style={labelStyle}>Regex Pattern</label>
+      <input type="text" value={form.pattern} onChange={(e) => setForm({ ...form, pattern: e.target.value })}
+        style={{ ...inputStyle, fontFamily: 'monospace' }} placeholder="e.g., ^\d{8}$ for YYYYMMDD" />
+      <div style={helpStyle}>Regular expression. The value must fully match this pattern.</div>
+      <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' as const }}>
+        {[['YYYYMMDD date', '^\\d{8}$'], ['Positive number', '^\\d+(\\.\\d+)?$'], ['Non-empty', '^.+$']].map(([label, val]) => (
+          <button key={val} onClick={() => setForm({ ...form, pattern: val })}
+            style={{ padding: '3px 8px', fontSize: '11px', backgroundColor: theme.background.secondary, border: `1px solid ${theme.background.quaternary}`, borderRadius: '4px', cursor: 'pointer', color: theme.text.secondary }}>
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  if (form.rule_type === 'ENUM_VALIDATION') return (
+    <div style={sectionStyle}>
+      <label style={labelStyle}>Allowed Values</label>
+      <input type="text" value={form.enum_values} onChange={(e) => setForm({ ...form, enum_values: e.target.value })}
+        style={inputStyle} placeholder="e.g., Active, Inactive, Pending" />
+      <div style={helpStyle}>Comma-separated list of valid values (case-sensitive)</div>
+      {form.enum_values && (
+        <div style={{ marginTop: '8px', display: 'flex', gap: '4px', flexWrap: 'wrap' as const }}>
+          {form.enum_values.split(',').map((v: string) => v.trim()).filter(Boolean).map((v: string) => (
+            <span key={v} style={{ padding: '2px 8px', backgroundColor: theme.accent.purpleTintLight, color: theme.primary.main, borderRadius: '4px', fontSize: '12px', border: `1px solid ${theme.accent.purpleTintMedium}` }}>{v}</span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  if (form.rule_type === 'DATE_RANGE_FROM_REFERENCE') return (
+    <div style={sectionStyle}>
+      <div style={{ fontSize: '13px', fontWeight: 600, color: theme.text.primary, marginBottom: '4px' }}>Date Range Configuration</div>
+      <div style={{ fontSize: '12px', color: theme.text.tertiary, marginBottom: '12px' }}>
+        Checks that <strong>{fieldName}</strong> falls within the begin/end dates of a referenced record.
+      </div>
+      <div style={gridStyle}>
+        <div>
+          <label style={labelStyle}>Reference Class</label>
+          <input type="text" list="dr-ref-classes" value={form.reference_business_class}
+            onChange={(e) => setForm({ ...form, reference_business_class: e.target.value })}
+            style={inputStyle} placeholder="e.g., Project" />
+          <datalist id="dr-ref-classes">{availableReferenceClasses.map((c: string) => <option key={c} value={c} />)}</datalist>
+        </div>
+        <div>
+          <label style={labelStyle}>Join Field (on this record)</label>
+          <input type="text" value={form.dr_join_field}
+            onChange={(e) => setForm({ ...form, dr_join_field: e.target.value })}
+            style={inputStyle} placeholder="e.g., Project" />
+          <div style={helpStyle}>Field that links to the reference record</div>
+        </div>
+        <div>
+          <label style={labelStyle}>Begin Date Field</label>
+          <input type="text" value={form.dr_begin_date_field}
+            onChange={(e) => setForm({ ...form, dr_begin_date_field: e.target.value })}
+            style={inputStyle} placeholder="BeginDate" />
+        </div>
+        <div>
+          <label style={labelStyle}>End Date Field</label>
+          <input type="text" value={form.dr_end_date_field}
+            onChange={(e) => setForm({ ...form, dr_end_date_field: e.target.value })}
+            style={inputStyle} placeholder="EndDate" />
+        </div>
+      </div>
+    </div>
+  );
+
+  if (form.rule_type === 'OPEN_PERIOD_CHECK') return (
+    <div style={sectionStyle}>
+      <div style={{ fontSize: '13px', fontWeight: 600, color: theme.text.primary, marginBottom: '4px' }}>Open Period Configuration</div>
+      <div style={{ fontSize: '12px', color: theme.text.tertiary, marginBottom: '12px' }}>
+        Two-step lookup: reads <strong>CurrentPeriod</strong> from AccountingEntity, then checks the period's date range in GeneralLedgerClosePeriod.
+      </div>
+      <div style={gridStyle}>
+        <div>
+          <label style={labelStyle}>Entity Field (on this record)</label>
+          <input type="text" value={form.op_entity_field}
+            onChange={(e) => setForm({ ...form, op_entity_field: e.target.value })}
+            style={inputStyle} placeholder="AccountingEntity" />
+        </div>
+        <div>
+          <label style={labelStyle}>Current Period Field</label>
+          <input type="text" value={form.op_current_period_field}
+            onChange={(e) => setForm({ ...form, op_current_period_field: e.target.value })}
+            style={inputStyle} placeholder="CurrentPeriod" />
+          <div style={helpStyle}>Field in AccountingEntity snapshot</div>
+        </div>
+        <div>
+          <label style={labelStyle}>Period Class</label>
+          <input type="text" value={form.op_period_class}
+            onChange={(e) => setForm({ ...form, op_period_class: e.target.value })}
+            style={inputStyle} placeholder="GeneralLedgerClosePeriod" />
+        </div>
+        <div>
+          <label style={labelStyle}>Period Key Field</label>
+          <input type="text" value={form.op_period_key_field}
+            onChange={(e) => setForm({ ...form, op_period_key_field: e.target.value })}
+            style={inputStyle} placeholder="GeneralLedgerCalendarPeriod" />
+        </div>
+        <div>
+          <label style={labelStyle}>Period Begin Field</label>
+          <input type="text" value={form.op_period_begin_field}
+            onChange={(e) => setForm({ ...form, op_period_begin_field: e.target.value })}
+            style={inputStyle} placeholder="DerivedBeginDate" />
+        </div>
+        <div>
+          <label style={labelStyle}>Period End Field</label>
+          <input type="text" value={form.op_period_end_field}
+            onChange={(e) => setForm({ ...form, op_period_end_field: e.target.value })}
+            style={inputStyle} placeholder="DerivedEndDate" />
+        </div>
+      </div>
+    </div>
+  );
+
+  if (form.rule_type === 'BALANCE_CHECK') return (
+    <div style={sectionStyle}>
+      <div style={{ fontSize: '13px', fontWeight: 600, color: theme.text.primary, marginBottom: '4px' }}>Balance Check Configuration</div>
+      <div style={{ fontSize: '12px', color: theme.text.tertiary, marginBottom: '12px' }}>
+        Groups all records by a field and verifies the amounts net to zero. Runs once across the entire file before per-row validation.
+      </div>
+      <div style={gridStyle}>
+        <div>
+          <label style={labelStyle}>Group By Field</label>
+          <input type="text" value={form.bc_group_by_field}
+            onChange={(e) => setForm({ ...form, bc_group_by_field: e.target.value })}
+            style={inputStyle} placeholder="RunGroup" />
+          <div style={helpStyle}>Records are grouped by this field</div>
+        </div>
+        <div>
+          <label style={labelStyle}>Amount Mode</label>
+          <select value={form.bc_mode} onChange={(e) => setForm({ ...form, bc_mode: e.target.value })} style={inputStyle}>
+            <option value="single_field">Single field (positive = debit, negative = credit)</option>
+            <option value="two_field">Two separate fields (debit field + credit field)</option>
+          </select>
+        </div>
+        {form.bc_mode === 'single_field' ? (
+          <div style={{ gridColumn: '1 / -1' }}>
+            <label style={labelStyle}>Amount Field</label>
+            <input type="text" value={form.bc_amount_field}
+              onChange={(e) => setForm({ ...form, bc_amount_field: e.target.value })}
+              style={inputStyle} placeholder="TransactionAmount" />
+            <div style={helpStyle}>Positive values = debits, negative values = credits</div>
+          </div>
+        ) : (
+          <>
+            <div>
+              <label style={labelStyle}>Debit Field</label>
+              <input type="text" value={form.bc_debit_field}
+                onChange={(e) => setForm({ ...form, bc_debit_field: e.target.value })}
+                style={inputStyle} placeholder="DebitAmount" />
+            </div>
+            <div>
+              <label style={labelStyle}>Credit Field</label>
+              <input type="text" value={form.bc_credit_field}
+                onChange={(e) => setForm({ ...form, bc_credit_field: e.target.value })}
+                style={inputStyle} placeholder="CreditAmount" />
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+
+  // REQUIRED_OVERRIDE, FIELD_MUST_BE_EMPTY — no extra config needed
+  return null;
+};
+
 const RulesManagement = () => {
   const [rules, setRules] = useState<Rule[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +308,27 @@ const RulesManagement = () => {
     is_active: true,
     rule_set_id: null as number | null,
     enum_values: '',
-    pattern: ''
+    pattern: '',
+    // REFERENCE_EXISTS filter
+    condition_filter_field: '',
+    condition_filter_value: '',
+    // DATE_RANGE_FROM_REFERENCE
+    dr_join_field: '',
+    dr_begin_date_field: 'BeginDate',
+    dr_end_date_field: 'EndDate',
+    // OPEN_PERIOD_CHECK
+    op_entity_field: 'AccountingEntity',
+    op_current_period_field: 'CurrentPeriod',
+    op_period_class: 'GeneralLedgerClosePeriod',
+    op_period_key_field: 'GeneralLedgerCalendarPeriod',
+    op_period_begin_field: 'DerivedBeginDate',
+    op_period_end_field: 'DerivedEndDate',
+    // BALANCE_CHECK
+    bc_group_by_field: 'RunGroup',
+    bc_amount_field: 'TransactionAmount',
+    bc_mode: 'single_field',
+    bc_debit_field: '',
+    bc_credit_field: '',
   });
 
   // Rule Sets state
@@ -68,6 +348,16 @@ const RulesManagement = () => {
   const [loadingFields, setLoadingFields] = useState(false);
   const [showAddRuleModal, setShowAddRuleModal] = useState(false);
   const [selectedField, setSelectedField] = useState<any>(null);
+  const [showAddFileLevelRuleModal, setShowAddFileLevelRuleModal] = useState(false);
+  const [fileLevelRuleForm, setFileLevelRuleForm] = useState({
+    rule_type: 'BALANCE_CHECK',
+    error_message: '',
+    bc_group_by_field: 'RunGroup',
+    bc_amount_field: 'TransactionAmount',
+    bc_mode: 'single_field',
+    bc_debit_field: '',
+    bc_credit_field: '',
+  });
   const [availableReferenceClasses, setAvailableReferenceClasses] = useState<string[]>([]);
   const [referenceClassSearch, setReferenceClassSearch] = useState('');
   const [availableReferenceFields, setAvailableReferenceFields] = useState<string[]>([]);
@@ -82,11 +372,107 @@ const RulesManagement = () => {
     error_message: '',
     reference_business_class: '',
     reference_field_name: '',
+    condition_filter_field: '',
+    condition_filter_value: '',
     pattern: '',
-    enum_values: ''
+    enum_values: '',
+    // DATE_RANGE_FROM_REFERENCE
+    dr_join_field: '',
+    dr_begin_date_field: 'BeginDate',
+    dr_end_date_field: 'EndDate',
+    // OPEN_PERIOD_CHECK
+    op_entity_field: 'AccountingEntity',
+    op_current_period_field: 'CurrentPeriod',
+    op_period_class: 'GeneralLedgerClosePeriod',
+    op_period_key_field: 'GeneralLedgerCalendarPeriod',
+    op_period_begin_field: 'DerivedBeginDate',
+    op_period_end_field: 'DerivedEndDate',
+    // BALANCE_CHECK
+    bc_group_by_field: 'RunGroup',
+    bc_amount_field: 'TransactionAmount',
+    bc_mode: 'single_field',
+    bc_debit_field: '',
+    bc_credit_field: '',
   });
 
   const account = JSON.parse(localStorage.getItem('account') || '{}');
+
+  // Build condition_expression JSON from form fields based on rule type
+  const buildConditionExpression = (form: any): string | null => {
+    switch (form.rule_type) {
+      case 'REFERENCE_EXISTS':
+        if (form.condition_filter_field && form.condition_filter_value) {
+          return JSON.stringify({ filter_field: form.condition_filter_field, filter_value: form.condition_filter_value });
+        }
+        return null;
+      case 'DATE_RANGE_FROM_REFERENCE':
+        return JSON.stringify({
+          join_field: form.dr_join_field,
+          begin_date_field: form.dr_begin_date_field || 'BeginDate',
+          end_date_field: form.dr_end_date_field || 'EndDate',
+        });
+      case 'OPEN_PERIOD_CHECK':
+        return JSON.stringify({
+          entity_field: form.op_entity_field || 'AccountingEntity',
+          current_period_field: form.op_current_period_field || 'CurrentPeriod',
+          period_class: form.op_period_class || 'GeneralLedgerClosePeriod',
+          period_key_field: form.op_period_key_field || 'GeneralLedgerCalendarPeriod',
+          period_begin_field: form.op_period_begin_field || 'DerivedBeginDate',
+          period_end_field: form.op_period_end_field || 'DerivedEndDate',
+        });
+      case 'BALANCE_CHECK':
+        return JSON.stringify({
+          group_by_field: form.bc_group_by_field || 'RunGroup',
+          amount_field: form.bc_amount_field || 'TransactionAmount',
+          mode: form.bc_mode || 'single_field',
+          ...(form.bc_mode === 'two_field' ? {
+            debit_field: form.bc_debit_field,
+            credit_field: form.bc_credit_field,
+          } : {}),
+        });
+      case 'PATTERN_MATCH':
+        return form.pattern || null;
+      default:
+        return null;
+    }
+  };
+
+  // Parse condition_expression back into form fields for editing
+  const parseConditionExpression = (ruleType: string, condExpr: string | null): Partial<typeof editRuleForm> => {
+    if (!condExpr) return {};
+    try {
+      const cfg = JSON.parse(condExpr);
+      switch (ruleType) {
+        case 'REFERENCE_EXISTS':
+          return { condition_filter_field: cfg.filter_field || '', condition_filter_value: cfg.filter_value || '' };
+        case 'DATE_RANGE_FROM_REFERENCE':
+          return { dr_join_field: cfg.join_field || '', dr_begin_date_field: cfg.begin_date_field || 'BeginDate', dr_end_date_field: cfg.end_date_field || 'EndDate' };
+        case 'OPEN_PERIOD_CHECK':
+          return {
+            op_entity_field: cfg.entity_field || 'AccountingEntity',
+            op_current_period_field: cfg.current_period_field || 'CurrentPeriod',
+            op_period_class: cfg.period_class || 'GeneralLedgerClosePeriod',
+            op_period_key_field: cfg.period_key_field || 'GeneralLedgerCalendarPeriod',
+            op_period_begin_field: cfg.period_begin_field || 'DerivedBeginDate',
+            op_period_end_field: cfg.period_end_field || 'DerivedEndDate',
+          };
+        case 'BALANCE_CHECK':
+          return {
+            bc_group_by_field: cfg.group_by_field || 'RunGroup',
+            bc_amount_field: cfg.amount_field || 'TransactionAmount',
+            bc_mode: cfg.mode || 'single_field',
+            bc_debit_field: cfg.debit_field || '',
+            bc_credit_field: cfg.credit_field || '',
+          };
+        default:
+          return {};
+      }
+    } catch {
+      // PATTERN_MATCH stores regex directly
+      if (ruleType === 'PATTERN_MATCH') return { pattern: condExpr };
+      return {};
+    }
+  };
 
   useEffect(() => {
     loadAvailableBusinessClasses();
@@ -104,7 +490,7 @@ const RulesManagement = () => {
       const schemas = response.data.schemas || [];
       
       // Extract unique business classes from schemas
-      const businessClasses = [...new Set(schemas.map((s: any) => s.business_class))];
+      const businessClasses = [...new Set<string>(schemas.map((s: any) => s.business_class as string))];
       setAvailableBusinessClasses(businessClasses);
     } catch (error) {
       console.error('Failed to load business classes:', error);
@@ -193,18 +579,17 @@ const RulesManagement = () => {
       
       // Reset form
       setNewRule({
-        name: '',
-        business_class: '',
-        rule_type: 'REFERENCE_EXISTS',
-        field_name: '',
-        reference_business_class: '',
-        reference_field_name: '',
-        condition_expression: '',
-        error_message: '',
-        is_active: true,
-        rule_set_id: selectedRuleSet?.id || null,
-        enum_values: '',
-        pattern: ''
+        name: '', business_class: '', rule_type: 'REFERENCE_EXISTS', field_name: '',
+        reference_business_class: '', reference_field_name: '', condition_expression: '',
+        error_message: '', is_active: true, rule_set_id: selectedRuleSet?.id || null,
+        enum_values: '', pattern: '',
+        condition_filter_field: '', condition_filter_value: '',
+        dr_join_field: '', dr_begin_date_field: 'BeginDate', dr_end_date_field: 'EndDate',
+        op_entity_field: 'AccountingEntity', op_current_period_field: 'CurrentPeriod',
+        op_period_class: 'GeneralLedgerClosePeriod', op_period_key_field: 'GeneralLedgerCalendarPeriod',
+        op_period_begin_field: 'DerivedBeginDate', op_period_end_field: 'DerivedEndDate',
+        bc_group_by_field: 'RunGroup', bc_amount_field: 'TransactionAmount',
+        bc_mode: 'single_field', bc_debit_field: '', bc_credit_field: '',
       });
       
       setShowCreateModal(false);
@@ -359,7 +744,8 @@ const RulesManagement = () => {
     if (!selectedField || !fieldViewData) return;
 
     try {
-      // Create rule with field name from selected field
+      const conditionExpression = buildConditionExpression(newRule);
+
       const ruleData: any = {
         name: `${selectedField.field_name} ${newRule.rule_type}`,
         business_class: fieldViewData.business_class,
@@ -368,46 +754,67 @@ const RulesManagement = () => {
         field_name: selectedField.field_name,
         reference_business_class: newRule.reference_business_class || null,
         reference_field_name: newRule.reference_field_name || null,
-        condition_expression: null,
+        condition_expression: conditionExpression,
         error_message: newRule.error_message,
-        is_active: true
+        is_active: true,
+        pattern: newRule.rule_type === 'PATTERN_MATCH' ? newRule.pattern : null,
+        enum_values: newRule.rule_type === 'ENUM_VALIDATION' ? newRule.enum_values : null,
       };
-
-      // Add type-specific fields
-      if (newRule.rule_type === 'PATTERN_MATCH') {
-        ruleData.pattern = newRule.pattern;
-        ruleData.condition_expression = newRule.pattern; // Store pattern in condition_expression for backend
-      } else if (newRule.rule_type === 'ENUM_VALIDATION') {
-        ruleData.enum_values = newRule.enum_values;
-      }
 
       await api.post('/rules/templates', ruleData);
 
       // Reset form
       setNewRule({
-        name: '',
-        business_class: '',
-        rule_type: 'REFERENCE_EXISTS',
-        field_name: '',
-        reference_business_class: '',
-        reference_field_name: '',
-        condition_expression: '',
-        error_message: '',
-        is_active: true,
-        rule_set_id: null,
-        enum_values: '',
-        pattern: ''
+        name: '', business_class: '', rule_type: 'REFERENCE_EXISTS', field_name: '',
+        reference_business_class: '', reference_field_name: '', condition_expression: '',
+        error_message: '', is_active: true, rule_set_id: null, enum_values: '', pattern: '',
+        condition_filter_field: '', condition_filter_value: '',
+        dr_join_field: '', dr_begin_date_field: 'BeginDate', dr_end_date_field: 'EndDate',
+        op_entity_field: 'AccountingEntity', op_current_period_field: 'CurrentPeriod',
+        op_period_class: 'GeneralLedgerClosePeriod', op_period_key_field: 'GeneralLedgerCalendarPeriod',
+        op_period_begin_field: 'DerivedBeginDate', op_period_end_field: 'DerivedEndDate',
+        bc_group_by_field: 'RunGroup', bc_amount_field: 'TransactionAmount',
+        bc_mode: 'single_field', bc_debit_field: '', bc_credit_field: '',
       });
 
       setShowAddRuleModal(false);
       setSelectedField(null);
-
-      // Reload field view
       await loadRuleSetFields(fieldViewData.rule_set_id);
-
-      alert('✅ Rule added successfully');
     } catch (error: any) {
       alert(`Failed to add rule: ${error.response?.data?.detail || error.message}`);
+    }
+  };
+
+  const handleAddFileLevelRule = async () => {
+    if (!fieldViewData) return;
+    try {
+      const conditionExpression = buildConditionExpression({ ...fileLevelRuleForm });
+      await api.post('/rules/templates', {
+        name: `${fieldViewData.business_class} ${fileLevelRuleForm.rule_type}`,
+        business_class: fieldViewData.business_class,
+        rule_set_id: fieldViewData.rule_set_id,
+        rule_type: fileLevelRuleForm.rule_type,
+        field_name: '_file_level_',   // sentinel — not a real field
+        condition_expression: conditionExpression,
+        error_message: fileLevelRuleForm.error_message ||
+          getDefaultErrorMessage(fileLevelRuleForm.rule_type, fieldViewData.business_class),
+        is_active: true,
+      });
+      setFileLevelRuleForm({ rule_type: 'BALANCE_CHECK', error_message: '', bc_group_by_field: 'RunGroup', bc_amount_field: 'TransactionAmount', bc_mode: 'single_field', bc_debit_field: '', bc_credit_field: '' });
+      setShowAddFileLevelRuleModal(false);
+      await loadRuleSetFields(fieldViewData.rule_set_id);
+    } catch (error: any) {
+      alert(`Failed to add rule: ${error.response?.data?.detail || error.message}`);
+    }
+  };
+
+  const handleDeleteFileLevelRule = async (ruleId: number) => {
+    if (!confirm('Delete this file-level rule?')) return;
+    try {
+      await api.delete(`/rules/templates/${ruleId}`);
+      await loadRuleSetFields(fieldViewData.rule_set_id);
+    } catch (error: any) {
+      alert(`Failed to delete rule: ${error.response?.data?.detail || error.message}`);
     }
   };
 
@@ -457,15 +864,31 @@ const RulesManagement = () => {
 
   const handleOpenEditRule = (rule: any) => {
     setEditingRule(rule);
+    const parsed = parseConditionExpression(rule.rule_type, rule.condition_expression);
     setEditRuleForm({
       rule_type: rule.rule_type,
       error_message: rule.error_message || '',
       reference_business_class: rule.reference_business_class || '',
       reference_field_name: rule.reference_field_name || '',
-      pattern: rule.pattern || rule.condition_expression || '',
-      enum_values: rule.enum_values || ''
+      condition_filter_field: parsed.condition_filter_field || '',
+      condition_filter_value: parsed.condition_filter_value || '',
+      pattern: rule.pattern || (rule.rule_type === 'PATTERN_MATCH' ? rule.condition_expression : '') || '',
+      enum_values: rule.enum_values ? (Array.isArray(rule.enum_values) ? rule.enum_values.join(', ') : rule.enum_values) : '',
+      dr_join_field: parsed.dr_join_field || '',
+      dr_begin_date_field: parsed.dr_begin_date_field || 'BeginDate',
+      dr_end_date_field: parsed.dr_end_date_field || 'EndDate',
+      op_entity_field: parsed.op_entity_field || 'AccountingEntity',
+      op_current_period_field: parsed.op_current_period_field || 'CurrentPeriod',
+      op_period_class: parsed.op_period_class || 'GeneralLedgerClosePeriod',
+      op_period_key_field: parsed.op_period_key_field || 'GeneralLedgerCalendarPeriod',
+      op_period_begin_field: parsed.op_period_begin_field || 'DerivedBeginDate',
+      op_period_end_field: parsed.op_period_end_field || 'DerivedEndDate',
+      bc_group_by_field: parsed.bc_group_by_field || 'RunGroup',
+      bc_amount_field: parsed.bc_amount_field || 'TransactionAmount',
+      bc_mode: parsed.bc_mode || 'single_field',
+      bc_debit_field: parsed.bc_debit_field || '',
+      bc_credit_field: parsed.bc_credit_field || '',
     });
-    // Pre-load reference fields so the dropdown is populated when modal opens
     if (rule.rule_type === 'REFERENCE_EXISTS' && rule.reference_business_class) {
       loadReferenceFields(rule.reference_business_class);
     } else {
@@ -477,14 +900,15 @@ const RulesManagement = () => {
   const handleUpdateRule = async () => {
     if (!editingRule) return;
     try {
+      const conditionExpression = buildConditionExpression(editRuleForm);
       await api.put(`/rules/templates/${editingRule.id}`, {
         rule_type: editRuleForm.rule_type,
         error_message: editRuleForm.error_message,
         reference_business_class: editRuleForm.reference_business_class || null,
         reference_field_name: editRuleForm.reference_field_name || null,
-        condition_expression: editRuleForm.rule_type === 'PATTERN_MATCH' ? editRuleForm.pattern : null,
-        pattern: editRuleForm.pattern || null,
-        enum_values: editRuleForm.enum_values || null
+        condition_expression: conditionExpression,
+        pattern: editRuleForm.rule_type === 'PATTERN_MATCH' ? editRuleForm.pattern : null,
+        enum_values: editRuleForm.rule_type === 'ENUM_VALIDATION' ? editRuleForm.enum_values : null,
       });
       setShowEditRuleModal(false);
       setEditingRule(null);
@@ -834,6 +1258,20 @@ const RulesManagement = () => {
                   </h2>
                   <div style={{ fontSize: '14px', color: theme.text.tertiary }}>
                     {fieldViewData.total_fields} fields | {fieldViewData.fields_with_rules} with rules
+                    {fieldViewData.business_class && (
+                      <span style={{
+                        marginLeft: '10px',
+                        padding: '2px 8px',
+                        backgroundColor: theme.accent.purpleTintLight,
+                        color: theme.primary.main,
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        border: `1px solid ${theme.accent.purpleTintMedium}`
+                      }}>
+                        {fieldViewData.business_class}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <button
@@ -854,6 +1292,64 @@ const RulesManagement = () => {
                 </button>
               </div>
             </div>
+
+            {/* File-Level Rules Section */}
+            {!fieldViewData.is_common && (() => {
+              const fileLevelField = fieldViewData.fields?.find((f: any) => f.field_name === '_file_level_');
+              const existingFileLevelRules = fileLevelField?.rules || [];
+              return (
+                <div style={{ padding: '20px 20px 0' }}>
+                  <div style={{
+                    backgroundColor: theme.background.tertiary,
+                    border: `1px solid ${theme.background.quaternary}`,
+                    borderRadius: '8px',
+                    padding: '16px',
+                    marginBottom: '8px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: existingFileLevelRules.length > 0 ? '12px' : '0' }}>
+                      <div>
+                        <div style={{ fontSize: '14px', fontWeight: 600, color: theme.text.primary }}>File-Level Rules</div>
+                        <div style={{ fontSize: '12px', color: theme.text.tertiary, marginTop: '2px' }}>
+                          Rules that apply to the entire file, not to individual fields (e.g. Balance Check)
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setShowAddFileLevelRuleModal(true)}
+                        style={{ padding: '6px 14px', backgroundColor: theme.primary.main, color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.primary.dark}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.primary.main}
+                      >
+                        + Add
+                      </button>
+                    </div>
+                    {existingFileLevelRules.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '8px' }}>
+                        {existingFileLevelRules.map((rule: any) => (
+                          <div key={rule.id} style={{
+                            display: 'flex', alignItems: 'center', gap: '8px',
+                            padding: '6px 12px',
+                            backgroundColor: theme.background.secondary,
+                            border: `1px solid ${theme.background.quaternary}`,
+                            borderRadius: '6px', fontSize: '13px'
+                          }}>
+                            <span style={{ fontWeight: 600, color: theme.primary.main }}>{rule.rule_type}</span>
+                            {rule.error_message && <span style={{ color: theme.text.tertiary, fontSize: '12px' }}>{rule.error_message}</span>}
+                            <button
+                              onClick={() => handleDeleteFileLevelRule(rule.id)}
+                              title="Delete"
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.status.error, fontSize: '14px', padding: '0', lineHeight: 1 }}
+                            >✕</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {existingFileLevelRules.length === 0 && (
+                      <div style={{ fontSize: '12px', color: theme.text.muted, fontStyle: 'italic', marginTop: '8px' }}>No file-level rules configured</div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Table */}
             <div style={{ padding: '20px' }}>
@@ -880,7 +1376,7 @@ const RulesManagement = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {fieldViewData.fields.map((field: any, idx: number) => (
+                  {fieldViewData.fields.filter((f: any) => f.field_name !== '_file_level_').map((field: any, idx: number) => (
                     <tr
                       key={idx}
                       style={{
@@ -988,156 +1484,62 @@ const RulesManagement = () => {
       {/* Add Rule Modal */}
       {showAddRuleModal && selectedField && (
         <div style={styles.modalOverlay} onClick={() => setShowAddRuleModal(false)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h2 style={styles.modalTitle}>Add Rule for Field: {selectedField.field_name}</h2>
-
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Rule Type</label>
-              <select
-                value={newRule.rule_type}
-                onChange={(e) => setNewRule({ ...newRule, rule_type: e.target.value })}
-                style={styles.input}
-              >
-                <option value="REFERENCE_EXISTS">REFERENCE_EXISTS</option>
-                <option value="REQUIRED_OVERRIDE">REQUIRED_OVERRIDE</option>
-                <option value="PATTERN_MATCH">PATTERN_MATCH</option>
-                <option value="ENUM_VALIDATION">ENUM_VALIDATION</option>
-              </select>
+          <div style={{ ...styles.modal, maxWidth: '680px' }} onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+              <div>
+                <h2 style={{ ...styles.modalTitle, marginBottom: '4px' }}>Add Validation Rule</h2>
+                <div style={{ fontSize: '13px', color: theme.text.tertiary }}>
+                  Field: <span style={{ fontWeight: 600, color: theme.primary.main }}>{selectedField.field_name}</span>
+                  {selectedField.field_type && <span style={{ marginLeft: '8px', padding: '2px 6px', backgroundColor: theme.background.tertiary, borderRadius: '4px', fontSize: '11px' }}>{selectedField.field_type}</span>}
+                </div>
+              </div>
+              <button onClick={() => setShowAddRuleModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px', color: theme.text.tertiary, padding: '4px' }}>✕</button>
             </div>
 
-            {newRule.rule_type === 'REFERENCE_EXISTS' && (
-              <>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Reference Business Class</label>
-                  <input
-                    type="text"
-                    list="reference-classes"
-                    value={newRule.reference_business_class}
-                    onChange={(e) => {
-                      const selectedClass = e.target.value;
-                      setNewRule({ ...newRule, reference_business_class: selectedClass, reference_field_name: '' });
-                      setReferenceClassSearch(selectedClass);
-                      // Load fields for selected class
-                      if (selectedClass) {
-                        loadReferenceFields(selectedClass);
-                      } else {
-                        setAvailableReferenceFields([]);
-                      }
-                    }}
-                    style={styles.input}
-                    placeholder="Type to search... (e.g., Account, Vendor, Customer)"
-                  />
-                  <datalist id="reference-classes">
-                    {availableReferenceClasses
-                      .filter(cls => 
-                        cls.toLowerCase().includes((newRule.reference_business_class || '').toLowerCase())
-                      )
-                      .map(cls => (
-                        <option key={cls} value={cls} />
-                      ))
-                    }
-                  </datalist>
-                  <div style={styles.helpText}>
-                    The FSM business class to check against (must be synced in Setup Data)
-                  </div>
-                </div>
-
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Reference Field Name</label>
-                  <select
-                    value={newRule.reference_field_name}
-                    onChange={(e) => setNewRule({ ...newRule, reference_field_name: e.target.value })}
+            {/* Rule Type Selector */}
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Rule Type</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                {RULE_TYPE_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setNewRule({ ...newRule, rule_type: opt.value })}
                     style={{
-                      ...styles.input,
-                      cursor: !newRule.reference_business_class || loadingReferenceFields ? 'not-allowed' : 'pointer'
+                      padding: '10px 12px',
+                      borderRadius: '6px',
+                      border: `2px solid ${newRule.rule_type === opt.value ? theme.primary.main : theme.background.quaternary}`,
+                      backgroundColor: newRule.rule_type === opt.value ? theme.accent.purpleTintLight : theme.background.secondary,
+                      cursor: 'pointer',
+                      textAlign: 'left' as const,
+                      transition: 'all 0.15s',
                     }}
-                    disabled={!newRule.reference_business_class || loadingReferenceFields}
                   >
-                    <option value="">
-                      {!newRule.reference_business_class
-                        ? 'Select a Reference Business Class first'
-                        : loadingReferenceFields
-                        ? 'Loading fields...'
-                        : '-- Select field --'}
-                    </option>
-                    {availableReferenceFields.map(field => (
-                      <option key={field} value={field}>{field}</option>
-                    ))}
-                  </select>
-                  <div style={styles.helpText}>
-                    {!newRule.reference_business_class
-                      ? 'Select a Reference Business Class to see available fields'
-                      : loadingReferenceFields
-                      ? 'Loading fields from schema...'
-                      : `The key field in the ${newRule.reference_business_class} class to validate against.`
-                    }
-                  </div>
-                </div>
-              </>
-            )}
-
-            {newRule.rule_type === 'PATTERN_MATCH' && (
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Regex Pattern</label>
-                <input
-                  type="text"
-                  value={newRule.pattern}
-                  onChange={(e) => setNewRule({ ...newRule, pattern: e.target.value })}
-                  style={styles.input}
-                  placeholder="e.g., ^\d{8}$ for YYYYMMDD dates"
-                />
-                <div style={styles.helpText}>
-                  Regular expression pattern to validate the field format
-                </div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: newRule.rule_type === opt.value ? theme.primary.main : theme.text.primary }}>{opt.label}</div>
+                    <div style={{ fontSize: '11px', color: theme.text.tertiary, marginTop: '2px' }}>{opt.description}</div>
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
 
-            {newRule.rule_type === 'ENUM_VALIDATION' && (
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Allowed Values (comma-separated)</label>
-                <input
-                  type="text"
-                  value={newRule.enum_values}
-                  onChange={(e) => setNewRule({ ...newRule, enum_values: e.target.value })}
-                  style={styles.input}
-                  placeholder='e.g., 0, 1 or Active, Inactive, Pending'
-                />
-                <div style={styles.helpText}>
-                  List of valid values separated by commas (case-sensitive)
-                </div>
-              </div>
-            )}
+            {/* Dynamic config section */}
+            <RuleTypeConfig form={newRule} setForm={setNewRule} availableReferenceClasses={availableReferenceClasses} availableReferenceFields={availableReferenceFields} loadingReferenceFields={loadingReferenceFields} loadReferenceFields={loadReferenceFields} fieldName={selectedField.field_name} />
 
+            {/* Error Message */}
             <div style={styles.formGroup}>
               <label style={styles.label}>Error Message</label>
               <textarea
                 value={newRule.error_message}
                 onChange={(e) => setNewRule({ ...newRule, error_message: e.target.value })}
-                style={{ ...styles.input, minHeight: '80px' }}
-                placeholder={
-                  newRule.rule_type === 'REFERENCE_EXISTS'
-                    ? `${selectedField.field_name} does not exist in FSM`
-                    : newRule.rule_type === 'REQUIRED_OVERRIDE'
-                    ? `${selectedField.field_name} is required`
-                    : newRule.rule_type === 'PATTERN_MATCH'
-                    ? `${selectedField.field_name} must match the required format`
-                    : newRule.rule_type === 'ENUM_VALIDATION'
-                    ? `${selectedField.field_name} must be one of the allowed values`
-                    : `Validation failed for ${selectedField.field_name}`
-                }
+                style={{ ...styles.input, minHeight: '72px', resize: 'vertical' as const }}
+                placeholder={getDefaultErrorMessage(newRule.rule_type, selectedField.field_name)}
               />
-              <div style={styles.helpText}>
-                Message shown when validation fails. The actual field value will be included automatically.
-              </div>
+              <div style={styles.helpText}>Shown to the consultant when this rule fails. The invalid value is appended automatically.</div>
             </div>
 
             <div style={styles.modalActions}>
-              <button onClick={() => setShowAddRuleModal(false)} style={styles.cancelButton}>
-                Cancel
-              </button>
-              <button onClick={handleAddRuleToField} style={styles.saveButton}>
-                Add Rule
-              </button>
+              <button onClick={() => setShowAddRuleModal(false)} style={styles.cancelButton}>Cancel</button>
+              <button onClick={handleAddRuleToField} style={styles.saveButton}>Add Rule</button>
             </div>
           </div>
         </div>
@@ -1146,85 +1548,96 @@ const RulesManagement = () => {
       {/* Edit Rule Modal */}
       {showEditRuleModal && editingRule && (
         <div style={styles.modalOverlay} onClick={() => setShowEditRuleModal(false)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h2 style={styles.modalTitle}>Edit Rule: {editingRule.rule_type} on {editingRule.field_name}</h2>
-
-            {editRuleForm.rule_type === 'REFERENCE_EXISTS' && (
-              <>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Reference Business Class</label>
-                  <input
-                    type="text"
-                    list="edit-reference-classes"
-                    value={editRuleForm.reference_business_class}
-                    onChange={(e) => {
-                      setEditRuleForm({ ...editRuleForm, reference_business_class: e.target.value, reference_field_name: '' });
-                      if (e.target.value) loadReferenceFields(e.target.value);
-                    }}
-                    style={styles.input}
-                  />
-                  <datalist id="edit-reference-classes">
-                    {availableReferenceClasses.map(cls => <option key={cls} value={cls} />)}
-                  </datalist>
+          <div style={{ ...styles.modal, maxWidth: '680px' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+              <div>
+                <h2 style={{ ...styles.modalTitle, marginBottom: '4px' }}>Edit Rule</h2>
+                <div style={{ fontSize: '13px', color: theme.text.tertiary }}>
+                  Field: <span style={{ fontWeight: 600, color: theme.primary.main }}>{editingRule.field_name}</span>
+                  <span style={{ marginLeft: '8px', padding: '2px 8px', backgroundColor: theme.accent.purpleTintLight, color: theme.primary.main, borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>{editRuleForm.rule_type}</span>
                 </div>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Reference Field Name</label>
-                  <select
-                    value={editRuleForm.reference_field_name}
-                    onChange={(e) => setEditRuleForm({ ...editRuleForm, reference_field_name: e.target.value })}
-                    style={{
-                      ...styles.input,
-                      cursor: !editRuleForm.reference_business_class || loadingReferenceFields ? 'not-allowed' : 'pointer'
-                    }}
-                    disabled={!editRuleForm.reference_business_class || loadingReferenceFields}
-                  >
-                    <option value="">
-                      {loadingReferenceFields ? 'Loading fields...' : '-- Select field --'}
-                    </option>
-                    {availableReferenceFields.map(f => (
-                      <option key={f} value={f}>{f}</option>
-                    ))}
-                  </select>
-                </div>
-              </>
-            )}
-
-            {editRuleForm.rule_type === 'PATTERN_MATCH' && (
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Regex Pattern</label>
-                <input
-                  type="text"
-                  value={editRuleForm.pattern}
-                  onChange={(e) => setEditRuleForm({ ...editRuleForm, pattern: e.target.value })}
-                  style={styles.input}
-                />
               </div>
-            )}
+              <button onClick={() => setShowEditRuleModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px', color: theme.text.tertiary, padding: '4px' }}>✕</button>
+            </div>
 
-            {editRuleForm.rule_type === 'ENUM_VALIDATION' && (
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Allowed Values (comma-separated)</label>
-                <input
-                  type="text"
-                  value={editRuleForm.enum_values}
-                  onChange={(e) => setEditRuleForm({ ...editRuleForm, enum_values: e.target.value })}
-                  style={styles.input}
-                />
-              </div>
-            )}
+            <RuleTypeConfig form={editRuleForm} setForm={setEditRuleForm} availableReferenceClasses={availableReferenceClasses} availableReferenceFields={availableReferenceFields} loadingReferenceFields={loadingReferenceFields} loadReferenceFields={loadReferenceFields} fieldName={editingRule.field_name} />
 
             <div style={styles.formGroup}>
               <label style={styles.label}>Error Message</label>
               <textarea
                 value={editRuleForm.error_message}
                 onChange={(e) => setEditRuleForm({ ...editRuleForm, error_message: e.target.value })}
-                style={{ ...styles.input, minHeight: '80px' }}
+                style={{ ...styles.input, minHeight: '72px', resize: 'vertical' as const }}
               />
             </div>
 
             <div style={styles.modalActions}>
               <button onClick={() => setShowEditRuleModal(false)} style={styles.cancelButton}>Cancel</button>
               <button onClick={handleUpdateRule} style={styles.saveButton}>Save Changes</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add File-Level Rule Modal */}
+      {showAddFileLevelRuleModal && fieldViewData && (
+        <div style={styles.modalOverlay} onClick={() => setShowAddFileLevelRuleModal(false)}>
+          <div style={{ ...styles.modal, maxWidth: '580px' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+              <div>
+                <h2 style={{ ...styles.modalTitle, marginBottom: '4px' }}>Add File-Level Rule</h2>
+                <div style={{ fontSize: '13px', color: theme.text.tertiary }}>
+                  Applies to the entire file for <span style={{ fontWeight: 600, color: theme.primary.main }}>{fieldViewData.business_class}</span>
+                </div>
+              </div>
+              <button onClick={() => setShowAddFileLevelRuleModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px', color: theme.text.tertiary, padding: '4px' }}>✕</button>
+            </div>
+
+            {/* Rule type selector — file-level only */}
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Rule Type</label>
+              <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '8px' }}>
+                {FILE_LEVEL_RULE_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setFileLevelRuleForm({ ...fileLevelRuleForm, rule_type: opt.value })}
+                    style={{
+                      padding: '12px 14px', borderRadius: '6px', textAlign: 'left' as const,
+                      border: `2px solid ${fileLevelRuleForm.rule_type === opt.value ? theme.primary.main : theme.background.quaternary}`,
+                      backgroundColor: fileLevelRuleForm.rule_type === opt.value ? theme.accent.purpleTintLight : theme.background.secondary,
+                      cursor: 'pointer', transition: 'all 0.15s',
+                    }}
+                  >
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: fileLevelRuleForm.rule_type === opt.value ? theme.primary.main : theme.text.primary }}>{opt.label}</div>
+                    <div style={{ fontSize: '11px', color: theme.text.tertiary, marginTop: '2px' }}>{opt.description}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <RuleTypeConfig
+              form={fileLevelRuleForm}
+              setForm={setFileLevelRuleForm}
+              availableReferenceClasses={availableReferenceClasses}
+              availableReferenceFields={availableReferenceFields}
+              loadingReferenceFields={loadingReferenceFields}
+              loadReferenceFields={loadReferenceFields}
+              fieldName={fieldViewData.business_class}
+            />
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Error Message</label>
+              <textarea
+                value={fileLevelRuleForm.error_message}
+                onChange={(e) => setFileLevelRuleForm({ ...fileLevelRuleForm, error_message: e.target.value })}
+                style={{ ...styles.input, minHeight: '72px', resize: 'vertical' as const }}
+                placeholder={getDefaultErrorMessage(fileLevelRuleForm.rule_type, fieldViewData.business_class)}
+              />
+            </div>
+
+            <div style={styles.modalActions}>
+              <button onClick={() => setShowAddFileLevelRuleModal(false)} style={styles.cancelButton}>Cancel</button>
+              <button onClick={handleAddFileLevelRule} style={styles.saveButton}>Add Rule</button>
             </div>
           </div>
         </div>

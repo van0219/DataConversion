@@ -1142,10 +1142,11 @@ axios.post('http://localhost:8000/validation/start', data);  // Don't do this
 4. **Track**: Sync timestamps and record counts stored in `snapshot_registry` table
 5. **Validate**: REFERENCE_EXISTS rules check against synced data (no FSM API calls during validation)
 
-**Setup Classes** (12 total):
+**Setup Classes** (14 total, extensible via UI):
 - Account, AccountingEntity, Currency
 - FinanceDimension1-5, FinanceEnterpriseGroup
-- GeneralLedgerChartAccount, Ledger, Project
+- GeneralLedgerChartAccount, GeneralLedgerClosePeriod, Ledger, Project
+- Any additional classes added by consultants via Setup Data Management UI
 
 **Endpoint Standard**: All use `_fields=_all&_limit=100000` for complete data capture
 
@@ -1162,9 +1163,49 @@ axios.post('http://localhost:8000/validation/start', data);  // Don't do this
 
 **Rule Set Validation (ONLY source during Step 3)**:
 - Driven exclusively by the Rule Set selected in the Validation step dropdown
-- Rule types: REFERENCE_EXISTS, REQUIRED_OVERRIDE, PATTERN_MATCH, ENUM_VALIDATION, REGEX_OVERRIDE
 - Schema is NOT used for validation — only for field mapping (Step 2)
 - All rules run on every record regardless of other failures (full error list per record)
+- Two execution phases: pre-validation (file-level rules) then per-row rules
+
+**Implemented Rule Types**:
+
+| Rule Type | Scope | Description |
+|---|---|---|
+| `REFERENCE_EXISTS` | Per-row | Value must exist in a synced setup class snapshot. Supports optional `filter_field`/`filter_value` via `condition_expression` JSON (e.g. Status = Active) |
+| `REQUIRED_OVERRIDE` | Per-row | Field must not be empty |
+| `REQUIRED_FIELD` | Per-row | Alias for REQUIRED_OVERRIDE |
+| `FIELD_MUST_BE_EMPTY` | Per-row | Field must be blank/null. Only fires if the field exists in the CSV — missing columns are treated as empty and skipped |
+| `PATTERN_MATCH` | Per-row | Value must match a regex pattern (stored in `pattern` or `condition_expression`) |
+| `ENUM_VALIDATION` | Per-row | Value must be one of a comma-separated list (stored in `enum_values`) |
+| `REGEX_OVERRIDE` | Per-row | Alias for PATTERN_MATCH using `condition_expression` |
+| `DATE_RANGE_FROM_REFERENCE` | Per-row | Date field must fall within begin/end dates of a referenced snapshot record. Config via `condition_expression` JSON: `{"join_field", "begin_date_field", "end_date_field"}` |
+| `OPEN_PERIOD_CHECK` | Per-row | Date must fall within the current open GL period. Two-step lookup: AccountingEntity.CurrentPeriod → GeneralLedgerClosePeriod date range. Config via `condition_expression` JSON |
+| `BALANCE_CHECK` | File-level | Groups all records by a field and verifies amounts net to zero. Runs as a pre-validation pass before per-row rules. Config via `condition_expression` JSON: `{"group_by_field", "amount_field", "mode"}` |
+
+**File-Level Rules**:
+- Stored with sentinel `field_name = "_file_level_"` in the database
+- Skipped during per-row execution (guarded in `rule_executor.py`)
+- Executed in `ValidationService._run_balance_checks()` before the streaming loop
+- Displayed in a dedicated "File-Level Rules" section at the top of the field view panel
+- Filtered out of the fields table in the UI
+
+**condition_expression JSON patterns**:
+```json
+// REFERENCE_EXISTS with status filter
+{"filter_field": "Status", "filter_value": "Active"}
+
+// DATE_RANGE_FROM_REFERENCE
+{"join_field": "Project", "begin_date_field": "BeginDate", "end_date_field": "EndDate"}
+
+// OPEN_PERIOD_CHECK
+{"entity_field": "AccountingEntity", "current_period_field": "CurrentPeriod",
+ "period_class": "GeneralLedgerClosePeriod", "period_key_field": "GeneralLedgerCalendarPeriod",
+ "period_begin_field": "DerivedBeginDate", "period_end_field": "DerivedEndDate"}
+
+// BALANCE_CHECK
+{"group_by_field": "RunGroup", "amount_field": "TransactionAmount", "mode": "single_field"}
+// mode: "single_field" (pos=debit, neg=credit) or "two_field" (separate debit_field/credit_field)
+```
 
 **Rule Set Hierarchy**:
 - Default rule set (`is_common=True`): read-only, cannot be edited or deleted
@@ -1839,3 +1880,60 @@ python verify_github_ready.py
 - **Generator**: `generate_100k.py` in workspace root (re-run to regenerate with new random positions)
 - **Purpose**: Performance testing of streaming validation pipeline and error report download
 - **Note**: REFERENCE rules will fire on account codes not in the synced snapshot — this is expected behavior, not a bug. The 20 injected errors are in addition to any reference validation failures.
+
+## Recent Updates (March 26, 2026)
+
+### Advanced Validation Rule Engine & UI Overhaul (March 26, 2026) ⭐⭐⭐
+
+- **New Rule Types Implemented**:
+  - `FIELD_MUST_BE_EMPTY` — field must be blank/null; skipped if field not present in CSV
+  - `DATE_RANGE_FROM_REFERENCE` — date must fall within begin/end dates of a referenced snapshot record (e.g. PostingDate within Project.BeginDate/EndDate)
+  - `OPEN_PERIOD_CHECK` — two-step lookup: AccountingEntity.CurrentPeriod → GeneralLedgerClosePeriod date range; validates posting date within open period
+  - `BALANCE_CHECK` — file-level pre-validation pass; groups records by field (e.g. RunGroup), sums amounts, flags groups that don't net to zero
+  - Enhanced `REFERENCE_EXISTS` — now supports optional status filter via `condition_expression` JSON (`filter_field`/`filter_value`)
+
+- **File-Level Rule Architecture**:
+  - `BALANCE_CHECK` and future file-level rules stored with sentinel `field_name = "_file_level_"`
+  - Skipped in per-row `execute_rule()` via guard check
+  - Executed in new `ValidationService._run_balance_checks()` pre-validation phase
+  - Errors persisted before streaming loop begins; invalid_records count updated accordingly
+
+- **Snapshot Upsert Fix**:
+  - Replaced SELECT+INSERT pattern with SQLite native `INSERT OR REPLACE` (`on_conflict_do_update`)
+  - Eliminates UNIQUE constraint errors on re-sync of any setup class
+  - Batch upsert in groups of 100 records for performance
+
+- **Rules Management UI — Dynamic Rule Form**:
+  - Add/Edit rule modals now show dynamic config sections per rule type (no raw JSON)
+  - Rule type selector uses visual card grid with plain-English labels and descriptions
+  - `REFERENCE_EXISTS`: class picker + field dropdown + optional status filter fields
+  - `PATTERN_MATCH`: regex input with one-click preset buttons (YYYYMMDD, positive number, non-empty)
+  - `ENUM_VALIDATION`: comma-separated input with live tag preview
+  - `DATE_RANGE_FROM_REFERENCE`: join field, reference class, begin/end date field names
+  - `OPEN_PERIOD_CHECK`: all 6 fields pre-filled with FSM defaults, editable
+  - `BALANCE_CHECK`: group-by field, mode toggle (single/two field), amount/debit/credit fields
+  - All config serializes to `condition_expression` JSON behind the scenes
+  - Edit modal parses stored JSON back into form fields automatically
+
+- **Rules Management UI — File-Level Rules Section**:
+  - Field view panel now has a "File-Level Rules" section at the top (separate from field table)
+  - `BALANCE_CHECK` removed from per-field `+` button; only appears in file-level section
+  - `_file_level_` sentinel rows filtered out of the fields table
+  - Dedicated "Add File-Level Rule" modal with its own rule type selector
+  - Existing file-level rules shown as deletable badges in the section
+
+- **Field View Panel — Business Class Badge**:
+  - Panel header now shows the business class as a purple badge next to field count
+
+- **Setup Business Classes**:
+  - Added `Project` and `GeneralLedgerClosePeriod` to support new validation rule types
+  - `GeneralLedgerClosePeriod` sync upsert fix applied (same as all classes)
+
+- **Files Modified**:
+  - `backend/app/services/rule_executor.py` — 5 new rule types, enhanced REFERENCE_EXISTS, file-level sentinel guard, snapshot field lookup helper, date parser
+  - `backend/app/modules/validation/service.py` — `_run_balance_checks()` pre-validation phase, json import
+  - `backend/app/modules/snapshot/service.py` — upsert fix (INSERT OR REPLACE)
+  - `backend/app/modules/rules/router.py` — `_file_level_` virtual entry in fields response
+  - `frontend/src/pages/RulesManagement.tsx` — dynamic rule form, file-level rules section, business class badge, field table filter
+
+- **Status**: Complete, production-ready. All new rule types configurable entirely through the UI — no code changes needed to add rules for new business classes.

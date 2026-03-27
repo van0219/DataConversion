@@ -89,41 +89,13 @@ class LoadService:
         
         logger.info(f"Starting load for job {job_id}. Skipping {len(invalid_row_numbers)} invalid rows.")
         
-        # Generate unique RunGroup for this conversion run (max 30 characters)
-        from datetime import datetime
-        now = datetime.now()
-        # Create 14-digit timestamp: YYYYMMDDHHMMSS + 2 microsecond digits for uniqueness
-        base_timestamp = now.strftime("%Y%m%d%H%M%S")  # 14 digits
-        microseconds = now.strftime("%f")[:2]  # First 2 microsecond digits
-        timestamp = base_timestamp + microseconds  # Total: 16 digits
+        # Derive RunGroup from the original filename (without extension), capped at 30 chars.
+        # This matches the user's expectation: the filename IS the RunGroup identifier.
+        from pathlib import Path as _Path
+        raw_run_group = _Path(job.filename).stem if job.filename else business_class
+        run_group = raw_run_group[:30]
         
-        # But we need exactly 14 digits to fit in 30 chars with longest business class names
-        # So let's use just YYYYMMDDHHMMSS (14 digits) and add microseconds only if we have space
-        timestamp = base_timestamp  # 14 digits: YYYYMMDDHHMMSS
-        
-        # Calculate available space for business class prefix
-        # Format: <prefix>_<timestamp> = 30 chars total
-        # Timestamp is 14 chars, underscore is 1 char
-        # So prefix can be: 30 - 14 - 1 = 15 chars max
-        max_prefix_length = 30 - len(timestamp) - 1
-        
-        # Truncate business class name if needed
-        business_class_prefix = business_class[:max_prefix_length].upper()
-        
-        # Generate RunGroup with exact 30 character limit
-        run_group = f"{business_class_prefix}_{timestamp}"
-        
-        # If we have extra space, we can add microseconds for better uniqueness
-        if len(run_group) < 30:
-            available_space = 30 - len(run_group)
-            extra_microseconds = microseconds[:available_space]
-            run_group = f"{business_class_prefix}_{timestamp}{extra_microseconds}"
-        
-        # Ensure it's exactly 30 characters or less
-        if len(run_group) > 30:
-            run_group = run_group[:30]
-        
-        logger.info(f"Generated unique RunGroup for conversion: {run_group} (length: {len(run_group)})")
+        logger.info(f"RunGroup derived from filename: {run_group} (length: {len(run_group)})")
         
         # Process file in chunks
         chunk_buffer = []
@@ -143,12 +115,28 @@ class LoadService:
                 # Apply field mapping
                 mapped_record = MappingEngine.apply_mapping(record, mapping)
                 
-                # Override RunGroup with our generated unique RunGroup
-                # Find the RunGroup field in the mapped record and replace it
-                for field_name in mapped_record.keys():
-                    if 'rungroup' in field_name.lower():
-                        mapped_record[field_name] = run_group
+                # Inject RunGroup from filename into the mapped record.
+                # Find the RunGroup field name from the schema mapping if it exists,
+                # otherwise fall back to the business-class-prefixed field name convention.
+                # We search the original mapping for any key whose fsm_field contains 'rungroup'.
+                run_group_field = None
+                for csv_col, field_info in mapping.items():
+                    if isinstance(field_info, dict) and 'rungroup' in field_info.get('fsm_field', '').lower():
+                        run_group_field = field_info['fsm_field']
                         break
+                
+                if run_group_field is None:
+                    # No RunGroup in mapping — check if it's already in the mapped record
+                    for field_name in list(mapped_record.keys()):
+                        if 'rungroup' in field_name.lower():
+                            run_group_field = field_name
+                            break
+                
+                if run_group_field is None:
+                    # Still not found — use the standard FSM convention: BusinessClass.RunGroup
+                    run_group_field = f"{business_class}.RunGroup"
+                
+                mapped_record[run_group_field] = run_group
                 
                 # Remove internal fields
                 mapped_record.pop('_row_number', None)

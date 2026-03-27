@@ -11,6 +11,7 @@ from app.modules.upload.service import UploadService
 from app.core.logging import logger
 import csv
 import io
+import json
 
 class ValidationService:
     @staticmethod
@@ -72,6 +73,18 @@ class ValidationService:
             total_invalid = 0
             chunk_num = 0
             
+            # --- Pre-validation: BALANCE_CHECK (file-level, cross-record) ---
+            balance_errors = await ValidationService._run_balance_checks(
+                db, account_id, job_id, file_path, mapping, rules
+            )
+            if balance_errors:
+                ValidationService._persist_errors(db, job_id, balance_errors)
+                # Count unique rows flagged by balance errors
+                total_invalid += len(set(e["row_number"] for e in balance_errors))
+                job.invalid_records = total_invalid
+                db.commit()
+                logger.info(f"Balance check found {len(balance_errors)} group errors")
+
             for chunk in StreamingEngine.stream_csv(file_path, chunk_size=1000):
                 chunk_num += 1
                 chunk_errors = []
@@ -141,6 +154,90 @@ class ValidationService:
             except:
                 pass
     
+    @staticmethod
+    async def _run_balance_checks(
+        db: Session,
+        account_id: int,
+        job_id: int,
+        file_path,
+        mapping: Dict,
+        rules: List[Dict]
+    ) -> List[Dict]:
+        """
+        Pre-validation pass for BALANCE_CHECK rules.
+        Groups all records by the group_by_field, sums amounts,
+        and flags groups where the net is not zero.
+
+        condition_expression JSON config:
+        {
+            "group_by_field": "RunGroup",
+            "amount_field": "TransactionAmount",
+            "mode": "single_field"   # pos=debit, neg=credit in same field
+        }
+        For two separate debit/credit fields use mode="two_field" with debit_field/credit_field.
+        """
+        balance_rules = [r for r in rules if r["rule_type"] == "BALANCE_CHECK"]
+        if not balance_rules:
+            return []
+
+        errors = []
+
+        for rule in balance_rules:
+            cond = rule.get("condition_expression")
+            if not cond:
+                continue
+            try:
+                cfg = json.loads(cond)
+            except Exception:
+                logger.error(f"BALANCE_CHECK: invalid JSON in condition_expression: {cond}")
+                continue
+
+            group_by_field = cfg.get("group_by_field", "RunGroup")
+            amount_field = cfg.get("amount_field", "TransactionAmount")
+            mode = cfg.get("mode", "single_field")
+            debit_field = cfg.get("debit_field", amount_field)
+            credit_field = cfg.get("credit_field", amount_field)
+
+            group_totals: Dict[str, float] = {}
+            group_rows: Dict[str, int] = {}
+
+            for chunk in StreamingEngine.stream_csv(file_path, chunk_size=1000):
+                for record in chunk:
+                    row_number = int(record.get("_row_number", 0))
+                    mapped = MappingEngine.apply_mapping(record, mapping)
+
+                    group_val = str(mapped.get(group_by_field, "")).strip()
+                    if not group_val:
+                        continue
+
+                    try:
+                        if mode == "two_field":
+                            net = float(mapped.get(debit_field) or 0) - float(mapped.get(credit_field) or 0)
+                        else:
+                            net = float(mapped.get(amount_field) or 0)
+                    except (ValueError, TypeError):
+                        net = 0.0
+
+                    group_totals[group_val] = group_totals.get(group_val, 0.0) + net
+                    group_rows[group_val] = row_number
+
+            for group_val, net_total in group_totals.items():
+                if abs(round(net_total, 2)) != 0.0:
+                    errors.append({
+                        "conversion_job_id": job_id,
+                        "row_number": group_rows.get(group_val, 0),
+                        "field_name": group_by_field,
+                        "invalid_value": group_val,
+                        "error_type": "balance",
+                        "error_message": (
+                            rule["error_message"] or
+                            f"{group_by_field} '{group_val}' does not net to zero "
+                            f"(net = {round(net_total, 2)})"
+                        )
+                    })
+
+        return errors
+
     @staticmethod
     def _get_active_rules(
         db: Session,

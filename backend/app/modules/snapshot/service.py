@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from typing import List, Dict, Optional
 from datetime import datetime
 from pathlib import Path
@@ -153,6 +154,7 @@ class SnapshotService:
             records_stored = 0
             batch_size = 100  # Commit every 100 records
             
+            batch = []
             for i, record in enumerate(records):
                 # Extract primary key using configured key_field
                 primary_key = str(record.get(setup_class.key_field, ""))
@@ -161,41 +163,36 @@ class SnapshotService:
                     logger.warning(f"Record missing key field '{setup_class.key_field}', skipping: {record}")
                     continue
                 
-                try:
-                    # Upsert snapshot record
-                    existing = db.query(SnapshotRecord).filter(
-                        SnapshotRecord.account_id == account_id,
-                        SnapshotRecord.business_class == setup_class.name,
-                        SnapshotRecord.primary_key == primary_key
-                    ).first()
-                    
-                    if existing:
-                        existing.raw_json = json.dumps(record)
-                        existing.last_modified_date = datetime.now()
-                    else:
-                        snapshot_record = SnapshotRecord(
-                            account_id=account_id,
-                            business_class=setup_class.name,
-                            primary_key=primary_key,
-                            last_modified_date=datetime.now(),
-                            raw_json=json.dumps(record)
-                        )
-                        db.add(snapshot_record)
-                    
-                    records_stored += 1
-                    
-                    # Commit every batch_size records
-                    if (i + 1) % batch_size == 0:
-                        db.commit()
-                        logger.debug(f"Committed batch of {batch_size} records for {setup_class.name}")
-                
-                except Exception as e:
-                    logger.error(f"Error storing record {primary_key}: {str(e)}")
-                    db.rollback()
-                    continue
-            
-            # Commit remaining records
-            db.commit()
+                batch.append({
+                    "account_id": account_id,
+                    "business_class": setup_class.name,
+                    "primary_key": primary_key,
+                    "last_modified_date": datetime.now(),
+                    "raw_json": json.dumps(record)
+                })
+                records_stored += 1
+
+                # Upsert every batch_size records
+                if len(batch) >= batch_size:
+                    stmt = sqlite_insert(SnapshotRecord).values(batch)
+                    stmt = stmt.on_conflict_do_update(
+                        index_elements=["account_id", "business_class", "primary_key"],
+                        set_={"raw_json": stmt.excluded.raw_json, "last_modified_date": stmt.excluded.last_modified_date}
+                    )
+                    db.execute(stmt)
+                    db.commit()
+                    logger.debug(f"Upserted batch of {len(batch)} records for {setup_class.name}")
+                    batch = []
+
+            # Upsert remaining records
+            if batch:
+                stmt = sqlite_insert(SnapshotRecord).values(batch)
+                stmt = stmt.on_conflict_do_update(
+                    index_elements=["account_id", "business_class", "primary_key"],
+                    set_={"raw_json": stmt.excluded.raw_json, "last_modified_date": stmt.excluded.last_modified_date}
+                )
+                db.execute(stmt)
+                db.commit()
             
             # Update registry
             registry = db.query(SnapshotRegistry).filter(

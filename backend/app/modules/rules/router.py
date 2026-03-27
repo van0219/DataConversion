@@ -396,7 +396,21 @@ def get_rule_set_fields(
         
         # Sort fields: required first, then alphabetically
         fields.sort(key=lambda x: (not x["required"], x["field_name"]))
-        
+
+        # Append file-level rules as a virtual entry (not a schema field)
+        file_level_rules = rules_by_field.get("_file_level_", [])
+        if file_level_rules:
+            fields.append({
+                "field_name": "_file_level_",
+                "field_type": None,
+                "required": False,
+                "description": None,
+                "enum_values": None,
+                "pattern": None,
+                "rules": file_level_rules,
+                "rule_count": len(file_level_rules)
+            })
+
         return {
             "business_class": business_class,
             "rule_set_id": rule_set_id,

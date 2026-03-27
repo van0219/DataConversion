@@ -18,7 +18,8 @@ interface MappingData {
     fsm_field: string;
     confidence: string;
     score: number;
-    enabled?: boolean; // Add enabled flag
+    enabled?: boolean;
+    run_group_value?: string; // Set when this field is a RunGroup field (value = filename without extension)
   }>;
   unmapped_csv_columns: string[];
   unmapped_fsm_fields: string[];
@@ -441,7 +442,23 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
         business_class: businessClass
       });
 
-      setMappingData(mappingResponse.data);
+      // Inject filename-as-RunGroup: find any mapped FSM field containing "rungroup" (case-insensitive)
+      // and override its value with the filename (without extension), capped at 30 chars.
+      const filenameForRunGroup = file?.name
+        ? file.name.replace(/\.[^/.]+$/, '').slice(0, 30)
+        : '';
+      const mappingWithRunGroup = { ...mappingResponse.data.mapping };
+      Object.entries(mappingWithRunGroup).forEach(([csvCol, fsmData]: [string, any]) => {
+        if (fsmData.fsm_field && fsmData.fsm_field.toLowerCase().includes('rungroup')) {
+          mappingWithRunGroup[csvCol] = {
+            ...fsmData,
+            run_group_value: filenameForRunGroup,
+            confidence: 'filename',
+          };
+        }
+      });
+
+      setMappingData({ ...mappingResponse.data, mapping: mappingWithRunGroup });
       
       // Convert to UI format (FSM field -> CSV column)
       const uiMapping: Record<string, string> = {};
@@ -647,9 +664,9 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       console.log('Business class:', businessClass);
       console.log('Selected rule set ID:', selectedRuleSetId);
       
-      // Filter out disabled fields
+      // Filter out disabled fields AND RunGroup fields (RunGroup comes from filename, not file contents)
       const enabledMapping = Object.entries(mappingData.mapping)
-        .filter(([_, mappingInfo]) => mappingInfo.enabled !== false)
+        .filter(([_, mappingInfo]) => mappingInfo.enabled !== false && !mappingInfo.fsm_field?.toLowerCase().includes('rungroup'))
         .reduce((acc, [csvColumn, mappingInfo]) => {
           acc[csvColumn] = mappingInfo;
           return acc;
@@ -1582,6 +1599,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                 {Object.entries(mappingData.mapping || {}).map(([csvColumn, mappingInfo], index) => {
                   const isEnabled = mappingInfo.enabled !== false;
+                  const isRunGroup = mappingInfo.fsm_field?.toLowerCase().includes('rungroup');
                   return (
                   <div key={csvColumn} style={{
                     display: 'grid',
@@ -1592,20 +1610,23 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                     alignItems: 'center',
                     fontSize: '13px',
                     opacity: isEnabled ? 1 : 0.4,
-                    backgroundColor: index % 2 === 0 ? theme.background.secondary : '#FAFAFC',
+                    backgroundColor: isRunGroup ? '#F0F7FF' : (index % 2 === 0 ? theme.background.secondary : '#FAFAFC'),
                     transition: 'background-color 0.2s ease',
                     cursor: 'pointer'
                   }}
                   onMouseEnter={(e) => {
-                    if (isEnabled) {
+                    if (isEnabled && !isRunGroup) {
                       e.currentTarget.style.backgroundColor = theme.interactive.hover;
                     }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = index % 2 === 0 ? theme.background.secondary : '#FAFAFC';
+                    e.currentTarget.style.backgroundColor = isRunGroup ? '#F0F7FF' : (index % 2 === 0 ? theme.background.secondary : '#FAFAFC');
                   }}>
-                    {/* Enable Checkbox */}
+                    {/* Enable Checkbox — locked for RunGroup fields */}
                     <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      {isRunGroup ? (
+                        <span style={{ fontSize: '16px' }} title="RunGroup is auto-filled from filename">🔒</span>
+                      ) : (
                       <input
                         type="checkbox"
                         checked={isEnabled}
@@ -1627,6 +1648,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                           cursor: 'pointer'
                         }}
                       />
+                      )}
                     </div>
 
                     {/* CSV Field */}
@@ -1638,133 +1660,134 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       {csvColumn}
                     </div>
 
-                    {/* FSM Field Searchable Dropdown */}
+                    {/* FSM Field — read-only display for RunGroup fields */}
                     <div style={{ position: 'relative' }}>
-                      <input
-                        type="text"
-                        value={searchQuery[csvColumn] !== undefined ? searchQuery[csvColumn] : (mappingInfo.fsm_field || '')}
-                        disabled={!isEnabled}
-                        onChange={(e) => {
-                          if (!isEnabled) return;
-                          setSearchQuery(prev => ({ ...prev, [csvColumn]: e.target.value }));
-                        }}
-                        placeholder="Search FSM field..."
-                        style={{
-                          width: '100%',
-                          padding: '8px 10px',
-                          backgroundColor: isEnabled ? theme.background.secondary : theme.background.secondary,
-                          border: `1px solid ${isEnabled ? theme.background.quaternary : theme.background.secondary}`,
-                          borderRadius: '4px',
-                          color: isEnabled ? theme.text.primary : theme.text.muted,
-                          fontSize: '12px',
-                          cursor: isEnabled ? 'text' : 'not-allowed',
-                          transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
-                        }}
-                        onFocus={(e) => {
-                          if (isEnabled) {
-                            e.target.style.borderColor = theme.primary.main;
-                            e.target.style.boxShadow = `0 0 0 2px ${theme.accent.purpleTintMedium}`;
-                            setSearchDropdownOpen(csvColumn);
-                            setSearchQuery(prev => ({ ...prev, [csvColumn]: mappingInfo.fsm_field || '' }));
-                          }
-                        }}
-                        onBlur={(e) => {
-                          e.target.style.borderColor = isEnabled ? theme.background.quaternary : theme.background.secondary;
-                          e.target.style.boxShadow = 'none';
-                          // Delay closing to allow click on dropdown items
-                          setTimeout(() => setSearchDropdownOpen(null), 150);
-                        }}
-                      />
-                      
-                      {/* Dropdown List */}
-                      {searchDropdownOpen === csvColumn && isEnabled && schema && (
+                      {isRunGroup ? (
                         <div style={{
-                          position: 'absolute',
-                          top: '100%',
-                          left: 0,
-                          right: 0,
-                          maxHeight: '200px',
-                          overflowY: 'auto',
-                          backgroundColor: theme.background.secondary,
-                          border: `1px solid ${theme.background.quaternary}`,
+                          padding: '8px 10px',
+                          backgroundColor: '#E8F0FE',
+                          border: `1px solid #4285F4`,
                           borderRadius: '4px',
-                          marginTop: '4px',
-                          zIndex: 1000,
-                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                          color: '#1A73E8',
+                          fontSize: '12px',
+                          fontFamily: 'monospace',
+                          fontWeight: '600'
                         }}>
-                          {(() => {
-                            const allFields = Object.keys(schema.properties || {});
-                            const searchTerm = (searchQuery[csvColumn] || '').toLowerCase();
-                            const filteredFields = allFields.filter(field => 
-                              field.toLowerCase().includes(searchTerm)
-                            );
-                            
-                            console.log('Schema fields:', allFields.length);
-                            console.log('Search term:', searchTerm);
-                            console.log('Filtered fields:', filteredFields.length);
-                            
-                            if (filteredFields.length === 0) {
-                              return (
-                                <div style={{
-                                  padding: '8px 12px',
-                                  fontSize: '12px',
-                                  color: '#666',
-                                  textAlign: 'center'
-                                }}>
-                                  No matching fields found
-                                </div>
-                              );
-                            }
-                            
-                            return filteredFields.slice(0, 50).map(field => (
-                              <div
-                                key={field}
-                                onClick={() => {
-                                  // Update both mapping structures
-                                  setMapping(prev => {
-                                    const newMapping = { ...prev };
-                                    // Remove old mapping
-                                    Object.keys(newMapping).forEach(key => {
-                                      if (newMapping[key] === csvColumn) {
-                                        delete newMapping[key];
-                                      }
-                                    });
-                                    // Add new mapping
-                                    newMapping[field] = csvColumn;
-                                    return newMapping;
-                                  });
-                                  
-                                  setMappingData(prev => ({
-                                    ...prev,
-                                    mapping: {
-                                      ...prev.mapping,
-                                      [csvColumn]: {
-                                        ...mappingInfo,
-                                        fsm_field: field,
-                                        confidence: 'manual'
-                                      }
-                                    }
-                                  }));
-                                  
-                                  setSearchDropdownOpen(null);
-                                  setSearchQuery(prev => ({ ...prev, [csvColumn]: field }));
-                                }}
-                                style={{
-                                  padding: '8px 12px',
-                                  cursor: 'pointer',
-                                  fontSize: '12px',
-                                  color: theme.text.primary,
-                                  borderBottom: '1px solid theme.background.tertiary',
-                                  transition: 'background-color 0.2s'
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'theme.background.tertiary'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                              >
-                                {field}
-                              </div>
-                            ));
-                          })()}
+                          {mappingInfo.run_group_value || '(filename without extension)'}
+                          <span style={{ fontSize: '10px', color: '#5F6368', marginLeft: '8px', fontFamily: 'sans-serif', fontWeight: 'normal' }}>
+                            from filename
+                          </span>
                         </div>
+                      ) : (
+                        <>
+                        <input
+                          type="text"
+                          value={searchQuery[csvColumn] !== undefined ? searchQuery[csvColumn] : (mappingInfo.fsm_field || '')}
+                          disabled={!isEnabled}
+                          onChange={(e) => {
+                            if (!isEnabled) return;
+                            setSearchQuery(prev => ({ ...prev, [csvColumn]: e.target.value }));
+                          }}
+                          placeholder="Search FSM field..."
+                          style={{
+                            width: '100%',
+                            padding: '8px 10px',
+                            backgroundColor: isEnabled ? theme.background.secondary : theme.background.secondary,
+                            border: `1px solid ${isEnabled ? theme.background.quaternary : theme.background.secondary}`,
+                            borderRadius: '4px',
+                            color: isEnabled ? theme.text.primary : theme.text.muted,
+                            fontSize: '12px',
+                            cursor: isEnabled ? 'text' : 'not-allowed',
+                            transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
+                          }}
+                          onFocus={(e) => {
+                            if (isEnabled) {
+                              e.target.style.borderColor = theme.primary.main;
+                              e.target.style.boxShadow = `0 0 0 2px ${theme.accent.purpleTintMedium}`;
+                              setSearchDropdownOpen(csvColumn);
+                              setSearchQuery(prev => ({ ...prev, [csvColumn]: mappingInfo.fsm_field || '' }));
+                            }
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = isEnabled ? theme.background.quaternary : theme.background.secondary;
+                            e.target.style.boxShadow = 'none';
+                            setTimeout(() => setSearchDropdownOpen(null), 150);
+                          }}
+                        />
+                        {/* Dropdown List */}
+                        {searchDropdownOpen === csvColumn && isEnabled && schema && (
+                          <div style={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: 0,
+                            right: 0,
+                            maxHeight: '200px',
+                            overflowY: 'auto',
+                            backgroundColor: theme.background.secondary,
+                            border: `1px solid ${theme.background.quaternary}`,
+                            borderRadius: '4px',
+                            marginTop: '4px',
+                            zIndex: 1000,
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                          }}>
+                            {(() => {
+                              const allFields = Object.keys(schema.properties || {});
+                              const searchTerm = (searchQuery[csvColumn] || '').toLowerCase();
+                              const filteredFields = allFields.filter(field =>
+                                field.toLowerCase().includes(searchTerm)
+                              );
+                              if (filteredFields.length === 0) {
+                                return (
+                                  <div style={{
+                                    padding: '8px 12px',
+                                    fontSize: '12px',
+                                    color: '#666',
+                                    textAlign: 'center'
+                                  }}>
+                                    No matching fields found
+                                  </div>
+                                );
+                              }
+                              return filteredFields.slice(0, 50).map(field => (
+                                <div
+                                  key={field}
+                                  onClick={() => {
+                                    setMapping(prev => {
+                                      const newMapping = { ...prev };
+                                      Object.keys(newMapping).forEach(key => {
+                                        if (newMapping[key] === csvColumn) delete newMapping[key];
+                                      });
+                                      newMapping[field] = csvColumn;
+                                      return newMapping;
+                                    });
+                                    setMappingData(prev => ({
+                                      ...prev,
+                                      mapping: {
+                                        ...prev.mapping,
+                                        [csvColumn]: { ...mappingInfo, fsm_field: field, confidence: 'manual' }
+                                      }
+                                    }));
+                                    setSearchDropdownOpen(null);
+                                    setSearchQuery(prev => ({ ...prev, [csvColumn]: field }));
+                                  }}
+                                  style={{
+                                    padding: '8px 12px',
+                                    cursor: 'pointer',
+                                    fontSize: '12px',
+                                    color: theme.text.primary,
+                                    borderBottom: `1px solid ${theme.background.tertiary}`,
+                                    transition: 'background-color 0.2s'
+                                  }}
+                                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.background.tertiary}
+                                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                >
+                                  {field}
+                                </div>
+                              ));
+                            })()}
+                          </div>
+                        )}
+                        </>
                       )}
                     </div>
 
@@ -1777,17 +1800,20 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         fontWeight: '500',
                         textTransform: 'uppercase',
                         backgroundColor: 
+                          isRunGroup ? '#1a3a5c' :
                           mappingInfo.confidence === 'exact' ? '#1a4d2e' :
                           mappingInfo.confidence === 'fuzzy' ? '#4d2e1a' :
                           mappingInfo.confidence === 'manual' ? '#1a2e4d' : 'theme.background.tertiary',
                         color: '#FFFFFF',
                         border: `1px solid ${
+                          isRunGroup ? '#4285F4' :
                           mappingInfo.confidence === 'exact' ? '#4CAF50' :
                           mappingInfo.confidence === 'fuzzy' ? 'theme.primary.main' :
                           mappingInfo.confidence === 'manual' ? '#2196F3' : 'theme.background.tertiary'
                         }`
                       }}>
-                        {mappingInfo.confidence === 'exact' ? 'Exact' :
+                        {isRunGroup ? 'Filename' :
+                         mappingInfo.confidence === 'exact' ? 'Exact' :
                          mappingInfo.confidence === 'fuzzy' ? 'Fuzzy' :
                          mappingInfo.confidence === 'manual' ? 'Manual' : 'Unknown'}
                       </span>
@@ -2194,7 +2220,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: '80px 120px 1fr 1fr 120px',
+                  gridTemplateColumns: '60px 200px 150px 1fr 80px',
                   gap: '12px',
                   padding: '12px 16px',
                   backgroundColor: 'theme.background.secondary',
@@ -2229,7 +2255,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                   return rows.map(([rowNum, errs]) => (
                     <div key={rowNum} style={{
                       display: 'grid',
-                      gridTemplateColumns: '80px 120px 1fr 1fr 120px',
+                      gridTemplateColumns: '60px 200px 150px 1fr 80px',
                       gap: '12px',
                       padding: '12px 16px',
                       borderBottom: '1px solid theme.background.tertiary',
@@ -2239,16 +2265,16 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       <div style={{ color: 'theme.primary.main', fontWeight: '500', paddingTop: '2px' }}>
                         {rowNum}
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
                         {errs.map((err, i) => (
-                          <div key={i} style={{ color: theme.text.primary, fontFamily: 'monospace' }}>
+                          <div key={i} style={{ color: theme.text.primary, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={err.field_name}>
                             {err.field_name}
                           </div>
                         ))}
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
                         {errs.map((err, i) => (
-                          <div key={i} style={{ color: '#999', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <div key={i} style={{ color: '#999', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={err.invalid_value || ''}>
                             {err.invalid_value || '(empty)'}
                           </div>
                         ))}
@@ -3317,7 +3343,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             {/* Error Details (only show if load failed) */}
             {loadResult.total_failure > 0 && (
               <div style={{
-                backgroundColor: '#1a0a0a',
+                backgroundColor: theme.background.secondary,
                 border: `1px solid ${theme.primary.main}`,
                 borderRadius: '8px',
                 padding: '16px',
@@ -3342,7 +3368,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 {loadResult.error_message && (
                   <div style={{
                     padding: '12px',
-                    backgroundColor: theme.background.secondary,
+                    backgroundColor: theme.background.primary,
+                    border: `1px solid ${theme.background.quaternary}`,
                     borderRadius: '6px',
                     marginBottom: '12px'
                   }}>
@@ -3362,26 +3389,30 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                       fontSize: '13px',
                       color: theme.primary.main,
                       padding: '8px',
-                      backgroundColor: theme.background.secondary,
+                      backgroundColor: theme.background.primary,
+                      border: `1px solid ${theme.background.quaternary}`,
                       borderRadius: '4px',
                       userSelect: 'none'
                     }}>
-                      View Full API Response
+                      ▼ View Full API Response
                     </summary>
                     <pre style={{
                       marginTop: '8px',
                       padding: '12px',
-                      backgroundColor: theme.background.secondary,
+                      backgroundColor: theme.background.primary,
+                      border: `1px solid ${theme.background.quaternary}`,
                       borderRadius: '6px',
                       fontSize: '11px',
-                      color: '#fff',
+                      color: theme.text.primary,
                       overflow: 'auto',
                       maxHeight: '300px',
                       fontFamily: 'monospace',
                       whiteSpace: 'pre-wrap',
                       wordBreak: 'break-word'
                     }}>
-                      {JSON.stringify(loadResult.error_details, null, 2)}
+                      {typeof loadResult.error_details === 'string'
+                        ? loadResult.error_details
+                        : JSON.stringify(loadResult.error_details, null, 2)}
                     </pre>
                   </details>
                 )}
@@ -3389,7 +3420,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 <div style={{
                   marginTop: '12px',
                   padding: '10px',
-                  backgroundColor: 'theme.background.secondary',
+                  backgroundColor: theme.background.primary,
+                  border: `1px solid ${theme.background.quaternary}`,
                   borderRadius: '6px',
                   fontSize: '12px',
                   color: theme.text.secondary
