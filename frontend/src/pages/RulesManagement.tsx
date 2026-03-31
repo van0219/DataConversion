@@ -62,8 +62,12 @@ const getDefaultErrorMessage = (ruleType: string, fieldName: string): string => 
 // Shared dynamic config form rendered inside both Add and Edit modals
 const RuleTypeConfig = ({
   form, setForm, availableReferenceClasses, availableReferenceFields,
-  loadingReferenceFields, loadReferenceFields, fieldName
+  loadingReferenceFields, loadReferenceFields, fieldName, businessClassFields
 }: any) => {
+  const [newFieldInput, setNewFieldInput] = useState('');
+  const [showFieldDropdown, setShowFieldDropdown] = useState(false);
+  const [filteredFields, setFilteredFields] = useState<string[]>([]);
+  
   const inputStyle = {
     width: '100%', padding: '9px 12px', backgroundColor: theme.background.primary,
     color: theme.text.primary, border: `1px solid ${theme.background.quaternary}`,
@@ -73,6 +77,47 @@ const RuleTypeConfig = ({
   const helpStyle = { fontSize: '11px', color: theme.text.muted, marginTop: '4px' };
   const sectionStyle = { backgroundColor: theme.background.tertiary, border: `1px solid ${theme.background.quaternary}`, borderRadius: '8px', padding: '16px', marginBottom: '16px' };
   const gridStyle = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' };
+
+  // Filter fields based on search input
+  const handleFieldSearch = (value: string) => {
+    setNewFieldInput(value);
+    if (value.trim() && businessClassFields && businessClassFields.length > 0) {
+      const search = value.toLowerCase();
+      const filtered = businessClassFields.filter((f: string) => 
+        f.toLowerCase().includes(search)
+      ).slice(0, 10); // Limit to 10 results
+      setFilteredFields(filtered);
+      setShowFieldDropdown(filtered.length > 0);
+    } else {
+      setFilteredFields([]);
+      setShowFieldDropdown(false);
+    }
+  };
+
+  // Generate default error message based on rule type and field name
+  const generateDefaultErrorMessage = (ruleType: string, fieldName: string, form: any): string => {
+    switch (ruleType) {
+      case 'REFERENCE_EXISTS':
+        return `${fieldName} must exist in ${form.reference_business_class || 'reference data'}`;
+      case 'REQUIRED_FIELD':
+      case 'REQUIRED_OVERRIDE':
+        return `${fieldName} is required and cannot be empty`;
+      case 'FIELD_MUST_BE_EMPTY':
+        return `${fieldName} must be empty`;
+      case 'PATTERN_MATCH':
+        return `${fieldName} must match the required pattern`;
+      case 'ENUM_VALIDATION':
+        return `${fieldName} must be one of the allowed values`;
+      case 'DATE_RANGE_FROM_REFERENCE':
+        return `${fieldName} must fall within the date range of the referenced record`;
+      case 'OPEN_PERIOD_CHECK':
+        return `${fieldName} must fall within the current open GL period`;
+      case 'BALANCE_CHECK':
+        return `Records grouped by ${form.bc_group_by_field || 'field'} must balance to zero`;
+      default:
+        return `${fieldName} validation failed`;
+    }
+  };
 
   if (form.rule_type === 'REFERENCE_EXISTS') return (
     <div style={sectionStyle}>
@@ -142,7 +187,7 @@ const RuleTypeConfig = ({
       <input type="text" value={form.enum_values} onChange={(e) => setForm({ ...form, enum_values: e.target.value })}
         style={inputStyle} placeholder="e.g., Active, Inactive, Pending" />
       <div style={helpStyle}>Comma-separated list of valid values (case-sensitive)</div>
-      {form.enum_values && (
+      {form.enum_values && typeof form.enum_values === 'string' && form.enum_values.trim() && (
         <div style={{ marginTop: '8px', display: 'flex', gap: '4px', flexWrap: 'wrap' as const }}>
           {form.enum_values.split(',').map((v: string) => v.trim()).filter(Boolean).map((v: string) => (
             <span key={v} style={{ padding: '2px 8px', backgroundColor: theme.accent.purpleTintLight, color: theme.primary.main, borderRadius: '4px', fontSize: '12px', border: `1px solid ${theme.accent.purpleTintMedium}` }}>{v}</span>
@@ -237,54 +282,245 @@ const RuleTypeConfig = ({
     </div>
   );
 
-  if (form.rule_type === 'BALANCE_CHECK') return (
-    <div style={sectionStyle}>
-      <div style={{ fontSize: '13px', fontWeight: 600, color: theme.text.primary, marginBottom: '4px' }}>Balance Check Configuration</div>
-      <div style={{ fontSize: '12px', color: theme.text.tertiary, marginBottom: '12px' }}>
-        Groups all records by a field and verifies the amounts net to zero. Runs once across the entire file before per-row validation.
-      </div>
-      <div style={gridStyle}>
-        <div>
-          <label style={labelStyle}>Group By Field</label>
-          <input type="text" value={form.bc_group_by_field}
-            onChange={(e) => setForm({ ...form, bc_group_by_field: e.target.value })}
-            style={inputStyle} placeholder="RunGroup" />
-          <div style={helpStyle}>Records are grouped by this field</div>
+  if (form.rule_type === 'BALANCE_CHECK') {
+    // Parse group_by_field into array for tag display
+    const groupByFields = typeof form.bc_group_by_field === 'string' 
+      ? form.bc_group_by_field.split(',').map(f => f.trim()).filter(Boolean)
+      : [];
+    
+    const handleAddField = (fieldToAdd?: string) => {
+      const trimmed = (fieldToAdd || newFieldInput).trim();
+      if (trimmed && !groupByFields.includes(trimmed)) {
+        const updated = [...groupByFields, trimmed];
+        setForm({ ...form, bc_group_by_field: updated.join(', ') });
+        setNewFieldInput('');
+        setShowFieldDropdown(false);
+      }
+    };
+    
+    const handleRemoveField = (idx: number) => {
+      const updated = groupByFields.filter((_, i) => i !== idx);
+      setForm({ ...form, bc_group_by_field: updated.join(', ') });
+    };
+    
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (filteredFields.length > 0) {
+          handleAddField(filteredFields[0]); // Add first suggestion
+        } else if (newFieldInput.trim()) {
+          handleAddField();
+        }
+      } else if (e.key === 'Backspace' && !newFieldInput && groupByFields.length > 0) {
+        handleRemoveField(groupByFields.length - 1);
+      } else if (e.key === 'Escape') {
+        setShowFieldDropdown(false);
+      } else if (e.key === 'ArrowDown' && showFieldDropdown) {
+        e.preventDefault();
+        // Focus first dropdown item (implement if needed)
+      }
+    };
+    
+    return (
+      <div style={sectionStyle}>
+        <div style={{ fontSize: '13px', fontWeight: 600, color: theme.text.primary, marginBottom: '4px' }}>Balance Check Configuration</div>
+        <div style={{ fontSize: '12px', color: theme.text.tertiary, marginBottom: '12px' }}>
+          Groups all records by one or more fields and verifies the amounts net to zero. Runs once across the entire file before per-row validation.
         </div>
-        <div>
-          <label style={labelStyle}>Amount Mode</label>
-          <select value={form.bc_mode} onChange={(e) => setForm({ ...form, bc_mode: e.target.value })} style={inputStyle}>
-            <option value="single_field">Single field (positive = debit, negative = credit)</option>
-            <option value="two_field">Two separate fields (debit field + credit field)</option>
-          </select>
-        </div>
-        {form.bc_mode === 'single_field' ? (
-          <div style={{ gridColumn: '1 / -1' }}>
-            <label style={labelStyle}>Amount Field</label>
-            <input type="text" value={form.bc_amount_field}
-              onChange={(e) => setForm({ ...form, bc_amount_field: e.target.value })}
-              style={inputStyle} placeholder="TransactionAmount" />
-            <div style={helpStyle}>Positive values = debits, negative values = credits</div>
+        
+        {/* Group By Fields - Tag-based UI with Search */}
+        <div style={{ marginBottom: '16px', position: 'relative' }}>
+          <label style={labelStyle}>Group By Fields</label>
+          <div style={{
+            backgroundColor: theme.background.primary,
+            border: `2px solid ${groupByFields.length > 0 ? theme.primary.main : theme.background.quaternary}`,
+            borderRadius: '8px',
+            padding: '10px',
+            minHeight: '48px',
+            display: 'flex',
+            flexWrap: 'wrap' as const,
+            gap: '8px',
+            alignItems: 'center',
+            transition: 'border-color 0.2s ease'
+          }}>
+            {groupByFields.map((field, idx) => (
+              <div key={idx} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '6px 12px',
+                backgroundColor: theme.primary.main,
+                color: '#fff',
+                borderRadius: '20px',
+                fontSize: '13px',
+                fontWeight: 600,
+                boxShadow: '0 2px 4px rgba(70, 0, 175, 0.2)',
+                animation: 'slideIn 0.2s ease'
+              }}>
+                <span>{field}</span>
+                <button
+                  onClick={() => handleRemoveField(idx)}
+                  title="Remove field"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    border: 'none',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    fontSize: '18px',
+                    lineHeight: 1,
+                    padding: '2px 6px',
+                    borderRadius: '50%',
+                    width: '22px',
+                    height: '22px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'background-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
+                >×</button>
+              </div>
+            ))}
+            <input
+              type="text"
+              value={newFieldInput}
+              onChange={(e) => handleFieldSearch(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onFocus={() => {
+                if (newFieldInput.trim() && filteredFields.length > 0) {
+                  setShowFieldDropdown(true);
+                }
+              }}
+              onBlur={() => {
+                // Delay to allow click on dropdown
+                setTimeout(() => {
+                  if (newFieldInput.trim() && !showFieldDropdown) {
+                    handleAddField();
+                  }
+                  setShowFieldDropdown(false);
+                }, 200);
+              }}
+              placeholder={groupByFields.length === 0 ? "🔍 Search fields..." : "Add another..."}
+              style={{
+                flex: 1,
+                minWidth: '180px',
+                border: 'none',
+                outline: 'none',
+                backgroundColor: 'transparent',
+                color: theme.text.primary,
+                fontSize: '13px',
+                padding: '6px 4px'
+              }}
+            />
           </div>
-        ) : (
-          <>
-            <div>
-              <label style={labelStyle}>Debit Field</label>
-              <input type="text" value={form.bc_debit_field}
-                onChange={(e) => setForm({ ...form, bc_debit_field: e.target.value })}
-                style={inputStyle} placeholder="DebitAmount" />
+          
+          {/* Searchable Dropdown */}
+          {showFieldDropdown && filteredFields.length > 0 && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              marginTop: '4px',
+              backgroundColor: theme.background.primary,
+              border: `2px solid ${theme.primary.main}`,
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              maxHeight: '240px',
+              overflowY: 'auto',
+              zIndex: 1000
+            }}>
+              {filteredFields.map((field, idx) => (
+                <div
+                  key={idx}
+                  onMouseDown={(e) => {
+                    e.preventDefault(); // Prevent blur
+                    handleAddField(field);
+                  }}
+                  style={{
+                    padding: '10px 14px',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    color: theme.text.primary,
+                    borderBottom: idx < filteredFields.length - 1 ? `1px solid ${theme.background.quaternary}` : 'none',
+                    transition: 'background-color 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.accent.purpleTintLight}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <div style={{ fontWeight: 500 }}>{field}</div>
+                  {groupByFields.includes(field) && (
+                    <div style={{ fontSize: '11px', color: theme.text.tertiary, marginTop: '2px' }}>
+                      ✓ Already added
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-            <div>
-              <label style={labelStyle}>Credit Field</label>
-              <input type="text" value={form.bc_credit_field}
-                onChange={(e) => setForm({ ...form, bc_credit_field: e.target.value })}
-                style={inputStyle} placeholder="CreditAmount" />
+          )}
+          
+          <div style={{ ...helpStyle, display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
+            <span style={{ fontSize: '16px' }}>💡</span>
+            <span>
+              {businessClassFields && businessClassFields.length > 0 
+                ? `Search from ${businessClassFields.length} available fields. Press `
+                : 'Type field name and press '}
+              <kbd style={{ padding: '2px 6px', backgroundColor: theme.background.tertiary, borderRadius: '4px', fontSize: '11px', fontFamily: 'monospace' }}>Enter</kbd> to add.
+            </span>
+          </div>
+          {groupByFields.length > 0 && (
+            <div style={{ 
+              marginTop: '12px', 
+              padding: '10px 14px',
+              backgroundColor: theme.accent.purpleTintLight,
+              border: `1px solid ${theme.accent.purpleTintMedium}`,
+              borderRadius: '6px',
+              fontSize: '12px', 
+              color: theme.primary.main,
+              fontWeight: 500
+            }}>
+              <strong>Grouping by:</strong> {groupByFields.join(' + ')}
             </div>
-          </>
-        )}
+          )}
+        </div>
+
+        <div style={gridStyle}>
+          <div>
+            <label style={labelStyle}>Amount Mode</label>
+            <select value={form.bc_mode} onChange={(e) => setForm({ ...form, bc_mode: e.target.value })} style={inputStyle}>
+              <option value="single_field">Single field (positive = debit, negative = credit)</option>
+              <option value="two_field">Two separate fields (debit field + credit field)</option>
+            </select>
+          </div>
+          {form.bc_mode === 'single_field' ? (
+            <div>
+              <label style={labelStyle}>Amount Field</label>
+              <input type="text" value={form.bc_amount_field}
+                onChange={(e) => setForm({ ...form, bc_amount_field: e.target.value })}
+                style={inputStyle} placeholder="TransactionAmount" />
+              <div style={helpStyle}>Positive values = debits, negative values = credits</div>
+            </div>
+          ) : (
+            <>
+              <div>
+                <label style={labelStyle}>Debit Field</label>
+                <input type="text" value={form.bc_debit_field}
+                  onChange={(e) => setForm({ ...form, bc_debit_field: e.target.value })}
+                  style={inputStyle} placeholder="DebitAmount" />
+              </div>
+              <div>
+                <label style={labelStyle}>Credit Field</label>
+                <input type="text" value={form.bc_credit_field}
+                  onChange={(e) => setForm({ ...form, bc_credit_field: e.target.value })}
+                  style={inputStyle} placeholder="CreditAmount" />
+              </div>
+            </>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   // REQUIRED_OVERRIDE, FIELD_MUST_BE_EMPTY — no extra config needed
   return null;
@@ -475,16 +711,30 @@ const RulesManagement = () => {
   };
 
   useEffect(() => {
-    loadAvailableBusinessClasses();
-    loadAvailableReferenceClasses();
+    // Load essential data first
+    loadRuleSets();
+    
+    // Load supporting data in background
+    setTimeout(() => {
+      loadAvailableBusinessClasses();
+      loadAvailableReferenceClasses();
+    }, 100);
   }, []);
 
   useEffect(() => {
-    loadRules();
+    // Reload rule sets when business class filter changes
     loadRuleSets();
+    
+    // Only load rules when a specific business class is selected
+    if (selectedBusinessClass !== 'all') {
+      loadRules();
+    }
   }, [selectedBusinessClass]);
 
   const loadAvailableBusinessClasses = async () => {
+    // Only load if not already loaded
+    if (availableBusinessClasses.length > 0) return;
+    
     try {
       const response = await api.get('/schema/list');
       const schemas = response.data.schemas || [];
@@ -498,6 +748,9 @@ const RulesManagement = () => {
   };
 
   const loadAvailableReferenceClasses = async () => {
+    // Only load if not already loaded
+    if (availableReferenceClasses.length > 0) return;
+    
     try {
       const response = await api.get('/snapshot/setup-classes');
       const setupClasses = response.data || [];
@@ -510,20 +763,22 @@ const RulesManagement = () => {
     }
   };
 
-  const loadReferenceFields = async (businessClass: string) => {
+  const loadReferenceFields = async (businessClass: string): Promise<string[]> => {
     if (!businessClass) {
       setAvailableReferenceFields([]);
-      return;
+      return [];
     }
 
     setLoadingReferenceFields(true);
     try {
       const response = await api.get(`/schema/${businessClass}/fields`);
-      const fields = response.data.fields || [];
+      const fields: string[] = response.data.fields || [];
       setAvailableReferenceFields(fields);
+      return fields;
     } catch (error) {
       console.error(`Failed to load fields for ${businessClass}:`, error);
       setAvailableReferenceFields([]);
+      return [];
     } finally {
       setLoadingReferenceFields(false);
     }
@@ -553,6 +808,7 @@ const RulesManagement = () => {
       
       const response = await api.get('/rules/rule-sets', { params });
       setRuleSets(response.data);
+      setLoading(false); // Set loading to false as soon as rule sets are loaded
       
       // Auto-select Default rule set if available
       const defaultRuleSet = response.data.find((rs: RuleSet) => rs.is_common);
@@ -561,7 +817,26 @@ const RulesManagement = () => {
       }
     } catch (error) {
       console.error('Failed to load rule sets:', error);
+      setLoading(false);
     }
+  };
+
+  // Helper function to determine if a rule set is the effective default
+  const isEffectiveDefault = (ruleSet: RuleSet): boolean => {
+    // If this rule set is marked as user default, it's the effective default
+    if (ruleSet.is_user_default) {
+      return true;
+    }
+    
+    // If this is a system default (is_common) and no user default exists for this business class
+    if (ruleSet.is_common) {
+      const hasUserDefault = ruleSets.some(rs => 
+        rs.business_class === ruleSet.business_class && rs.is_user_default
+      );
+      return !hasUserDefault;
+    }
+    
+    return false;
   };
 
   const handleCreateRule = async () => {
@@ -726,6 +1001,36 @@ const RulesManagement = () => {
     }
   };
 
+  const handleMakeDefault = async (ruleSet: RuleSet) => {
+    if (!confirm(`Make "${ruleSet.name}" the default rule set for ${ruleSet.business_class}?\n\nThis will be used automatically when validating ${ruleSet.business_class} data.`)) {
+      return;
+    }
+
+    try {
+      await api.post(`/rules/rule-sets/${ruleSet.id}/make-default`);
+      alert(`✅ "${ruleSet.name}" is now the default for ${ruleSet.business_class}`);
+      loadRuleSets();
+      setShowMoreMenu(null);
+    } catch (error: any) {
+      alert(`Failed to make default: ${error.response?.data?.detail || error.message}`);
+    }
+  };
+
+  const handleResetDefault = async (ruleSet: RuleSet) => {
+    if (!confirm(`Remove "${ruleSet.name}" as the default rule set for ${ruleSet.business_class}?\n\nThe system will use "System Default" instead.`)) {
+      return;
+    }
+
+    try {
+      await api.post(`/rules/rule-sets/${ruleSet.id}/reset-default`);
+      alert(`✅ "${ruleSet.name}" is no longer the default. Using System Default for ${ruleSet.business_class}.`);
+      loadRuleSets();
+      setShowMoreMenu(null);
+    } catch (error: any) {
+      alert(`Failed to reset default: ${error.response?.data?.detail || error.message}`);
+    }
+  };
+
   const loadRuleSetFields = async (ruleSetId: number) => {
     setLoadingFields(true);
     try {
@@ -755,7 +1060,7 @@ const RulesManagement = () => {
         reference_business_class: newRule.reference_business_class || null,
         reference_field_name: newRule.reference_field_name || null,
         condition_expression: conditionExpression,
-        error_message: newRule.error_message,
+        error_message: newRule.error_message || getDefaultErrorMessage(newRule.rule_type, selectedField.field_name),
         is_active: true,
         pattern: newRule.rule_type === 'PATTERN_MATCH' ? newRule.pattern : null,
         enum_values: newRule.rule_type === 'ENUM_VALIDATION' ? newRule.enum_values : null,
@@ -862,10 +1167,13 @@ const RulesManagement = () => {
     }
   };
 
-  const handleOpenEditRule = (rule: any) => {
+  const handleOpenEditRule = async (rule: any) => {
+    console.log('Opening edit rule:', rule);
+    console.log('Saved reference_field_name:', rule.reference_field_name);
+    
     setEditingRule(rule);
     const parsed = parseConditionExpression(rule.rule_type, rule.condition_expression);
-    setEditRuleForm({
+    const formData = {
       rule_type: rule.rule_type,
       error_message: rule.error_message || '',
       reference_business_class: rule.reference_business_class || '',
@@ -888,13 +1196,34 @@ const RulesManagement = () => {
       bc_mode: parsed.bc_mode || 'single_field',
       bc_debit_field: parsed.bc_debit_field || '',
       bc_credit_field: parsed.bc_credit_field || '',
-    });
+    };
+
+    console.log('Form data being set:', formData);
+    console.log('Form data reference_field_name:', formData.reference_field_name);
+    console.log('Form data enum_values:', formData.enum_values);
+
     if (rule.rule_type === 'REFERENCE_EXISTS' && rule.reference_business_class) {
-      loadReferenceFields(rule.reference_business_class);
+      // Await the fields and set them directly — don't rely on React state flush timing
+      const fields = await loadReferenceFields(rule.reference_business_class);
+      console.log('Loaded fields:', fields);
+      console.log('Does fields include saved value?', fields.includes(rule.reference_field_name));
+      
+      // If the saved reference_field_name isn't in the list, add it so the select always shows it
+      if (rule.reference_field_name && !fields.includes(rule.reference_field_name)) {
+        console.log('Adding saved field to list:', rule.reference_field_name);
+        setAvailableReferenceFields([rule.reference_field_name, ...fields]);
+      }
     } else {
       setAvailableReferenceFields([]);
     }
-    setShowEditRuleModal(true);
+
+    // Set form data and wait for next tick before showing modal
+    setEditRuleForm(formData);
+    
+    // Use setTimeout to ensure state is updated before showing modal
+    setTimeout(() => {
+      setShowEditRuleModal(true);
+    }, 0);
   };
 
   const handleUpdateRule = async () => {
@@ -903,7 +1232,7 @@ const RulesManagement = () => {
       const conditionExpression = buildConditionExpression(editRuleForm);
       await api.put(`/rules/templates/${editingRule.id}`, {
         rule_type: editRuleForm.rule_type,
-        error_message: editRuleForm.error_message,
+        error_message: editRuleForm.error_message || getDefaultErrorMessage(editRuleForm.rule_type, editingRule.field_name),
         reference_business_class: editRuleForm.reference_business_class || null,
         reference_field_name: editRuleForm.reference_field_name || null,
         condition_expression: conditionExpression,
@@ -1004,6 +1333,19 @@ const RulesManagement = () => {
                           <span style={styles.ruleSetName}>{ruleSet.name}</span>
                           {ruleSet.is_common && (
                             <span style={styles.commonBadge}>{ruleSet.business_class}</span>
+                          )}
+                          {isEffectiveDefault(ruleSet) && (
+                            <span style={{
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              fontWeight: '600' as const,
+                              backgroundColor: '#fff3cd',
+                              color: '#856404',
+                              border: '1px solid #ffeaa7'
+                            }}>
+                              ⭐ Default
+                            </span>
                           )}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
@@ -1111,6 +1453,31 @@ const RulesManagement = () => {
                                   })(),
                                 }}
                               >
+                                {!ruleSet.is_user_default ? (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleMakeDefault(ruleSet);
+                                    }}
+                                    style={styles.menuItem}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                  >
+                                    ⭐ Make Default
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleResetDefault(ruleSet);
+                                    }}
+                                    style={styles.menuItem}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                  >
+                                    🔄 Remove as Default
+                                  </button>
+                                )}
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -1335,6 +1702,11 @@ const RulesManagement = () => {
                             <span style={{ fontWeight: 600, color: theme.primary.main }}>{rule.rule_type}</span>
                             {rule.error_message && <span style={{ color: theme.text.tertiary, fontSize: '12px' }}>{rule.error_message}</span>}
                             <button
+                              onClick={() => handleOpenEditRule({ ...rule, field_name: '_file_level_' })}
+                              title="Edit rule"
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.primary.main, fontSize: '12px', padding: '0', lineHeight: 1 }}
+                            >✏️</button>
+                            <button
                               onClick={() => handleDeleteFileLevelRule(rule.id)}
                               title="Delete"
                               style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.status.error, fontSize: '14px', padding: '0', lineHeight: 1 }}
@@ -1523,7 +1895,7 @@ const RulesManagement = () => {
             </div>
 
             {/* Dynamic config section */}
-            <RuleTypeConfig form={newRule} setForm={setNewRule} availableReferenceClasses={availableReferenceClasses} availableReferenceFields={availableReferenceFields} loadingReferenceFields={loadingReferenceFields} loadReferenceFields={loadReferenceFields} fieldName={selectedField.field_name} />
+            <RuleTypeConfig form={newRule} setForm={setNewRule} availableReferenceClasses={availableReferenceClasses} availableReferenceFields={availableReferenceFields} loadingReferenceFields={loadingReferenceFields} loadReferenceFields={loadReferenceFields} fieldName={selectedField.field_name} businessClassFields={fieldViewData?.fields?.map((f: any) => f.field_name) || []} />
 
             {/* Error Message */}
             <div style={styles.formGroup}>
@@ -1553,28 +1925,47 @@ const RulesManagement = () => {
               <div>
                 <h2 style={{ ...styles.modalTitle, marginBottom: '4px' }}>Edit Rule</h2>
                 <div style={{ fontSize: '13px', color: theme.text.tertiary }}>
-                  Field: <span style={{ fontWeight: 600, color: theme.primary.main }}>{editingRule.field_name}</span>
+                  {editingRule.field_name === '_file_level_' ? (
+                    <>
+                      <span style={{ fontWeight: 600, color: theme.primary.main }}>File-Level Rule</span>
+                      <span style={{ marginLeft: '8px', fontSize: '12px', color: theme.text.muted }}>
+                        Applies to entire file for {fieldViewData?.business_class || 'business class'}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      Field: <span style={{ fontWeight: 600, color: theme.primary.main }}>{editingRule.field_name}</span>
+                    </>
+                  )}
                   <span style={{ marginLeft: '8px', padding: '2px 8px', backgroundColor: theme.accent.purpleTintLight, color: theme.primary.main, borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>{editRuleForm.rule_type}</span>
                 </div>
               </div>
               <button onClick={() => setShowEditRuleModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px', color: theme.text.tertiary, padding: '4px' }}>✕</button>
             </div>
 
-            <RuleTypeConfig form={editRuleForm} setForm={setEditRuleForm} availableReferenceClasses={availableReferenceClasses} availableReferenceFields={availableReferenceFields} loadingReferenceFields={loadingReferenceFields} loadReferenceFields={loadReferenceFields} fieldName={editingRule.field_name} />
+            {editRuleForm && editRuleForm.rule_type ? (
+              <>
+                <RuleTypeConfig form={editRuleForm} setForm={setEditRuleForm} availableReferenceClasses={availableReferenceClasses} availableReferenceFields={availableReferenceFields} loadingReferenceFields={loadingReferenceFields} loadReferenceFields={loadReferenceFields} fieldName={editingRule.field_name} businessClassFields={fieldViewData?.fields?.map((f: any) => f.field_name) || []} />
 
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Error Message</label>
-              <textarea
-                value={editRuleForm.error_message}
-                onChange={(e) => setEditRuleForm({ ...editRuleForm, error_message: e.target.value })}
-                style={{ ...styles.input, minHeight: '72px', resize: 'vertical' as const }}
-              />
-            </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Error Message</label>
+                  <textarea
+                    value={editRuleForm.error_message}
+                    onChange={(e) => setEditRuleForm({ ...editRuleForm, error_message: e.target.value })}
+                    style={{ ...styles.input, minHeight: '72px', resize: 'vertical' as const }}
+                  />
+                </div>
 
-            <div style={styles.modalActions}>
-              <button onClick={() => setShowEditRuleModal(false)} style={styles.cancelButton}>Cancel</button>
-              <button onClick={handleUpdateRule} style={styles.saveButton}>Save Changes</button>
-            </div>
+                <div style={styles.modalActions}>
+                  <button onClick={() => setShowEditRuleModal(false)} style={styles.cancelButton}>Cancel</button>
+                  <button onClick={handleUpdateRule} style={styles.saveButton}>Save Changes</button>
+                </div>
+              </>
+            ) : (
+              <div style={{ padding: '20px', textAlign: 'center', color: theme.text.secondary }}>
+                Loading rule data...
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1623,6 +2014,7 @@ const RulesManagement = () => {
               loadingReferenceFields={loadingReferenceFields}
               loadReferenceFields={loadReferenceFields}
               fieldName={fieldViewData.business_class}
+              businessClassFields={fieldViewData.fields?.map((f: any) => f.field_name) || []}
             />
 
             <div style={styles.formGroup}>

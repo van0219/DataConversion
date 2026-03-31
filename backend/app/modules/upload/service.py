@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 from app.models.job import ConversionJob
 from app.services.streaming_engine import StreamingEngine
+from app.services.business_class_detector import BusinessClassDetector
 from app.core.logging import logger
 
 class UploadService:
@@ -29,10 +30,18 @@ class UploadService:
         """
         UploadService._ensure_upload_dir()
         
+        # Auto-detect business class structure from filename
+        detection_result = BusinessClassDetector.detect_from_filename(db, file.filename)
+        logger.info(f"Auto-detection result: {detection_result}")
+        
+        # Use detected business class if not provided
+        if not business_class:
+            business_class = detection_result.get('business_class', 'Unknown')
+        
         # Create conversion job first to get job_id
         job = ConversionJob(
             account_id=account_id,
-            business_class=business_class or "Unknown",
+            business_class=business_class,
             filename=file.filename,
             total_records=0,  # Will update after processing
             status="pending"
@@ -59,11 +68,6 @@ class UploadService:
         
         logger.info(f"File metadata: {len(headers)} columns, ~{estimated_records} records")
         
-        # Auto-detect business class from filename if not provided
-        if not business_class:
-            business_class = UploadService._detect_business_class(file.filename)
-            job.business_class = business_class or "Unknown"
-        
         # Update job with metadata
         job.total_records = estimated_records
         db.commit()
@@ -76,7 +80,8 @@ class UploadService:
             "business_class": business_class,
             "estimated_records": estimated_records,
             "headers": headers,
-            "sample_records": sample_records
+            "sample_records": sample_records,
+            "detection": detection_result  # Include detection result
         }
     
     @staticmethod

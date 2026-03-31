@@ -3,6 +3,8 @@ from app.models.account import Account
 from app.models.schema import Schema
 from app.models.snapshot import SnapshotRegistry, SnapshotRecord
 from app.models.setup_business_class import SetupBusinessClass
+from app.models.business_class_registry import BusinessClassRegistry
+from app.models.business_class_config import BusinessClassConfig
 from app.models.job import ConversionJob, ValidationError, LoadResult
 from app.models.rule import ValidationRuleTemplate, ValidationRuleAssignment
 from app.models.validation_rule_set import ValidationRuleSet
@@ -14,6 +16,8 @@ __all__ = [
     "SnapshotRegistry",
     "SnapshotRecord",
     "SetupBusinessClass",
+    "BusinessClassRegistry",
+    "BusinessClassConfig",
     "ConversionJob",
     "ValidationError",
     "LoadResult",

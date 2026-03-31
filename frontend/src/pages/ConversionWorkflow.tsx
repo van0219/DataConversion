@@ -13,6 +13,19 @@ interface FileInfo {
   total_records: number;
 }
 
+interface DetectionResult {
+  business_class: string;
+  structure_type: string;
+  family_root: string;
+  member_count: number;
+  related_tables: string[];
+  table_roles: Record<string, string>;
+  naming_pattern?: string;
+  is_load_class: boolean;
+  detected: boolean;
+  confidence: string;
+}
+
 interface MappingData {
   mapping: Record<string, {
     fsm_field: string;
@@ -170,6 +183,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
   const [uploading, setUploading] = useState(false);
   const [jobId, setJobId] = useState<number | null>(null);
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
+  const [detectionResult, setDetectionResult] = useState<DetectionResult | null>(null);
+  const [showDetectionDetails, setShowDetectionDetails] = useState(false);
   
   // Mapping state
   const [businessClass, setBusinessClass] = useState('');
@@ -196,6 +211,24 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [searchDropdownOpen]);
+
+  // Helper function to get role icon
+  const getRoleIcon = (role: string): string => {
+    const icons: Record<string, string> = {
+      'header': '📄',
+      'lines': '📝',
+      'distributions': '💰',
+      'comments': '💬',
+      'errors': '❌',
+      'results': '✅',
+      'charges': '💳',
+      'payments': '💵',
+      'funds': '🏦',
+      'options': '⚙️',
+      'main': '📊'
+    };
+    return icons[role] || '📊';
+  };
 
   // Validation state
   const [validating, setValidating] = useState(false);
@@ -371,6 +404,16 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
   // Interface error table pagination state
   const [errorTableCurrentPage, setErrorTableCurrentPage] = useState(1);
   const errorTablePageSize = 10;
+
+  // Validation error table pagination state
+  const [validationErrorCurrentPage, setValidationErrorCurrentPage] = useState(1);
+  const validationErrorPageSize = 50;
+
+  // Reset validation error pagination when errors change
+  useEffect(() => {
+    setValidationErrorCurrentPage(1);
+  }, [validationErrors]);
+
   // File upload handler
   const handleFileUpload = async () => {
     if (!file) return;
@@ -383,13 +426,36 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
 
       const response = await api.post('/upload/', formData);
       
+      console.log('Upload response:', response.data);
+      console.log('Detection in response:', response.data.detection);
+      
       setJobId(response.data.job_id);
-      setFileInfo(response.data.file_info);
+      
+      // Construct FileInfo from response data
+      setFileInfo({
+        filename: response.data.filename,
+        headers: response.data.headers,
+        sample_records: response.data.sample_records,
+        total_records: response.data.estimated_records
+      });
+      
+      // Capture detection result if available
+      if (response.data.detection) {
+        console.log('Setting detection result:', response.data.detection);
+        setDetectionResult(response.data.detection);
+        
+        // Set business class from detection result
+        setBusinessClass(response.data.detection.business_class);
+        console.log('Business class set from detection:', response.data.detection.business_class);
+      } else {
+        console.warn('No detection data in upload response');
+      }
       
       // Automatically perform mapping after successful upload
       setCompletedSteps(prev => new Set([...prev, 'mapping'])); // Mark mapping as available
       changeStep('mapping');
-      await performAutomaticMapping(response.data.job_id);
+      const detectedClass = response.data.detection?.business_class || response.data.business_class || '';
+      await performAutomaticMapping(response.data.job_id, detectedClass);
     } catch (error: any) {
       console.error('Upload failed:', error);
       alert(`Upload failed: ${error.response?.data?.detail || error.message}`);
@@ -399,11 +465,12 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
   };
 
   // Automatic mapping after upload
-  const performAutomaticMapping = async (uploadJobId: number) => {
+  const performAutomaticMapping = async (uploadJobId: number, detectedBusinessClass?: string) => {
+    const effectiveBusinessClass = detectedBusinessClass || businessClass;
     try {
       // Get existing schema (no auto-fetch)
       setFetchingSchema(true);
-      const schemaResponse = await api.get(`/schema/${businessClass}/latest`);
+      const schemaResponse = await api.get(`/schema/${effectiveBusinessClass}/latest`);
       
       // Parse schema_json string to object
       const schemaData = schemaResponse.data;
@@ -439,7 +506,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       setAutoMapping(true);
       const mappingResponse = await api.post('/mapping/auto-map', {
         job_id: uploadJobId,
-        business_class: businessClass
+        business_class: effectiveBusinessClass
       });
 
       // Inject filename-as-RunGroup: find any mapped FSM field containing "rungroup" (case-insensitive)
@@ -473,7 +540,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       // Check if it's a schema not found error
       if (error.response?.status === 404) {
         alert(
-          `No schema found for business class '${businessClass}'.\n\n` +
+          `No schema found for business class '${effectiveBusinessClass}'.\n\n` +
           `Please upload a schema via the Schema Management page first, then try again.`
         );
         return;
@@ -630,16 +697,80 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       });
       console.log('Rule sets loaded:', response.data);
       
-      setAvailableRuleSets(response.data || []); // Store in availableRuleSets
+      const ruleSets = response.data || [];
+      setAvailableRuleSets(ruleSets);
       
-      // Don't auto-select Default rule set - let user choose
-      // Default will be used if selectedRuleSetId is null
+      // Auto-select the effective default rule set
+      const effectiveDefault = getEffectiveDefaultRuleSet(ruleSets);
+      if (effectiveDefault) {
+        setSelectedRuleSetId(effectiveDefault.id);
+        console.log('Auto-selected effective default rule set:', effectiveDefault.name);
+      }
     } catch (error) {
       console.error('Failed to load rule sets:', error);
       setAvailableRuleSets([]);
     } finally {
       setLoadingRuleSets(false);
     }
+  };
+
+  // Helper function to determine the effective default rule set
+  const getEffectiveDefaultRuleSet = (ruleSets: any[]) => {
+    // First, check if there's a user default
+    const userDefault = ruleSets.find(rs => rs.is_user_default);
+    if (userDefault) {
+      return userDefault;
+    }
+    
+    // If no user default, use the system default (is_common)
+    const systemDefault = ruleSets.find(rs => rs.is_common);
+    return systemDefault;
+  };
+
+  const handleContinueToValidationStep = () => {
+    // Check for non-exact mappings and show warning before navigating to validation step
+    const nonExactMappings = Object.entries(mappingData.mapping)
+      .filter(([_, mappingInfo]) => 
+        mappingInfo.enabled !== false && 
+        !mappingInfo.fsm_field?.toLowerCase().includes('rungroup') &&
+        mappingInfo.confidence !== 'exact'
+      )
+      .map(([csvCol, mappingInfo]) => ({
+        csvColumn: csvCol,
+        fsmField: mappingInfo.fsm_field,
+        confidence: mappingInfo.confidence
+      }));
+
+    console.log('Non-exact mappings found:', nonExactMappings);
+
+    if (nonExactMappings.length > 0) {
+      const mappingList = nonExactMappings
+        .map(m => `  • "${m.csvColumn}" → "${m.fsmField}" (${m.confidence} confidence)`)
+        .join('\n');
+      
+      const message = 
+        `⚠️ Field Name Differences Detected\n\n` +
+        `The following ${nonExactMappings.length} CSV field name(s) don't exactly match FSM field names:\n\n` +
+        `${mappingList}\n\n` +
+        `DataBridge will automatically map these to the correct FSM field names during validation and load.\n\n` +
+        `You can either:\n` +
+        `• Click OK to continue to validation step\n` +
+        `• Click Cancel to fix the CSV file headers first`;
+      
+      console.log('Showing confirmation dialog:', message);
+      
+      const confirmed = window.confirm(message);
+      
+      console.log('User confirmation result:', confirmed);
+
+      if (!confirmed) {
+        console.log('User cancelled navigation to validation step');
+        return; // User cancelled
+      }
+    }
+
+    // Navigate to validation step (don't start validation yet)
+    changeStep('validation');
   };
 
   const handleStartValidation = async () => {
@@ -817,7 +948,10 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `validation_errors_job_${jobId}.csv`;
+      // Use original filename with _with_errors suffix
+      const originalFilename = fileInfo?.filename || `job_${jobId}`;
+      const baseFilename = originalFilename.replace(/\.csv$/i, '');
+      link.download = `${baseFilename}_with_errors.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1327,39 +1461,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 const selectedFile = e.target.files?.[0] || null;
                 setFile(selectedFile);
                 
-                // Auto-detect business class from filename
-                if (selectedFile) {
-                  const filename = selectedFile.name;
-                  const filenameParts = filename.split('_');
-                  if (filenameParts.length > 0) {
-                    const detectedBusinessClass = filenameParts[0];
-                    
-                    // Map common filename patterns to business classes
-                    const businessClassMap: Record<string, string> = {
-                      'GLTransactionInterface': 'GLTransactionInterface',
-                      'GLTransaction': 'GLTransactionInterface',
-                      'GL': 'GLTransactionInterface',
-                      'PayablesInvoice': 'PayablesInvoice',
-                      'Payables': 'PayablesInvoice',
-                      'Invoice': 'PayablesInvoice',
-                      'AP': 'PayablesInvoice',
-                      'Vendor': 'Vendor',
-                      'Suppliers': 'Vendor',
-                      'Customer': 'Customer',
-                      'Customers': 'Customer',
-                      'AR': 'Customer'
-                    };
-                    
-                    // Check if detected business class matches any known patterns
-                    const mappedBusinessClass = businessClassMap[detectedBusinessClass];
-                    if (mappedBusinessClass) {
-                      setBusinessClass(mappedBusinessClass);
-                    } else {
-                      // If no exact match, use the detected part as-is
-                      setBusinessClass(detectedBusinessClass);
-                    }
-                  }
-                }
+                // Business class is now set from detection result in upload response
+                // Legacy filename-based detection removed in favor of proper detection service
               }}
               style={{
                 width: '400px',
@@ -1372,6 +1475,163 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               }}
             />
           </div>
+
+          {/* Auto-Detection Results Card */}
+          {detectionResult && (
+            <div style={{
+              backgroundColor: theme.background.tertiary,
+              border: `2px solid ${theme.primary.main}`,
+              borderRadius: '12px',
+              padding: '20px',
+              marginTop: '24px',
+              marginBottom: '20px'
+            }}>
+              <div style={{ marginBottom: '16px' }}>
+                <h4 style={{
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: theme.primary.main,
+                  marginBottom: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  🔍 Auto-Detection Results
+                </h4>
+                <p style={{ fontSize: '13px', color: '#999' }}>
+                  Automatically detected business class structure from filename
+                </p>
+              </div>
+
+              {/* Business Class Name */}
+              <div style={{ marginBottom: '12px' }}>
+                <span style={{ fontSize: '13px', color: '#999', marginRight: '8px' }}>
+                  Business Class:
+                </span>
+                <span style={{ 
+                  fontSize: '14px', 
+                  fontWeight: '600', 
+                  color: theme.primary.main 
+                }}>
+                  {detectionResult.business_class}
+                </span>
+              </div>
+
+              {/* Structure Type Badge */}
+              <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '13px', color: '#999' }}>
+                  Structure:
+                </span>
+                <span style={{
+                  padding: '6px 12px',
+                  backgroundColor: detectionResult.structure_type === 'single' ? '#10b981' : '#f59e0b',
+                  color: '#ffffff',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  fontWeight: '600'
+                }}>
+                  {detectionResult.structure_type === 'single' ? '📄 Single Table' : '📑 Multiple Tables'}
+                </span>
+                <span style={{
+                  padding: '6px 12px',
+                  backgroundColor: theme.background.quaternary,
+                  color: theme.text.primary,
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  fontWeight: '500'
+                }}>
+                  {detectionResult.member_count} {detectionResult.member_count === 1 ? 'table' : 'tables'}
+                </span>
+              </div>
+
+              {/* Confidence Indicator */}
+              <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '13px', color: '#999' }}>
+                  Confidence:
+                </span>
+                <span style={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: detectionResult.confidence === 'high' ? '#10b981' : '#f59e0b'
+                }}>
+                  {detectionResult.confidence === 'high' ? '⭐⭐⭐ High' : '⭐⭐ Medium'}
+                </span>
+              </div>
+
+              {/* Related Tables (if multiple) */}
+              {detectionResult.structure_type === 'multiple' && detectionResult.related_tables.length > 0 && (
+                <div>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '12px'
+                  }}>
+                    <span style={{ fontSize: '13px', color: '#999' }}>
+                      Related Tables:
+                    </span>
+                    <button
+                      onClick={() => setShowDetectionDetails(!showDetectionDetails)}
+                      style={{
+                        padding: '4px 12px',
+                        backgroundColor: 'transparent',
+                        border: `1px solid ${theme.background.quaternary}`,
+                        borderRadius: '4px',
+                        color: theme.primary.main,
+                        fontSize: '12px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {showDetectionDetails ? '▼ Hide Details' : '▶ Show Details'}
+                    </button>
+                  </div>
+
+                  {showDetectionDetails && (
+                    <div style={{
+                      backgroundColor: theme.background.secondary,
+                      borderRadius: '8px',
+                      padding: '12px',
+                      maxHeight: '200px',
+                      overflowY: 'auto'
+                    }}>
+                      {detectionResult.related_tables.map((table, index) => {
+                        const role = detectionResult.table_roles[table] || 'main';
+                        const icon = getRoleIcon(role);
+                        return (
+                          <div
+                            key={index}
+                            style={{
+                              padding: '8px',
+                              marginBottom: index < detectionResult.related_tables.length - 1 ? '4px' : '0',
+                              backgroundColor: theme.background.tertiary,
+                              borderRadius: '4px',
+                              fontSize: '13px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px'
+                            }}
+                          >
+                            <span style={{ fontSize: '16px' }}>{icon}</span>
+                            <span style={{ color: theme.text.primary, flex: 1 }}>{table}</span>
+                            <span style={{
+                              padding: '2px 8px',
+                              backgroundColor: theme.background.quaternary,
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              color: '#999',
+                              textTransform: 'capitalize'
+                            }}>
+                              {role}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           <button
             onClick={handleFileUpload}
@@ -1431,6 +1691,169 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             }}>
               🔗 Field Mapping
             </h3>
+            <p style={{ fontSize: '14px', color: '#999' }}>
+              Map CSV columns to FSM fields
+            </p>
+          </div>
+
+          {/* Auto-Detection Results Card - Also show in mapping step */}
+          {detectionResult && (
+            <div style={{
+              backgroundColor: theme.background.tertiary,
+              border: `2px solid ${theme.primary.main}`,
+              borderRadius: '12px',
+              padding: '20px',
+              marginBottom: '20px'
+            }}>
+              <div style={{ marginBottom: '16px' }}>
+                <h4 style={{
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: theme.primary.main,
+                  marginBottom: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  🔍 Auto-Detection Results
+                </h4>
+                <p style={{ fontSize: '13px', color: '#999' }}>
+                  Detected business class structure from filename
+                </p>
+              </div>
+
+              {/* Business Class Name */}
+              <div style={{ marginBottom: '12px' }}>
+                <span style={{ fontSize: '13px', color: '#999', marginRight: '8px' }}>
+                  Business Class:
+                </span>
+                <span style={{ 
+                  fontSize: '14px', 
+                  fontWeight: '600', 
+                  color: theme.primary.main 
+                }}>
+                  {detectionResult.business_class}
+                </span>
+              </div>
+
+              {/* Structure Type Badge */}
+              <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '13px', color: '#999' }}>
+                  Structure:
+                </span>
+                <span style={{
+                  padding: '6px 12px',
+                  backgroundColor: detectionResult.structure_type === 'single' ? '#10b981' : '#f59e0b',
+                  color: '#ffffff',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  fontWeight: '600'
+                }}>
+                  {detectionResult.structure_type === 'single' ? '📄 Single Table' : '📑 Multiple Tables'}
+                </span>
+                <span style={{
+                  padding: '6px 12px',
+                  backgroundColor: theme.background.quaternary,
+                  color: theme.text.primary,
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  fontWeight: '500'
+                }}>
+                  {detectionResult.member_count} {detectionResult.member_count === 1 ? 'table' : 'tables'}
+                </span>
+              </div>
+
+              {/* Confidence Indicator */}
+              <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '13px', color: '#999' }}>
+                  Confidence:
+                </span>
+                <span style={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: detectionResult.confidence === 'high' ? '#10b981' : '#f59e0b'
+                }}>
+                  {detectionResult.confidence === 'high' ? '⭐⭐⭐ High' : '⭐⭐ Medium'}
+                </span>
+              </div>
+
+              {/* Related Tables (if multiple) */}
+              {detectionResult.structure_type === 'multiple' && detectionResult.related_tables.length > 0 && (
+                <div>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '12px'
+                  }}>
+                    <span style={{ fontSize: '13px', color: '#999' }}>
+                      Related Tables:
+                    </span>
+                    <button
+                      onClick={() => setShowDetectionDetails(!showDetectionDetails)}
+                      style={{
+                        padding: '4px 12px',
+                        backgroundColor: 'transparent',
+                        border: `1px solid ${theme.background.quaternary}`,
+                        borderRadius: '4px',
+                        color: theme.primary.main,
+                        fontSize: '12px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {showDetectionDetails ? '▼ Hide Details' : '▶ Show Details'}
+                    </button>
+                  </div>
+
+                  {showDetectionDetails && (
+                    <div style={{
+                      backgroundColor: theme.background.secondary,
+                      borderRadius: '8px',
+                      padding: '12px',
+                      maxHeight: '200px',
+                      overflowY: 'auto'
+                    }}>
+                      {detectionResult.related_tables.map((table, index) => {
+                        const role = detectionResult.table_roles[table] || 'main';
+                        const icon = getRoleIcon(role);
+                        return (
+                          <div
+                            key={index}
+                            style={{
+                              padding: '8px',
+                              marginBottom: index < detectionResult.related_tables.length - 1 ? '4px' : '0',
+                              backgroundColor: theme.background.tertiary,
+                              borderRadius: '4px',
+                              fontSize: '13px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px'
+                            }}
+                          >
+                            <span style={{ fontSize: '16px' }}>{icon}</span>
+                            <span style={{ color: theme.text.primary, flex: 1 }}>{table}</span>
+                            <span style={{
+                              padding: '2px 8px',
+                              backgroundColor: theme.background.quaternary,
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              color: '#999',
+                              textTransform: 'capitalize'
+                            }}>
+                              {role}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Mapping Instructions */}
+          <div style={{ marginBottom: '20px' }}>
             <p style={{ fontSize: '13px', color: '#999' }}>
               {Object.keys(mappingData.mapping || {}).length > 0 
                 ? 'Auto-mapped CSV columns to FSM fields based on field name similarity'
@@ -1444,7 +1867,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             <div style={{
               padding: '40px',
               textAlign: 'center',
-              color: 'theme.primary.main'
+              color: theme.primary.main
             }}>
               <div style={{ fontSize: '16px', marginBottom: '8px' }}>
                 {fetchingSchema ? 'Fetching FSM Schema...' : 'Auto-Mapping Fields...'}
@@ -1500,7 +1923,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           {Object.keys(mappingData.mapping || {}).length > 0 && (
             <div style={{ marginBottom: '20px' }}>
               <button
-                onClick={() => changeStep('validation')}
+                onClick={handleContinueToValidationStep}
                 style={{
                   padding: '12px 24px',
                   backgroundColor: theme.primary.main,
@@ -1802,20 +2225,29 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                         backgroundColor: 
                           isRunGroup ? '#1a3a5c' :
                           mappingInfo.confidence === 'exact' ? '#1a4d2e' :
-                          mappingInfo.confidence === 'fuzzy' ? '#4d2e1a' :
-                          mappingInfo.confidence === 'manual' ? '#1a2e4d' : 'theme.background.tertiary',
+                          mappingInfo.confidence === 'high' ? '#2d4d1a' :
+                          mappingInfo.confidence === 'medium' ? '#4d3a1a' :
+                          mappingInfo.confidence === 'low' ? '#4d2e1a' :
+                          mappingInfo.confidence === 'manual' ? '#1a2e4d' :
+                          mappingInfo.confidence === 'unmapped' ? '#4d1a1a' : '#2a2a2a',
                         color: '#FFFFFF',
                         border: `1px solid ${
                           isRunGroup ? '#4285F4' :
                           mappingInfo.confidence === 'exact' ? '#4CAF50' :
-                          mappingInfo.confidence === 'fuzzy' ? 'theme.primary.main' :
-                          mappingInfo.confidence === 'manual' ? '#2196F3' : 'theme.background.tertiary'
+                          mappingInfo.confidence === 'high' ? '#8BC34A' :
+                          mappingInfo.confidence === 'medium' ? '#FFC107' :
+                          mappingInfo.confidence === 'low' ? '#FF9800' :
+                          mappingInfo.confidence === 'manual' ? '#2196F3' :
+                          mappingInfo.confidence === 'unmapped' ? '#F44336' : '#666666'
                         }`
                       }}>
                         {isRunGroup ? 'Filename' :
                          mappingInfo.confidence === 'exact' ? 'Exact' :
-                         mappingInfo.confidence === 'fuzzy' ? 'Fuzzy' :
-                         mappingInfo.confidence === 'manual' ? 'Manual' : 'Unknown'}
+                         mappingInfo.confidence === 'high' ? 'High' :
+                         mappingInfo.confidence === 'medium' ? 'Medium' :
+                         mappingInfo.confidence === 'low' ? 'Low' :
+                         mappingInfo.confidence === 'manual' ? 'Manual' :
+                         mappingInfo.confidence === 'unmapped' ? 'Unmapped' : 'Unknown'}
                       </span>
                     </div>
                   </div>
@@ -1870,7 +2302,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 or proceed to validation without mappings.
               </p>
               <button
-                onClick={() => changeStep('validation')}
+                onClick={handleContinueToValidationStep}
                 style={{
                   padding: '10px 20px',
                   backgroundColor: 'theme.background.tertiary',
@@ -2171,7 +2603,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 borderBottom: '1px solid theme.background.tertiary',
                 display: 'flex',
                 gap: '16px',
-                alignItems: 'center'
+                alignItems: 'center',
+                flexWrap: 'wrap'
               }}>
                 <div>
                   <label style={{ fontSize: '12px', color: '#999', marginRight: '8px' }}>
@@ -2214,6 +2647,71 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                     ))}
                   </select>
                 </div>
+
+                {/* Pagination Controls */}
+                {(() => {
+                  const filtered = validationErrors.filter(error =>
+                    (!errorFilter || error.field_name.toLowerCase().includes(errorFilter.toLowerCase())) &&
+                    (!errorTypeFilter || error.error_type.toLowerCase().includes(errorTypeFilter.toLowerCase()))
+                  );
+                  const grouped: Record<number, ValidationError[]> = {};
+                  filtered.forEach(err => {
+                    if (!grouped[err.row_number]) grouped[err.row_number] = [];
+                    grouped[err.row_number].push(err);
+                  });
+                  const totalRows = Object.keys(grouped).length;
+                  const totalPages = Math.ceil(totalRows / validationErrorPageSize);
+
+                  if (totalPages > 1) {
+                    return (
+                      <div style={{
+                        marginLeft: 'auto',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px'
+                      }}>
+                        <button
+                          onClick={() => setValidationErrorCurrentPage(prev => Math.max(1, prev - 1))}
+                          disabled={validationErrorCurrentPage === 1}
+                          style={{
+                            padding: '4px 12px',
+                            backgroundColor: validationErrorCurrentPage === 1 ? theme.background.tertiary : theme.primary.main,
+                            color: validationErrorCurrentPage === 1 ? theme.text.muted : '#fff',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: validationErrorCurrentPage === 1 ? 'not-allowed' : 'pointer',
+                            fontSize: '12px',
+                            fontWeight: '500'
+                          }}
+                        >
+                          Previous
+                        </button>
+                        
+                        <span style={{ color: theme.text.primary, fontWeight: '500', fontSize: '12px' }}>
+                          Page {validationErrorCurrentPage} of {totalPages}
+                        </span>
+                        
+                        <button
+                          onClick={() => setValidationErrorCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                          disabled={validationErrorCurrentPage >= totalPages}
+                          style={{
+                            padding: '4px 12px',
+                            backgroundColor: validationErrorCurrentPage >= totalPages ? theme.background.tertiary : theme.primary.main,
+                            color: validationErrorCurrentPage >= totalPages ? theme.text.muted : '#fff',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: validationErrorCurrentPage >= totalPages ? 'not-allowed' : 'pointer',
+                            fontSize: '12px',
+                            fontWeight: '500'
+                          }}
+                        >
+                          Next
+                        </button>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
 
               {/* Error Table */}
@@ -2250,7 +2748,11 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                     grouped[err.row_number].push(err);
                   });
 
-                  const rows = Object.entries(grouped).slice(0, 50);
+                  // Apply pagination
+                  const allRows = Object.entries(grouped);
+                  const startIndex = (validationErrorCurrentPage - 1) * validationErrorPageSize;
+                  const endIndex = startIndex + validationErrorPageSize;
+                  const rows = allRows.slice(startIndex, endIndex);
 
                   return rows.map(([rowNum, errs]) => (
                     <div key={rowNum} style={{
@@ -2316,22 +2818,37 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 })()}
               </div>
 
-              {validationErrors.length > 50 && (
-                <div style={{
-                  padding: '12px 16px',
-                  backgroundColor: 'theme.background.secondary',
-                  borderTop: '1px solid theme.background.tertiary',
-                  fontSize: '12px',
-                  color: '#999',
-                  textAlign: 'center'
-                }}>
-                  Showing first {validationErrors.length.toLocaleString()} errors
-                  {validationProgress && validationProgress.errors_found > validationErrors.length
-                    ? ` of ${validationProgress.errors_found.toLocaleString()} total`
-                    : ''
-                  }. Export CSV to see all errors.
-                </div>
-              )}
+              {(() => {
+                const filtered = validationErrors.filter(error =>
+                  (!errorFilter || error.field_name.toLowerCase().includes(errorFilter.toLowerCase())) &&
+                  (!errorTypeFilter || error.error_type.toLowerCase().includes(errorTypeFilter.toLowerCase()))
+                );
+                const grouped: Record<number, ValidationError[]> = {};
+                filtered.forEach(err => {
+                  if (!grouped[err.row_number]) grouped[err.row_number] = [];
+                  grouped[err.row_number].push(err);
+                });
+                const totalRows = Object.keys(grouped).length;
+                const startIndex = (validationErrorCurrentPage - 1) * validationErrorPageSize;
+                const endIndex = Math.min(startIndex + validationErrorPageSize, totalRows);
+
+                return (
+                  <div style={{
+                    padding: '12px 16px',
+                    backgroundColor: 'theme.background.secondary',
+                    borderTop: '1px solid theme.background.tertiary',
+                    fontSize: '12px',
+                    color: '#999',
+                    textAlign: 'center'
+                  }}>
+                    Showing rows {startIndex + 1}-{endIndex} of {totalRows.toLocaleString()} error rows
+                    {validationProgress && validationProgress.errors_found > validationErrors.length
+                      ? ` (${validationErrors.length.toLocaleString()} errors fetched of ${validationProgress.errors_found.toLocaleString()} total)`
+                      : ''
+                    }. Export CSV to see all errors.
+                  </div>
+                );
+              })()}
             </div>
           )}
 
@@ -2380,7 +2897,189 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             </p>
           </div>
 
-          {!loading && (
+          {/* Show load results if they exist, otherwise show the form */}
+          {loadResult ? (
+            /* Full Load Results - Same as completed step */
+            <div>
+              {/* Load Results Display */}
+              <div style={{
+                backgroundColor: theme.background.secondary,
+                border: `2px solid ${loadResult.total_failure === 0 ? '#22c55e' : theme.status.error}`,
+                borderRadius: '12px',
+                padding: '24px',
+                marginBottom: '24px'
+              }}>
+                <div style={{ marginBottom: '20px' }}>
+                  <h3 style={{ 
+                    fontSize: '18px', 
+                    fontWeight: '600', 
+                    color: loadResult.total_failure === 0 ? '#22c55e' : theme.status.error,
+                    marginBottom: '8px'
+                  }}>
+                    {loadResult.total_failure === 0 ? '🎉 Load Completed Successfully' : '❌ Load Failed'}
+                  </h3>
+                  <p style={{ fontSize: '13px', color: theme.text.secondary }}>
+                    {loadResult.total_failure === 0 
+                      ? 'All records have been loaded to FSM successfully'
+                      : 'Load failed and all records have been rolled back'
+                    }
+                    {(loadResult.interface_result?.interface_successful) && (
+                      <span style={{ color: '#22c55e', marginLeft: '8px' }}>
+                        • Interface to GL completed successfully
+                      </span>
+                    )}
+                    {loadResult.interface_result && !loadResult.interface_result.interface_successful && (
+                      <span style={{ color: '#FFA500', marginLeft: '8px' }}>
+                        • Interface to GL failed (records still loaded)
+                      </span>
+                    )}
+                  </p>
+                </div>
+
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  gap: '16px',
+                  marginBottom: '20px'
+                }}>
+                  {/* Show interface metrics ONLY if interface was triggered AND has verification results */}
+                  {loadResult.interface_result && loadResult.interface_result.verification ? (
+                    /* Interface KPIs */
+                    <>
+                      <div style={{
+                        padding: '16px',
+                        backgroundColor: '#FFFFFF',
+                        border: `2px solid ${theme.background.quaternary}`,
+                        borderRadius: '8px',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ fontSize: '24px', fontWeight: '600', color: theme.primary.main }}>
+                          {loadResult.interface_result.verification.total_records.toLocaleString()}
+                        </div>
+                        <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Records Processed</div>
+                      </div>
+                      <div style={{
+                        padding: '16px',
+                        backgroundColor: '#FFFFFF',
+                        border: `2px solid ${theme.background.quaternary}`,
+                        borderRadius: '8px',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ fontSize: '24px', fontWeight: '600', color: '#22c55e' }}>
+                          {loadResult.interface_result.verification.successfully_imported.toLocaleString()}
+                        </div>
+                        <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Successfully Interfaced</div>
+                      </div>
+                      <div style={{
+                        padding: '16px',
+                        backgroundColor: '#FFFFFF',
+                        border: `2px solid ${theme.background.quaternary}`,
+                        borderRadius: '8px',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ fontSize: '24px', fontWeight: '600', color: loadResult.interface_result.verification.records_with_error > 0 ? '#dc2626' : '#22c55e' }}>
+                          {loadResult.interface_result.verification.records_with_error.toLocaleString()}
+                        </div>
+                        <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Records with Errors</div>
+                      </div>
+                      <div style={{
+                        padding: '16px',
+                        backgroundColor: '#FFFFFF',
+                        border: `2px solid ${theme.background.quaternary}`,
+                        borderRadius: '8px',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ fontSize: '18px', fontWeight: '600', color: loadResult.interface_result.verification.status_label === 'Complete' ? '#22c55e' : '#dc2626' }}>
+                          {loadResult.interface_result.verification.status_label}
+                        </div>
+                        <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Interface Status</div>
+                      </div>
+                    </>
+                  ) : (
+                    /* Import Only KPIs */
+                    <>
+                      <div style={{
+                        padding: '16px',
+                        backgroundColor: '#FFFFFF',
+                        border: `2px solid ${theme.background.quaternary}`,
+                        borderRadius: '8px',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ fontSize: '24px', fontWeight: '600', color: theme.primary.main }}>
+                          {loadResult.success_count.toLocaleString()}
+                        </div>
+                        <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Records Loaded</div>
+                      </div>
+                      <div style={{
+                        padding: '16px',
+                        backgroundColor: '#FFFFFF',
+                        border: `2px solid ${theme.background.quaternary}`,
+                        borderRadius: '8px',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ fontSize: '18px', fontWeight: '600', color: theme.primary.main }}>
+                          {loadResult.business_class}
+                        </div>
+                        <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Business Class</div>
+                      </div>
+                      <div style={{
+                        padding: '16px',
+                        backgroundColor: '#FFFFFF',
+                        border: `2px solid ${theme.background.quaternary}`,
+                        borderRadius: '8px',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ fontSize: '18px', fontWeight: '600', color: theme.primary.main }}>
+                          {loadResult.run_group}
+                        </div>
+                        <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Run Group</div>
+                      </div>
+                      <div style={{
+                        padding: '16px',
+                        backgroundColor: '#FFFFFF',
+                        border: `2px solid ${theme.background.quaternary}`,
+                        borderRadius: '8px',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ fontSize: '18px', fontWeight: '600', color: theme.primary.main }}>
+                          {loadResult.chunks_processed}
+                        </div>
+                        <div style={{ fontSize: '12px', color: theme.text.secondary, fontWeight: '500' }}>Chunks Processed</div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Note: Interface and Delete sections are shown in the Completed step */}
+              <div style={{
+                padding: '16px',
+                backgroundColor: theme.background.tertiary,
+                borderRadius: '8px',
+                border: `1px solid ${theme.background.quaternary}`,
+                textAlign: 'center'
+              }}>
+                <p style={{ fontSize: '14px', color: theme.text.secondary, marginBottom: '8px' }}>
+                  For Interface Transactions and Delete RunGroup actions, proceed to the next step.
+                </p>
+                <button
+                  onClick={() => changeStep('completed')}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: theme.primary.main,
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}
+                >
+                  Go to Post-Load Actions →
+                </button>
+              </div>
+            </div>
+          ) : !loading && (
             <div style={{ marginBottom: '20px' }}>
               {/* Interface Option Checkbox */}
               <div style={{ marginBottom: '16px' }}>

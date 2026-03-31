@@ -5,6 +5,7 @@ from app.core.database import get_db
 from app.modules.accounts.router import get_current_account_id
 from app.modules.upload.service import UploadService
 from app.modules.upload.schemas import UploadResponse, FileInfoResponse
+from app.services.business_class_detector import BusinessClassDetector
 
 class InterfaceJobRequest(BaseModel):
     job_id: int
@@ -27,6 +28,25 @@ class InterfaceJobRequest(BaseModel):
     error_run_group_prefix: str = ""
 
 router = APIRouter()
+
+@router.post("/detect")
+def detect_business_class_structure(
+    filename: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Auto-detect business class structure from filename.
+    
+    Returns detection result with structure type, table count, and related tables.
+    """
+    try:
+        result = BusinessClassDetector.detect_from_filename(db, filename)
+        return result
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Detection failed: {str(e)}"
+        )
 
 @router.post("/", response_model=UploadResponse)
 async def upload_file(

@@ -166,6 +166,7 @@ def get_rule_sets(
             "business_class": rule_set.business_class,
             "description": rule_set.description,
             "is_common": rule_set.is_common,
+            "is_user_default": rule_set.is_user_default,
             "is_active": rule_set.is_active,
             "created_at": rule_set.created_at,
             "updated_at": rule_set.updated_at,
@@ -196,6 +197,7 @@ def get_rule_set(
         "business_class": rule_set.business_class,
         "description": rule_set.description,
         "is_common": rule_set.is_common,
+        "is_user_default": rule_set.is_user_default,
         "is_active": rule_set.is_active,
         "created_at": rule_set.created_at,
         "updated_at": rule_set.updated_at,
@@ -227,6 +229,7 @@ def create_rule_set(
             "business_class": created_set.business_class,
             "description": created_set.description,
             "is_common": created_set.is_common,
+            "is_user_default": created_set.is_user_default,
             "is_active": created_set.is_active,
             "created_at": created_set.created_at,
             "updated_at": created_set.updated_at,
@@ -262,6 +265,7 @@ def update_rule_set(
             "business_class": updated_set.business_class,
             "description": updated_set.description,
             "is_common": updated_set.is_common,
+            "is_user_default": updated_set.is_user_default,
             "is_active": updated_set.is_active,
             "created_at": updated_set.created_at,
             "updated_at": updated_set.updated_at,
@@ -282,6 +286,36 @@ def delete_rule_set(
     try:
         RuleSetService.delete_rule_set(db, rule_set_id)
         return {"message": "Rule set deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/rule-sets/{rule_set_id}/make-default")
+def make_rule_set_default(
+    rule_set_id: int,
+    db: Session = Depends(get_db),
+    account_id: int = Depends(get_current_account_id)
+):
+    """Make a custom rule set the default for its business class"""
+    try:
+        RuleSetService.make_rule_set_default(db, rule_set_id)
+        return {"message": "Rule set is now the default"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/rule-sets/{rule_set_id}/reset-default")
+def reset_to_original_default(
+    rule_set_id: int,
+    db: Session = Depends(get_db),
+    account_id: int = Depends(get_current_account_id)
+):
+    """Reset to the original Default rule set for the business class"""
+    try:
+        RuleSetService.reset_to_original_default(db, rule_set_id)
+        return {"message": "Reset to original Default rule set"}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -374,6 +408,8 @@ def get_rule_set_fields(
                 "is_readonly": rule.is_readonly,
                 "error_message": rule.error_message,
                 "reference_business_class": rule.reference_business_class,
+                "reference_field_name": rule.reference_field_name,
+                "condition_expression": rule.condition_expression,
                 "pattern": rule.pattern,
                 "enum_values": json.loads(rule.enum_values) if rule.enum_values else None
             })

@@ -58,9 +58,9 @@ class RuleSetService:
         
         if not default_set:
             default_set = ValidationRuleSet(
-                name="Default",
+                name="System Default",
                 business_class=business_class,
-                description=f"Default validation rules for {business_class}.",
+                description=f"System default validation rules for {business_class}.",
                 is_common=True,
                 is_active=True
             )
@@ -137,12 +137,12 @@ class RuleSetService:
         if not rule_set:
             raise ValueError(f"Rule set with ID {rule_set_id} not found")
         
-        # Protect Default rule sets
+        # Protect System Default rule sets
         if rule_set.is_common:
-            if name is not None and name != "Default":
-                raise ValueError("Cannot rename Default rule set")
+            if name is not None and name != "System Default":
+                raise ValueError("Cannot rename System Default rule set")
             if is_active is not None and not is_active:
-                raise ValueError("Cannot deactivate Default rule set")
+                raise ValueError("Cannot deactivate System Default rule set")
         
         # Update fields
         if name is not None:
@@ -182,9 +182,9 @@ class RuleSetService:
         if not rule_set:
             raise ValueError(f"Rule set with ID {rule_set_id} not found")
         
-        # Protect Default rule sets
+        # Protect System Default rule sets
         if rule_set.is_common:
-            raise ValueError("Cannot delete Default rule set")
+            raise ValueError("Cannot delete System Default rule set")
         
         name = rule_set.name
         business_class = rule_set.business_class
@@ -239,3 +239,53 @@ class RuleSetService:
         
         logger.info(f"Total applicable rules: {len(rules)} (Common + Selected)")
         return rules
+
+    @staticmethod
+    def make_rule_set_default(db: Session, rule_set_id: int):
+        """
+        Make a custom rule set the default for its business class.
+        Only one rule set per business class can be the user default.
+        Cannot make the original Default (is_common=True) the user default.
+        """
+        rule_set = db.query(ValidationRuleSet).filter(ValidationRuleSet.id == rule_set_id).first()
+        
+        if not rule_set:
+            raise ValueError("Rule set not found")
+        
+        if rule_set.is_common:
+            raise ValueError("Cannot make the original System Default rule set a user default (it's already the system default)")
+        
+        # Clear any existing user default for this business class
+        db.query(ValidationRuleSet).filter(
+            ValidationRuleSet.business_class == rule_set.business_class,
+            ValidationRuleSet.is_user_default == True
+        ).update({"is_user_default": False})
+        
+        # Set this rule set as the user default
+        rule_set.is_user_default = True
+        db.commit()
+        db.refresh(rule_set)
+        
+        logger.info(f"Rule set '{rule_set.name}' is now the default for {rule_set.business_class}")
+        return rule_set
+    
+    @staticmethod
+    def reset_to_original_default(db: Session, rule_set_id: int):
+        """
+        Reset to the original Default rule set for the business class.
+        Clears the is_user_default flag from all custom rule sets for this business class.
+        """
+        rule_set = db.query(ValidationRuleSet).filter(ValidationRuleSet.id == rule_set_id).first()
+        
+        if not rule_set:
+            raise ValueError("Rule set not found")
+        
+        # Clear user default for this business class
+        db.query(ValidationRuleSet).filter(
+            ValidationRuleSet.business_class == rule_set.business_class,
+            ValidationRuleSet.is_user_default == True
+        ).update({"is_user_default": False})
+        
+        db.commit()
+        
+        logger.info(f"Reset to original System Default rule set for {rule_set.business_class}")

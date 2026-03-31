@@ -29,6 +29,7 @@ class RuleSetResponse(BaseModel):
     business_class: str
     description: Optional[str] = None
     is_common: bool
+    is_user_default: bool
     is_active: bool
     created_at: datetime
     updated_at: datetime

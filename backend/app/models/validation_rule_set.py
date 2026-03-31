@@ -26,7 +26,8 @@ class ValidationRuleSet(Base):
     name = Column(String(255), nullable=False)
     business_class = Column(String(255), nullable=False, index=True)
     description = Column(Text, nullable=True)
-    is_common = Column(Boolean, default=False, nullable=False)  # Default rules always apply
+    is_common = Column(Boolean, default=False, nullable=False)  # Original Default rule set
+    is_user_default = Column(Boolean, default=False, nullable=False)  # User-selected default
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())

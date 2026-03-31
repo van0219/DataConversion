@@ -192,7 +192,15 @@ class ValidationService:
                 logger.error(f"BALANCE_CHECK: invalid JSON in condition_expression: {cond}")
                 continue
 
-            group_by_field = cfg.get("group_by_field", "RunGroup")
+            # Support multiple group-by fields (comma-separated or array)
+            group_by_raw = cfg.get("group_by_field", "RunGroup")
+            if isinstance(group_by_raw, list):
+                group_by_fields = group_by_raw
+            elif isinstance(group_by_raw, str):
+                group_by_fields = [f.strip() for f in group_by_raw.split(",") if f.strip()]
+            else:
+                group_by_fields = ["RunGroup"]
+            
             amount_field = cfg.get("amount_field", "TransactionAmount")
             mode = cfg.get("mode", "single_field")
             debit_field = cfg.get("debit_field", amount_field)
@@ -206,9 +214,18 @@ class ValidationService:
                     row_number = int(record.get("_row_number", 0))
                     mapped = MappingEngine.apply_mapping(record, mapping)
 
-                    group_val = str(mapped.get(group_by_field, "")).strip()
-                    if not group_val:
-                        continue
+                    # Build composite group key from multiple fields
+                    group_parts = []
+                    for field in group_by_fields:
+                        val = str(mapped.get(field, "")).strip()
+                        if not val:
+                            break  # Skip if any field is empty
+                        group_parts.append(val)
+                    
+                    if len(group_parts) != len(group_by_fields):
+                        continue  # Skip records with incomplete group keys
+                    
+                    group_val = " | ".join(group_parts)
 
                     try:
                         if mode == "two_field":
@@ -223,15 +240,17 @@ class ValidationService:
 
             for group_val, net_total in group_totals.items():
                 if abs(round(net_total, 2)) != 0.0:
+                    # Display field names in error message
+                    field_display = " + ".join(group_by_fields) if len(group_by_fields) > 1 else group_by_fields[0]
                     errors.append({
                         "conversion_job_id": job_id,
                         "row_number": group_rows.get(group_val, 0),
-                        "field_name": group_by_field,
+                        "field_name": ", ".join(group_by_fields),  # Store all fields
                         "invalid_value": group_val,
                         "error_type": "balance",
                         "error_message": (
                             rule["error_message"] or
-                            f"{group_by_field} '{group_val}' does not net to zero "
+                            f"{field_display} '{group_val}' does not net to zero "
                             f"(net = {round(net_total, 2)})"
                         )
                     })
@@ -250,7 +269,10 @@ class ValidationService:
         
         Rule Set Logic:
         - If a custom rule set is selected, use ONLY that rule set
-        - If no rule set is selected, use the Default rule set
+        - If no rule set is selected:
+          - Check if user has set a custom default (is_user_default=True)
+          - If yes, use that
+          - If no, use the original Default (is_common=True)
         - Never apply both (custom sets are often copies of Default)
         """
         from app.models.validation_rule_set import ValidationRuleSet
@@ -272,9 +294,22 @@ class ValidationService:
                 rule_set_name = rule_set_to_use.name
                 logger.info(f"Using selected rule set '{rule_set_name}' for {business_class}")
             else:
-                logger.warning(f"Selected rule set {selected_rule_set_id} not found, falling back to Default")
+                logger.warning(f"Selected rule set {selected_rule_set_id} not found, falling back to default")
         
-        # Step 2: If no custom rule set selected (or not found), use Default
+        # Step 2: If no custom rule set selected (or not found), check for user default
+        if not rule_set_to_use:
+            # First, check if user has set a custom default
+            rule_set_to_use = db.query(ValidationRuleSet).filter(
+                ValidationRuleSet.business_class == business_class,
+                ValidationRuleSet.is_user_default == True,
+                ValidationRuleSet.is_active == True
+            ).first()
+            
+            if rule_set_to_use:
+                rule_set_name = rule_set_to_use.name
+                logger.info(f"Using user default rule set '{rule_set_name}' for {business_class}")
+        
+        # Step 3: If no user default, use original Default (is_common=True)
         if not rule_set_to_use:
             rule_set_to_use = db.query(ValidationRuleSet).filter(
                 ValidationRuleSet.business_class == business_class,
@@ -283,12 +318,12 @@ class ValidationService:
             ).first()
             
             if rule_set_to_use:
-                logger.info(f"Using Default rule set for {business_class}")
+                logger.info(f"Using original Default rule set for {business_class}")
             else:
                 logger.warning(f"No Default rule set found for {business_class}")
                 return []
         
-        # Step 3: Get all active rules from the selected rule set
+        # Step 4: Get all active rules from the selected rule set
         rule_records = db.query(ValidationRuleTemplate).filter(
             ValidationRuleTemplate.rule_set_id == rule_set_to_use.id,
             ValidationRuleTemplate.is_active == True
@@ -296,7 +331,7 @@ class ValidationService:
         
         logger.info(f"Loaded {len(rule_records)} rules from '{rule_set_name}' rule set")
         
-        # Step 4: Convert to dict format
+        # Step 5: Convert to dict format
         for rule in rule_records:
             rules.append({
                 "rule_type": rule.rule_type,
@@ -452,31 +487,67 @@ class ValidationService:
     @staticmethod
     def export_errors_csv(db: Session, account_id: int, job_id: int) -> Optional[str]:
         """
-        Export validation errors only (no passing records).
-        Columns: Row, Field, Value, Error
-        One row per field error.
+        Export full CSV file with Error Message column appended.
+        All rows included: valid rows have blank error message, invalid rows show errors.
+        Multiple errors per row are concatenated with semicolons.
         """
+        from app.modules.upload.service import UploadService
+        
+        # Get the original CSV file
+        file_path = UploadService.get_file_path(job_id)
+        if not file_path.exists():
+            logger.error(f"Original CSV file not found for job {job_id}")
+            return None
+        
+        # Get all validation errors for this job
         errors = db.query(ValidationErrorModel).filter(
             ValidationErrorModel.conversion_job_id == job_id
         ).order_by(ValidationErrorModel.row_number, ValidationErrorModel.field_name).all()
-
-        if not errors:
-            return None
-
+        
+        # Build error map: row_number -> concatenated error messages
+        error_map: Dict[int, str] = {}
+        for e in errors:
+            error_msg = f"{e.field_name}: {e.error_message}"
+            if e.row_number in error_map:
+                error_map[e.row_number] += f"; {error_msg}"
+            else:
+                error_map[e.row_number] = error_msg
+        
+        logger.info(f"Exporting full CSV with {len(error_map)} error rows for job {job_id}")
+        
+        # Read original CSV and append Error Message column
         output = io.StringIO()
         try:
-            writer = csv.DictWriter(output, fieldnames=["Row", "Field", "Value", "Error"])
-            writer.writeheader()
-            for e in errors:
-                writer.writerow({
-                    "Row": e.row_number,
-                    "Field": e.field_name,
-                    "Value": e.invalid_value or "",
-                    "Error": e.error_message
-                })
-            logger.info(f"Exported {len(errors)} error rows for job {job_id}")
+            with open(file_path, 'r', encoding='utf-8-sig') as f:
+                # Read and clean the file (remove leading/trailing blank lines)
+                raw = f.read()
+                lines = raw.splitlines(keepends=True)
+                while lines and not lines[0].strip():
+                    lines.pop(0)
+                while lines and not lines[-1].strip():
+                    lines.pop()
+                
+                # Parse CSV
+                reader = csv.DictReader(io.StringIO(''.join(lines)))
+                
+                # Get original fieldnames and add Error Message column
+                fieldnames = list(reader.fieldnames or [])
+                fieldnames.append('Error Message')
+                
+                writer = csv.DictWriter(output, fieldnames=fieldnames)
+                writer.writeheader()
+                
+                # Write all rows with error messages
+                row_number = 1
+                for row in reader:
+                    # Add error message if exists, otherwise blank
+                    row['Error Message'] = error_map.get(row_number, '')
+                    writer.writerow(row)
+                    row_number += 1
+                
+                logger.info(f"Exported {row_number - 1} total rows with error annotations")
         except Exception as e:
-            logger.error(f"Error exporting errors CSV: {e}")
+            logger.error(f"Error exporting full CSV with errors: {e}")
             return None
-
+        
         return output.getvalue()

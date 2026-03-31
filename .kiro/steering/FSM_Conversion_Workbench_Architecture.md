@@ -995,6 +995,132 @@ async def query_gl_transaction_interface_errors(self, run_group: str) -> List[Di
 - Reference data validation failures
 - Business rule violations
 
+### 21. Multi-Business-Class Detection (ARCHITECTURE)
+
+**Principle**: Automatically detect FSM business class structure from filename and display comprehensive metadata to users.
+
+**Implementation Status**:
+- ✅ **Detection Service**: `BusinessClassDetector` with fuzzy matching algorithm
+- ✅ **Database**: 255 FSM business classes imported (85 single-table, 170 multi-table)
+- ✅ **API Integration**: Detection runs automatically during file upload
+- ✅ **Frontend Display**: Professional detection card with visual indicators
+- ⏳ **Load Integration**: Multi-table load strategies built but not yet integrated
+
+**Detection Process**:
+```python
+# Backend: Auto-detect during upload
+detection_result = BusinessClassDetector.detect_from_filename(db, file.filename)
+
+# Returns:
+{
+  "business_class": "PayablesInvoiceImport",
+  "structure_type": "multiple",  # or "single"
+  "family_root": "PayablesInvoice",
+  "member_count": 8,
+  "related_tables": ["PayablesInvoiceImport", "PayablesInvoiceDetailImport", ...],
+  "table_roles": {"PayablesInvoiceImport": "header", ...},
+  "confidence": "high",  # or "medium", "low"
+  "detected": true
+}
+```
+
+**Frontend Display**:
+```tsx
+// Detection card with Infor purple theme
+<div style={{ backgroundColor: '#f8f5ff', border: '2px solid #4600AF' }}>
+  <h3>🔍 Auto-Detection Results</h3>
+  
+  {/* Business class name */}
+  <div style={{ color: '#4600AF' }}>
+    Business Class: {detection.business_class}
+  </div>
+  
+  {/* Structure badge */}
+  <span style={{ 
+    backgroundColor: detection.structure_type === 'single' ? '#10b981' : '#f59e0b'
+  }}>
+    {detection.structure_type === 'single' ? '📄 Single Table' : '📑 Multiple Tables'}
+  </span>
+  
+  {/* Table count */}
+  <span>{detection.member_count} tables</span>
+  
+  {/* Confidence indicator */}
+  <div>Confidence: {detection.confidence === 'high' ? '⭐⭐⭐' : '⭐⭐'}</div>
+  
+  {/* Expandable related tables list */}
+  <details>
+    <summary>Related Tables</summary>
+    {detection.related_tables.map(table => (
+      <div>
+        {getRoleIcon(detection.table_roles[table])} {table}
+        <span>{detection.table_roles[table]}</span>
+      </div>
+    ))}
+  </details>
+</div>
+```
+
+**Role Icons**:
+- 📄 header - Main table
+- 📝 lines - Detail lines
+- 💰 distributions - GL distributions
+- 💬 comments - Comment records
+- ❌ errors - Error records
+- ✅ results - Result/status records
+
+**Database Schema**:
+```sql
+-- business_class_registry table
+CREATE TABLE business_class_registry (
+  id INTEGER PRIMARY KEY,
+  business_class TEXT UNIQUE NOT NULL,
+  single_or_multiple TEXT NOT NULL,  -- 'single' or 'multiple'
+  family_root TEXT,
+  family_member_count INTEGER,
+  related_business_classes TEXT,  -- JSON array
+  table_roles TEXT,  -- JSON object
+  created_at TIMESTAMP
+);
+
+-- 255 business classes imported
+-- 85 single-table structures
+-- 170 multiple-table structures
+```
+
+**Current Behavior**:
+- Detection works automatically during file upload
+- UI displays comprehensive structure information
+- Load process currently uses single-table batch load for all classes
+- Multi-table load strategies exist but not yet integrated
+
+**Future Enhancement**:
+```python
+# Planned: Integrate LoadStrategyFactory into LoadService
+strategy = LoadStrategyFactory.create_strategy(db, business_class)
+result = await strategy.load_records(
+  db, fsm_client, records, mapping, run_group, load_mode
+)
+# This will enable:
+# - Sequential loading (header → lines → distributions)
+# - Foreign key management
+# - Automatic rollback on failure
+```
+
+**Benefits**:
+- **User Awareness**: Users see structure complexity before mapping
+- **Better Planning**: Consultants understand table relationships
+- **Future-Ready**: Architecture supports multi-table loading when integrated
+- **Professional UX**: Visual indicators and clear information display
+- **Extensible**: Easy to add new business classes via CSV import
+
+**Why This Matters**:
+- Eliminates guesswork about business class structure
+- Prepares users for complex multi-table conversions
+- Provides foundation for advanced load strategies
+- Professional appearance builds user confidence
+- Data-driven approach (no hardcoding)
+
 ## Architectural Improvements (March 2026)
 
 ### Schema-Driven Platform
@@ -1384,7 +1510,7 @@ logging.basicConfig(level=logging.DEBUG)
 7. ✅ Workflow Orchestrator API - Centralized workflow logic
 8. ✅ Schema Management UI - Upload, view, manage schemas
 
-**Optional Enhancements** (3 remaining): Rule management UI, enhanced dashboard, end-to-end testing
+**Optional Enhancements** (4 remaining): Multi-table load integration (architecture complete), rule management UI, enhanced dashboard, end-to-end testing
 
 **Status**: Production-ready, demo-ready, schema-driven platform
 
@@ -1937,3 +2063,50 @@ python verify_github_ready.py
   - `frontend/src/pages/RulesManagement.tsx` — dynamic rule form, file-level rules section, business class badge, field table filter
 
 - **Status**: Complete, production-ready. All new rule types configurable entirely through the UI — no code changes needed to add rules for new business classes.
+
+
+## Recent Updates (March 30, 2026)
+
+### Multi-Business-Class Detection Integration (March 30, 2026) ⭐⭐⭐
+
+- **Achievement**: Auto-detection of FSM business class structures fully integrated into upload workflow
+- **Implementation Status**:
+  - ✅ **Phase 1-3 Complete**: Detection service, API integration, frontend UI
+  - ✅ **Database**: 255 FSM business classes imported (85 single-table, 170 multi-table)
+  - ✅ **Upload Integration**: `BusinessClassDetector.detect_from_filename()` called automatically during file upload
+  - ✅ **Detection API**: `POST /api/upload/detect` endpoint available for standalone detection
+  - ✅ **Frontend Display**: Professional detection card with Infor purple theme, structure badges, table count, related tables list
+  - ⏳ **Phase 4 Planned**: Multi-table load strategies (header/lines/distributions) - future enhancement
+- **Current Behavior**:
+  - System detects multi-table structures (e.g., PayablesInvoice with 8 tables)
+  - UI displays detection results with visual indicators
+  - Load process currently treats all classes as single-table (existing batch load)
+  - Foreign key relationships and sequential loading not yet implemented
+- **Architecture Components Built**:
+  - `BusinessClassDetector` service with fuzzy matching
+  - `LoadStrategyFactory` with 3-tier selection logic (ready for future use)
+  - Three load strategies: `SingleTableLoadStrategy`, `HeaderLinesLoadStrategy`, `HeaderLinesDistributionsLoadStrategy`
+  - `business_class_registry` and `business_class_config` database tables
+- **Files Created**: 13 backend files, 1 frontend file, 8 documentation files
+- **Documentation**: 
+  - `MULTI_BUSINESS_CLASS_COMPLETE.md` - Complete implementation summary
+  - `MULTI_BUSINESS_CLASS_ARCHITECTURE.md` - Architecture design
+  - `QUICK_START_MULTI_BUSINESS_CLASS.md` - Setup and usage guide
+- **Future Enhancement**: Integrate `LoadStrategyFactory` into `LoadService.start_load()` to enable true multi-table loading with foreign key management
+- **Status**: Detection complete and production-ready; multi-table load strategies built but not yet integrated
+
+### Rule Edit Modal Field Persistence Fix (March 27, 2026) ⭐
+
+- **Problem**: Edit rule modal showed placeholder "-- Select field --" instead of saved `reference_field_name` value
+- **Root Cause**: Backend endpoint `GET /rules/rule-sets/{id}/fields` was missing `reference_field_name` and `condition_expression` fields in the response
+- **Impact**: Users couldn't see what reference field was configured when editing REFERENCE_EXISTS rules
+- **Solution**: 
+  - Added `reference_field_name` to rule dict in `get_rule_set_fields()` response (line 379)
+  - Added `condition_expression` to rule dict for filter field/value parsing
+  - Frontend `parseConditionExpression()` already handled null correctly
+  - Frontend `handleOpenEditRule()` now awaits field loading and pre-populates dropdown
+- **Files Modified**:
+  - `backend/app/modules/rules/router.py` — added missing fields to rule response dict
+  - `frontend/src/pages/RulesManagement.tsx` — async field loading with return value, console logging for debugging
+- **Result**: Edit modal now correctly displays saved reference field, reference class, and optional filter fields
+- **Status**: Complete, tested with GeneralLedgerChartAccount reference field

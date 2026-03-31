@@ -549,6 +549,30 @@ python -m uvicorn app.main:app --reload
 - **Documentation**: Updated README.md steering files reference section
 - **Status**: Ready for use, comprehensive automation reference
 
+### March 30, 2026 - Multi-Business-Class Detection Integration ⭐⭐⭐
+
+- **Achievement**: Auto-detection of FSM business class structures fully integrated into DataBridge
+- **Implementation Status**:
+  - ✅ Phase 1-3 Complete: Detection service, API integration, frontend UI
+  - ✅ Database: 255 FSM business classes imported (85 single-table, 170 multi-table)
+  - ✅ Upload Integration: Auto-detection runs during file upload
+  - ✅ Frontend Display: Professional detection card with structure badges and table list
+  - ⏳ Phase 4 Planned: Multi-table load strategies (future enhancement)
+- **Current Behavior**:
+  - System detects multi-table structures (e.g., PayablesInvoice with 8 tables)
+  - UI displays detection results with visual indicators
+  - Load process currently uses single-table batch load for all classes
+  - Multi-table load strategies built but not yet integrated
+- **Architecture Components**:
+  - BusinessClassDetector service with fuzzy matching
+  - LoadStrategyFactory with 3-tier selection logic (ready for future use)
+  - Three load strategies: Single, Header/Lines, Header/Lines/Distributions
+  - business_class_registry and business_class_config database tables
+- **Files**: 13 backend files, 1 frontend file, 8 documentation files
+- **Documentation**: MULTI_BUSINESS_CLASS_COMPLETE.md, MULTI_BUSINESS_CLASS_ARCHITECTURE.md, QUICK_START_MULTI_BUSINESS_CLASS.md
+- **Future Enhancement**: Integrate LoadStrategyFactory into LoadService for true multi-table loading
+- **Status**: Detection complete and production-ready; multi-table load planned for future
+
 ### March 4, 2026 - Architectural Improvements Complete ⭐⭐⭐
 
 - **Achievement**: All 8 architectural improvement steps completed (100%)
