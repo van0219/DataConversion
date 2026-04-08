@@ -46,6 +46,7 @@ interface ValidationProgress {
   total_chunks: number;
   records_processed: number;
   total_records: number;
+  valid_records: number;
   errors_found: number;
   filename: string;
 }
@@ -908,6 +909,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
         total_chunks: 1,
         records_processed: summary.total_records,
         total_records: summary.total_records,
+        valid_records: summary.valid_records,
         errors_found: summary.error_count,
         filename: fileInfo?.filename || ''
       });
@@ -2533,7 +2535,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               }}>
                 {/* Green bar for valid records */}
                 <div style={{
-                  width: `${(validationProgress.records_processed - validationProgress.errors_found) / validationProgress.total_records * 100}%`,
+                  width: `${validationProgress.valid_records / validationProgress.total_records * 100}%`,
                   height: '100%',
                   backgroundColor: '#22c55e',
                   transition: 'width 0.3s ease'
@@ -2560,6 +2562,9 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                 </div>
                 <div>
                   <strong>Records:</strong> {validationProgress.records_processed.toLocaleString()} / {validationProgress.total_records.toLocaleString()}
+                </div>
+                <div>
+                  <strong>Valid:</strong> <span style={{ color: validationProgress.valid_records > 0 ? '#22c55e' : 'inherit', fontWeight: '700' }}>{validationProgress.valid_records.toLocaleString()}</span>
                 </div>
                 <div>
                   <strong>Errors:</strong> <span style={{ color: validationProgress.errors_found > 0 ? '#dc2626' : 'inherit', fontWeight: validationProgress.errors_found > 0 ? '700' : 'normal' }}>{validationProgress.errors_found.toLocaleString()}</span>

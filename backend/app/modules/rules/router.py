@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
+import json
 from app.core.database import get_db
 from app.modules.accounts.router import get_current_account_id
 from app.modules.rules.service import RuleService
@@ -404,6 +406,7 @@ def get_rule_set_fields(
                 "id": rule.id,
                 "name": rule.name,
                 "rule_type": rule.rule_type,
+                "field_name": rule.field_name,
                 "source": rule.source,
                 "is_readonly": rule.is_readonly,
                 "error_message": rule.error_message,
@@ -467,3 +470,133 @@ def get_rule_set_fields(
             detail=f"Failed to get rule set fields: {str(e)}"
         )
 
+
+
+@router.get("/rule-sets/{rule_set_id}/export")
+def export_rule_set(
+    rule_set_id: int,
+    db: Session = Depends(get_db),
+    account_id: int = Depends(get_current_account_id)
+):
+    """Export a rule set and its rules as a portable JSON file."""
+    rule_set = RuleSetService.get_rule_set_by_id(db, rule_set_id)
+    if not rule_set:
+        raise HTTPException(status_code=404, detail="Rule set not found")
+
+    rules = RuleSetService.get_rules_for_set(db, rule_set_id)
+
+    export_data = {
+        "databridge_export": "rule_set",
+        "version": "1.0",
+        "rule_set": {
+            "name": rule_set.name,
+            "business_class": rule_set.business_class,
+            "description": rule_set.description,
+            "is_active": rule_set.is_active,
+        },
+        "rules": [
+            {
+                "name": r.name,
+                "rule_type": r.rule_type,
+                "field_name": r.field_name,
+                "from_field": r.from_field,
+                "reference_business_class": r.reference_business_class,
+                "reference_field_name": r.reference_field_name,
+                "condition_expression": r.condition_expression,
+                "error_message": r.error_message,
+                "is_active": r.is_active,
+                "is_readonly": r.is_readonly,
+                "source": r.source,
+                "pattern": r.pattern,
+                "enum_values": r.enum_values,
+            }
+            for r in rules
+        ],
+    }
+
+    safe_name = rule_set.name.replace(" ", "_").replace("/", "_")
+    filename = f"{rule_set.business_class}_{safe_name}_rules.json"
+
+    return JSONResponse(
+        content=export_data,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.post("/rule-sets/import")
+async def import_rule_set(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    account_id: int = Depends(get_current_account_id)
+):
+    """Import a rule set from a previously exported JSON file."""
+    try:
+        content = await file.read()
+        data = json.loads(content)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        raise HTTPException(status_code=400, detail="Invalid JSON file")
+
+    if data.get("databridge_export") != "rule_set":
+        raise HTTPException(status_code=400, detail="Not a valid DataBridge rule set export file")
+
+    rs = data.get("rule_set", {})
+    rules_data = data.get("rules", [])
+
+    if not rs.get("name") or not rs.get("business_class"):
+        raise HTTPException(status_code=400, detail="Export file missing rule set name or business class")
+
+    # Check for name collision and auto-rename
+    base_name = rs["name"]
+    final_name = base_name
+    suffix = 1
+    while RuleSetService.get_rule_set_by_name(db, rs["business_class"], final_name):
+        suffix += 1
+        final_name = f"{base_name} ({suffix})"
+
+    try:
+        created_set = RuleSetService.create_rule_set(
+            db,
+            name=final_name,
+            business_class=rs["business_class"],
+            description=rs.get("description") or f"Imported from {file.filename}",
+            is_active=rs.get("is_active", True),
+        )
+
+        imported_count = 0
+        for rule in rules_data:
+            from app.models.rule import ValidationRuleTemplate
+            new_rule = ValidationRuleTemplate(
+                name=rule.get("name", "Imported Rule"),
+                business_class=rs["business_class"],
+                rule_set_id=created_set.id,
+                rule_type=rule.get("rule_type", "REQUIRED_FIELD"),
+                field_name=rule.get("field_name", ""),
+                from_field=rule.get("from_field"),
+                reference_business_class=rule.get("reference_business_class"),
+                reference_field_name=rule.get("reference_field_name"),
+                condition_expression=rule.get("condition_expression"),
+                error_message=rule.get("error_message", "Validation failed"),
+                is_active=rule.get("is_active", True),
+                source=rule.get("source", "custom"),
+                is_readonly=rule.get("is_readonly", False),
+                pattern=rule.get("pattern"),
+                enum_values=rule.get("enum_values"),
+            )
+            db.add(new_rule)
+            imported_count += 1
+
+        db.commit()
+
+        return {
+            "message": f"Rule set '{final_name}' imported successfully with {imported_count} rules",
+            "rule_set_id": created_set.id,
+            "name": final_name,
+            "rules_imported": imported_count,
+        }
+
+    except ValueError as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")

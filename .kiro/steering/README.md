@@ -528,6 +528,19 @@ python -m uvicorn app.main:app --reload
 
 ## Version History
 
+### April 7, 2026 - Rule Set Export/Import, Validation UX, Detection Fixes ⭐⭐
+
+- **Rule Set Export/Import**: Custom rule sets can be exported as JSON and imported into other DataBridge instances. Preserves `is_readonly` flag for rules copied from System Default. Auto-renames on collision.
+- **Edit Rule Modal Fixes**: Fixed field name display (showed rule_type instead of field name), `[object Object]` error on save, `enum_values` type mismatch, removed invalid `rule_type` from update payload.
+- **Searchable Dropdowns**: All rule type config forms (DATE_RANGE_FROM_REFERENCE, OPEN_PERIOD_CHECK) now have searchable datalists for field selection. Auto-loads reference fields on render.
+- **FSM Caret Date Ranges**: Rule executor now handles FSM's caret-separated composite date fields (e.g., `ProjectDateRange = "20230101^20301231"`). Set same field for both begin/end date.
+- **Business Class Detection**: Simplified filename detection to `split('_')[0]`. Fixes `GLTransactionInterface_100K` being detected as a separate business class.
+- **Validation Progress**: Added "Valid" record count (green) using backend's per-record tracking. Clarified distinction between error rows vs invalid records.
+- **Business Class Badge**: Now shown on all rule set cards, not just System Default.
+- **Numeric Regex Preset**: Added `^-?\d+(\.\d+)?$` preset for positive/negative amounts.
+- **Files**: 5 backend files, 2 frontend files modified
+- **Status**: All features production-ready
+
 ### March 10, 2026 - Kiro Agent Automation Guide Added ⭐
 
 - **New Steering File**: Created comprehensive `Kiro_Agent_Automation_Guide.md`

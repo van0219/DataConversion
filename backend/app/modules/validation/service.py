@@ -397,6 +397,7 @@ class ValidationService:
             "total_chunks": total_chunks,
             "records_processed": processed,
             "total_records": total_records,
+            "valid_records": job.valid_records,
             "errors_found": errors_found,
             "filename": job.filename
         }

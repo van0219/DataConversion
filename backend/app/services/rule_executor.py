@@ -389,6 +389,24 @@ class RuleExecutor:
         begin_str = str(ref_data.get(begin_date_field, "")).strip()
         end_str = str(ref_data.get(end_date_field, "")).strip()
 
+        # Handle FSM caret-separated date range fields (e.g. "20230101^20301231")
+        # If both begin and end point to the same field, or if the field contains ^, split it
+        if not begin_str and not end_str and begin_date_field == end_date_field:
+            composite = str(ref_data.get(begin_date_field, "")).strip()
+            if "^" in composite:
+                parts = composite.split("^", 1)
+                begin_str = parts[0].strip()
+                end_str = parts[1].strip() if len(parts) > 1 else ""
+        elif begin_str and "^" in begin_str and not end_str:
+            # begin_date_field holds the composite value
+            parts = begin_str.split("^", 1)
+            begin_str = parts[0].strip()
+            end_str = parts[1].strip() if len(parts) > 1 else ""
+        elif end_str and "^" in end_str and not begin_str:
+            parts = end_str.split("^", 1)
+            begin_str = parts[0].strip()
+            end_str = parts[1].strip() if len(parts) > 1 else ""
+
         if not begin_str and not end_str:
             return None  # No date range defined on the reference record
 

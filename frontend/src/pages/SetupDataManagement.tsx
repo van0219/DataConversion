@@ -304,7 +304,7 @@ const SetupDataManagement: React.FC = () => {
     // Set default list (first one) if available
     const defaultList = swaggerFile.available_lists?.[0] || '';
     const endpointUrl = defaultList 
-      ? `soap/classes/${swaggerFile.name}/lists/${defaultList}?_fields=_all&_limit=100000&_links=false&_pageNav=true&_out=JSON&_flatten=false`
+      ? `soap/classes/${swaggerFile.name}/lists/${defaultList}?_fields=_all&_limit=10000&_links=false&_pageNav=true&_out=JSON&_flatten=false`
       : '';
     
     setFormData({
@@ -317,7 +317,7 @@ const SetupDataManagement: React.FC = () => {
   };
   
   const handleListSelect = (listName: string) => {
-    const endpointUrl = `soap/classes/${formData.name}/lists/${listName}?_fields=_all&_limit=100000&_links=false&_pageNav=true&_out=JSON&_flatten=false`;
+    const endpointUrl = `soap/classes/${formData.name}/lists/${listName}?_fields=_all&_limit=10000&_links=false&_pageNav=true&_out=JSON&_flatten=false`;
     setFormData({
       ...formData,
       list_name: listName,
@@ -527,7 +527,11 @@ const SetupDataManagement: React.FC = () => {
                           disabled={!setupClass.is_active || isSyncing}
                           style={{
                             padding: '6px 12px',
-                            backgroundColor: isSyncing ? '#6b7280' : theme.primary.main,
+                            backgroundColor: (() => {
+                              const syncStatus = syncStatuses.get(setupClass.name);
+                              if (syncStatus?.status === 'failed') return '#dc2626';
+                              return isSyncing ? '#6b7280' : theme.primary.main;
+                            })(),
                             color: theme.background.secondary,
                             border: 'none',
                             borderRadius: '4px',
@@ -551,7 +555,7 @@ const SetupDataManagement: React.FC = () => {
                                 case 'completed':
                                   return `Completed (${syncStatus.recordCount || 0})`;
                                 case 'failed':
-                                  return 'Failed';
+                                  return '⟳ Retry';
                                 default:
                                   return 'Sync';
                               }

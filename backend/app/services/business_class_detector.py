@@ -114,21 +114,9 @@ class BusinessClassDetector:
         # Remove file extension
         name = filename.replace('.csv', '').replace('.CSV', '')
         
-        # Remove common suffixes (dates, timestamps, etc.)
-        # Pattern: Remove underscore followed by numbers or common suffixes
-        name = re.sub(r'_\d{6,}.*$', '', name)  # Remove _20250101, _20250101_123456, etc.
-        
-        # Pattern 2: Remove company/client codes like _C7010, _TAMICS10, etc.
-        name = re.sub(r'_[A-Z]+\d+.*$', '', name)
-        
-        # Pattern 3: Remove year patterns like _Y2026, _2026, etc.
-        name = re.sub(r'_Y?\d{4}.*$', '', name)
-        
-        # Pattern 4: Remove period patterns like _P01, _P1, etc.
-        name = re.sub(r'_P\d+.*$', '', name)
-        
-        # Pattern 5: Remove common suffixes (data, import, export, file)
-        name = re.sub(r'_(data|import|export|file).*$', '', name, flags=re.IGNORECASE)
+        # Business class is the first part before the first underscore
+        if '_' in name:
+            name = name.split('_')[0]
         
         return name
     

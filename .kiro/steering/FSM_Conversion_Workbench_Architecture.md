@@ -2110,3 +2110,119 @@ python verify_github_ready.py
   - `frontend/src/pages/RulesManagement.tsx` — async field loading with return value, console logging for debugging
 - **Result**: Edit modal now correctly displays saved reference field, reference class, and optional filter fields
 - **Status**: Complete, tested with GeneralLedgerChartAccount reference field
+
+## Recent Updates (April 1, 2026)
+
+### Business Class State Timing Fix — Upload Flow (April 1, 2026) ⭐
+
+- **Problem**: After clicking "Upload File", the error `No schema found for business class ''` appeared immediately, even when the filename contained a valid business class name.
+- **Root Cause**: React state timing issue in `ConversionWorkflow.tsx`. The upload response contained `detection.business_class`, and `setBusinessClass()` was called correctly — but React state updates are asynchronous. By the time `performAutomaticMapping()` ran (immediately after), `businessClass` state was still `''`.
+- **Fix**: Added an optional `detectedBusinessClass` parameter to `performAutomaticMapping()`. The caller passes the detected class directly from the response object, bypassing stale state entirely.
+
+```typescript
+// BEFORE (broken — businessClass state is still '' here)
+await performAutomaticMapping(response.data.job_id);
+
+// AFTER (correct — pass detected class directly from response)
+const detectedClass = response.data.detection?.business_class || response.data.business_class || '';
+await performAutomaticMapping(response.data.job_id, detectedClass);
+
+// Function signature updated
+const performAutomaticMapping = async (uploadJobId: number, detectedBusinessClass?: string) => {
+  const effectiveBusinessClass = detectedBusinessClass || businessClass;
+  // Use effectiveBusinessClass for all API calls inside this function
+};
+```
+
+- **Pattern**: Whenever a React state setter (`setState`) is called and the new value is needed immediately in the same async function, pass the value directly as a parameter rather than reading from state. State reads after `setState` will still return the old value within the same render cycle.
+- **Files Modified**: `frontend/src/pages/ConversionWorkflow.tsx`
+- **Status**: Fixed, production-ready
+
+## Recent Updates (April 7, 2026)
+
+### Rule Set Export/Import Feature (April 7, 2026) ⭐⭐
+
+- **Feature**: Custom rule sets can now be exported as JSON files and imported into other DataBridge instances
+- **Export**: Available on both System Default and Custom rule set cards. Custom sets have it in the ⋮ menu; Default sets show a direct Export button alongside Duplicate
+- **Import**: "Import Rule Set" button in the Rule Sets section header. Opens file picker for `.json` files
+- **Export Format**: Portable JSON with `databridge_export: "rule_set"` marker, rule set metadata, and all rules with `is_readonly` flag preserved
+- **Import Behavior**: Auto-renames on name collision (e.g., "Custom1 (2)"). Preserves `is_readonly` flag so rules copied from System Default stay locked
+- **Endpoints Added**:
+  - `GET /api/rules/rule-sets/{id}/export` — returns JSON with Content-Disposition header
+  - `POST /api/rules/rule-sets/import` — accepts JSON file upload, creates rule set + rules
+- **Files Modified**: `backend/app/modules/rules/router.py`, `frontend/src/pages/RulesManagement.tsx`
+
+### Regex Pattern Preset — Numeric (April 7, 2026)
+
+- **Added**: "Numeric" preset button for PATTERN_MATCH rules: `^-?\d+(\.\d+)?$`
+- **Matches**: Any positive or negative real number (e.g., `100`, `-45.67`, `0.5`, `-1000`)
+- **Location**: Between "Positive number" and "Non-empty" in the preset row
+
+### Edit Rule Modal Fixes (April 7, 2026) ⭐
+
+- **Bug 1 — Field name showing rule_type**: Edit modal displayed "ENUM_VALIDATION" instead of the actual field name (e.g., "FinanceEnterpriseGroup")
+  - **Root Cause**: Backend `get_rule_set_fields` endpoint didn't include `field_name` in the rule dict
+  - **Fix**: Added `field_name` to the rule dict in `rules_by_field` construction
+- **Bug 2 — "[object Object]" error on save**: `Failed to update rule: [object Object]`
+  - **Root Cause**: FastAPI 422 validation errors return `detail` as an array of objects, not a string. Frontend used `error.response?.data?.detail || error.message` which stringified the object
+  - **Fix**: Error handler now checks `typeof detail === 'string'` and falls back to `JSON.stringify(detail)`
+- **Bug 3 — enum_values type mismatch**: Pydantic rejected `enum_values: 1` (integer) instead of `"1"` (string)
+  - **Root Cause**: Backend returns `enum_values` as parsed JSON (e.g., `[1]` with numeric values). Frontend sent the value back without string coercion
+  - **Fix**: Added `String()` coercion in both form initialization (`.map(String).join(', ')`) and save payload
+- **Bug 4 — Removed `rule_type` from update payload**: `RuleTemplateUpdate` schema doesn't include `rule_type`, which could cause 422 errors
+- **Files Modified**: `backend/app/modules/rules/router.py`, `frontend/src/pages/RulesManagement.tsx`
+
+### Searchable Dropdowns for All Rule Type Configs (April 7, 2026) ⭐
+
+- **DATE_RANGE_FROM_REFERENCE**: Reference Class now triggers `loadReferenceFields` on change. Join Field uses datalist from business class fields. Begin/End Date fields use datalist from reference class fields
+- **OPEN_PERIOD_CHECK**: Entity Field uses datalist from business class fields. Period Class uses datalist from available reference classes
+- **Auto-load**: Added `useEffect` in `RuleTypeConfig` that auto-loads reference fields when component renders with a pre-filled reference class (fixes edit modal not showing fields)
+- **Files Modified**: `frontend/src/pages/RulesManagement.tsx`
+
+### FSM Caret-Separated Date Range Support (April 7, 2026) ⭐⭐
+
+- **Discovery**: FSM's list API returns composite date ranges as a single caret-separated field (e.g., `ProjectDateRange = "20230101^20301231"`), not as separate `ProjectDateRange.BeginDate` / `ProjectDateRange.EndDate` fields. Dot-notation fields only exist in swagger schemas for create/update operations
+- **Fix**: Updated `_validate_date_range_from_reference` in `rule_executor.py` to auto-detect and split caret-separated values
+- **Configuration**: For Project, set both Begin Date Field and End Date Field to `ProjectDateRange`. The engine splits on `^` automatically
+- **Handles**: Same field for both begin/end, single field with `^` in begin position, single field with `^` in end position
+- **Files Modified**: `backend/app/services/rule_executor.py`
+
+### Business Class Detection Simplification (April 7, 2026) ⭐
+
+- **Problem**: `GLTransactionInterface_100K.csv` was detected as business class `GLTransactionInterface_100K` instead of `GLTransactionInterface`
+- **Root Cause**: Complex regex patterns in `_extract_business_class` didn't handle size indicators like `_100K`
+- **Fix**: Simplified to: business class is the first part of the filename before the first underscore. Removed all complex regex patterns
+- **Pattern**: `filename.split('_')[0]` — simple and covers all naming conventions (dates, codes, sizes, etc.)
+- **Files Modified**: `backend/app/services/business_class_detector.py`
+
+### Business Class Badge on All Rule Set Cards (April 7, 2026)
+
+- **Change**: Business class badge (e.g., purple "GLTransactionInterface" tag) now shows on all rule set cards, not just System Default
+- **Files Modified**: `frontend/src/pages/RulesManagement.tsx`
+
+### Validation Progress — Valid Records Count (April 7, 2026) ⭐
+
+- **Added**: "Valid" count in the Validation Progress section showing records with zero errors (green, bold)
+- **Data Source**: Uses `job.valid_records` from backend (actual per-record count), not calculated from `records_processed - errors_found`
+- **Important Distinction**: `errors_found` = total error rows (can exceed record count since one record can have multiple errors). `valid_records` = distinct records with zero errors. `invalid_records` = distinct records with 1+ errors. `valid_records + invalid_records = total_records`
+- **Backend**: Added `valid_records` field to `ValidationProgress` Pydantic schema and `get_progress()` service method
+- **Frontend**: Added `valid_records` to `ValidationProgress` interface, progress bar uses `valid_records` for green segment
+- **Files Modified**: `backend/app/modules/validation/schemas.py`, `backend/app/modules/validation/service.py`, `frontend/src/pages/ConversionWorkflow.tsx`
+
+### Key Patterns Learned
+
+**Validation Error Counting**:
+- `errors_found` counts total error rows in `validation_errors` table (one row per field error per record)
+- `valid_records` / `invalid_records` count distinct records (each record counted once)
+- A record with 3 rule violations = 1 invalid record + 3 error rows
+- Never subtract `errors_found` from `total_records` to get valid count — use `valid_records` directly
+
+**FSM Composite Date Fields**:
+- FSM list API returns nested date ranges as caret-separated single fields (e.g., `"20230101^20301231"`)
+- Swagger schema shows dot-notation fields (e.g., `ProjectDateRange.BeginDate`) but these are for create/update operations only
+- Snapshot data stores the caret format — rule executor must handle splitting
+
+**Filename Business Class Detection**:
+- Business class name is always the first segment before the first underscore
+- Everything after the first underscore is metadata (dates, codes, sizes, periods)
+- Simple `split('_')[0]` is more reliable than complex regex patterns

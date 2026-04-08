@@ -16,6 +16,7 @@ class ValidationProgress(BaseModel):
     total_chunks: int
     records_processed: int
     total_records: int
+    valid_records: int = 0
     errors_found: int
     filename: str
 

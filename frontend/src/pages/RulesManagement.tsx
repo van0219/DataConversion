@@ -67,6 +67,13 @@ const RuleTypeConfig = ({
   const [newFieldInput, setNewFieldInput] = useState('');
   const [showFieldDropdown, setShowFieldDropdown] = useState(false);
   const [filteredFields, setFilteredFields] = useState<string[]>([]);
+
+  // Auto-load reference fields when the component renders with a pre-filled reference class
+  useEffect(() => {
+    if (form.reference_business_class && availableReferenceFields.length === 0 && !loadingReferenceFields) {
+      loadReferenceFields(form.reference_business_class);
+    }
+  }, [form.reference_business_class]);
   
   const inputStyle = {
     width: '100%', padding: '9px 12px', backgroundColor: theme.background.primary,
@@ -171,7 +178,7 @@ const RuleTypeConfig = ({
         style={{ ...inputStyle, fontFamily: 'monospace' }} placeholder="e.g., ^\d{8}$ for YYYYMMDD" />
       <div style={helpStyle}>Regular expression. The value must fully match this pattern.</div>
       <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' as const }}>
-        {[['YYYYMMDD date', '^\\d{8}$'], ['Positive number', '^\\d+(\\.\\d+)?$'], ['Non-empty', '^.+$']].map(([label, val]) => (
+        {[['YYYYMMDD date', '^\\d{8}$'], ['Positive number', '^\\d+(\\.\\d+)?$'], ['Numeric', '^-?\\d+(\\.\\d+)?$'], ['Non-empty', '^.+$']].map(([label, val]) => (
           <button key={val} onClick={() => setForm({ ...form, pattern: val })}
             style={{ padding: '3px 8px', fontSize: '11px', backgroundColor: theme.background.secondary, border: `1px solid ${theme.background.quaternary}`, borderRadius: '4px', cursor: 'pointer', color: theme.text.secondary }}>
             {label}
@@ -207,28 +214,34 @@ const RuleTypeConfig = ({
         <div>
           <label style={labelStyle}>Reference Class</label>
           <input type="text" list="dr-ref-classes" value={form.reference_business_class}
-            onChange={(e) => setForm({ ...form, reference_business_class: e.target.value })}
+            onChange={(e) => { setForm({ ...form, reference_business_class: e.target.value }); loadReferenceFields(e.target.value); }}
             style={inputStyle} placeholder="e.g., Project" />
           <datalist id="dr-ref-classes">{availableReferenceClasses.map((c: string) => <option key={c} value={c} />)}</datalist>
+          <div style={helpStyle}>Must be synced in Setup Data</div>
         </div>
         <div>
           <label style={labelStyle}>Join Field (on this record)</label>
-          <input type="text" value={form.dr_join_field}
+          <input type="text" list="dr-join-fields" value={form.dr_join_field}
             onChange={(e) => setForm({ ...form, dr_join_field: e.target.value })}
             style={inputStyle} placeholder="e.g., Project" />
+          <datalist id="dr-join-fields">{(businessClassFields || []).map((f: string) => <option key={f} value={f} />)}</datalist>
           <div style={helpStyle}>Field that links to the reference record</div>
         </div>
         <div>
           <label style={labelStyle}>Begin Date Field</label>
-          <input type="text" value={form.dr_begin_date_field}
+          <input type="text" list="dr-begin-fields" value={form.dr_begin_date_field}
             onChange={(e) => setForm({ ...form, dr_begin_date_field: e.target.value })}
             style={inputStyle} placeholder="BeginDate" />
+          <datalist id="dr-begin-fields">{availableReferenceFields.map((f: string) => <option key={f} value={f} />)}</datalist>
+          <div style={helpStyle}>Date field on the reference class. For caret-separated fields (e.g. ProjectDateRange), use the same field for both.</div>
         </div>
         <div>
           <label style={labelStyle}>End Date Field</label>
-          <input type="text" value={form.dr_end_date_field}
+          <input type="text" list="dr-end-fields" value={form.dr_end_date_field}
             onChange={(e) => setForm({ ...form, dr_end_date_field: e.target.value })}
             style={inputStyle} placeholder="EndDate" />
+          <datalist id="dr-end-fields">{availableReferenceFields.map((f: string) => <option key={f} value={f} />)}</datalist>
+          <div style={helpStyle}>Date field on the reference class</div>
         </div>
       </div>
     </div>
@@ -243,9 +256,10 @@ const RuleTypeConfig = ({
       <div style={gridStyle}>
         <div>
           <label style={labelStyle}>Entity Field (on this record)</label>
-          <input type="text" value={form.op_entity_field}
+          <input type="text" list="op-entity-fields" value={form.op_entity_field}
             onChange={(e) => setForm({ ...form, op_entity_field: e.target.value })}
             style={inputStyle} placeholder="AccountingEntity" />
+          <datalist id="op-entity-fields">{(businessClassFields || []).map((f: string) => <option key={f} value={f} />)}</datalist>
         </div>
         <div>
           <label style={labelStyle}>Current Period Field</label>
@@ -256,9 +270,10 @@ const RuleTypeConfig = ({
         </div>
         <div>
           <label style={labelStyle}>Period Class</label>
-          <input type="text" value={form.op_period_class}
+          <input type="text" list="op-period-classes" value={form.op_period_class}
             onChange={(e) => setForm({ ...form, op_period_class: e.target.value })}
             style={inputStyle} placeholder="GeneralLedgerClosePeriod" />
+          <datalist id="op-period-classes">{availableReferenceClasses.map((c: string) => <option key={c} value={c} />)}</datalist>
         </div>
         <div>
           <label style={labelStyle}>Period Key Field</label>
@@ -1031,6 +1046,45 @@ const RulesManagement = () => {
     }
   };
 
+  const handleExportRuleSet = async (ruleSet: RuleSet) => {
+    try {
+      const response = await api.get(`/rules/rule-sets/${ruleSet.id}/export`);
+      const blob = new Blob([JSON.stringify(response.data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const safeName = ruleSet.name.replace(/\s+/g, '_').replace(/\//g, '_');
+      a.href = url;
+      a.download = `${ruleSet.business_class}_${safeName}_rules.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setShowMoreMenu(null);
+    } catch (error: any) {
+      alert(`Failed to export rule set: ${error.response?.data?.detail || error.message}`);
+    }
+  };
+
+  const handleImportRuleSet = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e: any) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const response = await api.post('/rules/rule-sets/import', formData);
+        alert(`✅ ${response.data.message}`);
+        loadRuleSets();
+      } catch (error: any) {
+        alert(`Failed to import rule set: ${error.response?.data?.detail || error.message}`);
+      }
+    };
+    input.click();
+  };
+
   const loadRuleSetFields = async (ruleSetId: number) => {
     setLoadingFields(true);
     try {
@@ -1181,7 +1235,7 @@ const RulesManagement = () => {
       condition_filter_field: parsed.condition_filter_field || '',
       condition_filter_value: parsed.condition_filter_value || '',
       pattern: rule.pattern || (rule.rule_type === 'PATTERN_MATCH' ? rule.condition_expression : '') || '',
-      enum_values: rule.enum_values ? (Array.isArray(rule.enum_values) ? rule.enum_values.join(', ') : rule.enum_values) : '',
+      enum_values: rule.enum_values ? (Array.isArray(rule.enum_values) ? rule.enum_values.map(String).join(', ') : String(rule.enum_values)) : '',
       dr_join_field: parsed.dr_join_field || '',
       dr_begin_date_field: parsed.dr_begin_date_field || 'BeginDate',
       dr_end_date_field: parsed.dr_end_date_field || 'EndDate',
@@ -1231,19 +1285,20 @@ const RulesManagement = () => {
     try {
       const conditionExpression = buildConditionExpression(editRuleForm);
       await api.put(`/rules/templates/${editingRule.id}`, {
-        rule_type: editRuleForm.rule_type,
         error_message: editRuleForm.error_message || getDefaultErrorMessage(editRuleForm.rule_type, editingRule.field_name),
         reference_business_class: editRuleForm.reference_business_class || null,
         reference_field_name: editRuleForm.reference_field_name || null,
         condition_expression: conditionExpression,
         pattern: editRuleForm.rule_type === 'PATTERN_MATCH' ? editRuleForm.pattern : null,
-        enum_values: editRuleForm.rule_type === 'ENUM_VALIDATION' ? editRuleForm.enum_values : null,
+        enum_values: editRuleForm.rule_type === 'ENUM_VALIDATION' ? String(editRuleForm.enum_values) : null,
       });
       setShowEditRuleModal(false);
       setEditingRule(null);
       await loadRuleSetFields(fieldViewData.rule_set_id);
     } catch (error: any) {
-      alert(`Failed to update rule: ${error.response?.data?.detail || error.message}`);
+      const detail = error.response?.data?.detail;
+      const msg = typeof detail === 'string' ? detail : (detail ? JSON.stringify(detail) : error.message);
+      alert(`Failed to update rule: ${msg}`);
     }
   };
 
@@ -1302,8 +1357,23 @@ const RulesManagement = () => {
 
       {/* Rule Sets Section */}
       <div style={styles.ruleSetsSection}>
-          <div style={styles.ruleSetsHeader}>
+          <div style={{...styles.ruleSetsHeader, display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
             <h3 style={styles.sectionTitle}>Rule Sets</h3>
+            <button
+              onClick={handleImportRuleSet}
+              style={{
+                padding: '6px 14px',
+                backgroundColor: theme.primary.main,
+                color: '#fff',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontWeight: '500',
+              }}
+            >
+              📤 Import Rule Set
+            </button>
           </div>
 
           {ruleSets.length === 0 ? (
@@ -1331,9 +1401,7 @@ const RulesManagement = () => {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                           <span style={styles.ruleSetName}>{ruleSet.name}</span>
-                          {ruleSet.is_common && (
-                            <span style={styles.commonBadge}>{ruleSet.business_class}</span>
-                          )}
+                          <span style={styles.commonBadge}>{ruleSet.business_class}</span>
                           {isEffectiveDefault(ruleSet) && (
                             <span style={{
                               padding: '2px 8px',
@@ -1381,16 +1449,35 @@ const RulesManagement = () => {
                       👁️ View
                     </button>
                     {ruleSet.is_common ? (
-                      // Default rule set: Show Duplicate button directly
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDuplicateRuleSet(ruleSet);
-                        }}
-                        style={styles.duplicateButton}
-                      >
-                        📋 Duplicate
-                      </button>
+                      // Default rule set: Show Duplicate and Export buttons
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDuplicateRuleSet(ruleSet);
+                          }}
+                          style={styles.duplicateButton}
+                        >
+                          📋 Duplicate
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleExportRuleSet(ruleSet);
+                          }}
+                          style={{
+                            padding: '4px 10px',
+                            backgroundColor: 'transparent',
+                            color: theme.primary.main,
+                            border: `1px solid ${theme.primary.main}`,
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                          }}
+                        >
+                          📥 Export
+                        </button>
+                      </>
                     ) : (
                       // Custom rule sets: Show Edit, Delete, and More menu
                       <>
@@ -1488,6 +1575,17 @@ const RulesManagement = () => {
                                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                                 >
                                   📋 Duplicate
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleExportRuleSet(ruleSet);
+                                  }}
+                                  style={styles.menuItem}
+                                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.interactive.hover}
+                                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                >
+                                  📥 Export
                                 </button>
                               </div>
                             </>

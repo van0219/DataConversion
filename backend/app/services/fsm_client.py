@@ -344,7 +344,7 @@ class FSMClient:
     async def fetch_setup_data(self, endpoint_url: str) -> List[Dict]:
         """
         Fetch setup data from FSM using configured list endpoint.
-        Used for snapshot orchestration.
+        Automatically paginates to retrieve all records.
         
         Args:
             endpoint_url: Relative endpoint path (e.g., "soap/classes/Currency/lists/PrimaryCurrencyList?...")
@@ -354,69 +354,89 @@ class FSMClient:
         """
         await self._ensure_authenticated()
         
-        # Construct full URL: base_url + tenant_id + /FSM/fsm + endpoint_url
-        # Ensure proper URL joining
         base = self.base_url.rstrip('/')
         full_url = f"{base}/{self.tenant_id}/FSM/fsm/{endpoint_url}"
         
         logger.info(f"Fetching setup data from: {full_url}")
         
-        # Use longer timeout for setup data (can be large datasets like GeneralLedgerChartAccount)
+        all_records = []
+        offset = 0
+        page_size = 10000
+        
+        # Parse the limit from the URL to use as page size
+        import re
+        limit_match = re.search(r'_limit=(\d+)', endpoint_url)
+        if limit_match:
+            page_size = int(limit_match.group(1))
+        
         async with httpx.AsyncClient(timeout=300.0) as client:
-            try:
-                response = await client.get(
-                    full_url,
-                    headers={"Authorization": f"Bearer {self.access_token}"}
-                )
-                response.raise_for_status()
-                
-                data = response.json()
-                
-                # Handle different response formats
-                if isinstance(data, list):
-                    # Response is directly a list of records
-                    # First item may be metadata (_count, _links), skip it
-                    # Remaining items have _fields wrapper
-                    flattened_records = []
-                    for i, record in enumerate(data):
-                        if isinstance(record, dict):
-                            # Skip metadata item (has _count or _links but no _fields)
-                            if "_count" in record or ("_links" in record and "_fields" not in record):
-                                logger.debug(f"Skipping metadata item at index {i}")
-                                continue
-                            
-                            # Extract _fields if present
-                            if "_fields" in record:
-                                flattened_records.append(record["_fields"])
-                            else:
-                                flattened_records.append(record)
-                    
-                    logger.info(f"Fetched {len(flattened_records)} records from setup endpoint (direct list)")
-                    return flattened_records
-                elif isinstance(data, dict):
-                    # Response is a dict, extract _records array
-                    records = data.get("_records", [])
-                    
-                    # Flatten _fields from each record
-                    flattened_records = []
-                    for record in records:
-                        if "_fields" in record:
-                            flattened_records.append(record["_fields"])
-                        else:
-                            flattened_records.append(record)
-                    
-                    logger.info(f"Fetched {len(flattened_records)} records from setup endpoint")
-                    return flattened_records
+            while True:
+                # Add or replace _offset in the URL
+                if '_offset=' in full_url:
+                    page_url = re.sub(r'_offset=\d+', f'_offset={offset}', full_url)
+                elif '?' in full_url:
+                    page_url = f"{full_url}&_offset={offset}"
                 else:
-                    logger.error(f"Unexpected response type: {type(data)}")
-                    return []
+                    page_url = f"{full_url}?_offset={offset}"
                 
-            except httpx.HTTPStatusError as e:
-                logger.error(f"Failed to fetch setup data: {e.response.status_code} - {e.response.text}")
-                raise Exception(f"Failed to fetch setup data: {e.response.status_code}")
-            except Exception as e:
-                logger.error(f"Setup data fetch error: {str(e)}")
-                raise Exception(f"Setup data fetch error: {str(e)}")
+                try:
+                    logger.info(f"Fetching page at offset {offset} (page_size={page_size})")
+                    response = await client.get(
+                        page_url,
+                        headers={"Authorization": f"Bearer {self.access_token}"}
+                    )
+                    response.raise_for_status()
+                    
+                    data = response.json()
+                    page_records = self._extract_records(data)
+                    
+                    if not page_records:
+                        break
+                    
+                    all_records.extend(page_records)
+                    logger.info(f"Page fetched: {len(page_records)} records (total so far: {len(all_records)})")
+                    
+                    # If we got fewer records than the page size, we've reached the end
+                    if len(page_records) < page_size:
+                        break
+                    
+                    offset += page_size
+                    
+                except httpx.HTTPStatusError as e:
+                    logger.error(f"Failed to fetch setup data: {e.response.status_code} - {e.response.text}")
+                    raise Exception(f"Failed to fetch setup data: {e.response.status_code}")
+                except Exception as e:
+                    logger.error(f"Setup data fetch error: {str(e)}")
+                    raise Exception(f"Setup data fetch error: {str(e)}")
+        
+        logger.info(f"Fetched {len(all_records)} total records from setup endpoint")
+        return all_records
+    
+    def _extract_records(self, data) -> List[Dict]:
+        """Extract and flatten records from FSM API response."""
+        if isinstance(data, list):
+            flattened_records = []
+            for i, record in enumerate(data):
+                if isinstance(record, dict):
+                    if "_count" in record or ("_links" in record and "_fields" not in record):
+                        continue
+                    if "_fields" in record:
+                        flattened_records.append(record["_fields"])
+                    else:
+                        flattened_records.append(record)
+            return flattened_records
+        elif isinstance(data, dict):
+            records = data.get("_records", [])
+            flattened_records = []
+            for record in records:
+                if "_fields" in record:
+                    flattened_records.append(record["_fields"])
+                else:
+                    flattened_records.append(record)
+            return flattened_records
+        else:
+            logger.error(f"Unexpected response type: {type(data)}")
+            return []
     
     async def interface_transactions(
         self,
