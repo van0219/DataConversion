@@ -12,7 +12,7 @@ class LoadStartRequest(BaseModel):
     job_id: int
     business_class: str
     mapping: dict
-    chunk_size: int = 100
+    chunk_size: int = 1000
     trigger_interface: bool = False
     # Interface parameters (used when trigger_interface is True)
     interface_params: Optional[dict] = None
@@ -212,6 +212,19 @@ async def delete_run_group(
             request.business_class,
             request.run_group
         )
+        
+        # Reset job status to "validated" so it can be reloaded
+        from app.models.job import ConversionJob, LoadResult
+        job = db.query(ConversionJob).filter(
+            ConversionJob.id == request.job_id,
+            ConversionJob.account_id == account_id
+        ).first()
+        if job:
+            job.status = "validated"
+            # Remove load results for this job
+            db.query(LoadResult).filter(LoadResult.conversion_job_id == request.job_id).delete()
+            db.commit()
+        
         return {
             "message": "RunGroup deleted successfully",
             "run_group": request.run_group,

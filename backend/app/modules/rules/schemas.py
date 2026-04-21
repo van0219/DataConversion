@@ -37,7 +37,7 @@ class RuleTemplateUpdate(BaseModel):
 
 class RuleTemplateResponse(RuleTemplateBase):
     id: int
-    version: int
+    version: Optional[int] = None
     created_at: datetime
     updated_at: datetime
     

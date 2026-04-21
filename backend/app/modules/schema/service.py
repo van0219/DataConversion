@@ -216,11 +216,44 @@ class SchemaService:
         account_id: int,
         business_class: str
     ) -> Optional[Schema]:
-        """Get latest schema version for business class"""
-        return db.query(Schema).filter(
+        """Get latest schema version for business class. Auto-fetches from local swagger if not found."""
+        schema = db.query(Schema).filter(
             Schema.account_id == account_id,
             Schema.business_class == business_class
         ).order_by(Schema.version_number.desc()).first()
+        
+        if schema:
+            return schema
+        
+        # Auto-fetch from local swagger file (sync, no FSM API needed)
+        try:
+            import hashlib
+            swagger_json = SchemaService._load_local_swagger(business_class)
+            if swagger_json:
+                parsed = SchemaService._parse_local_swagger(swagger_json, business_class)
+                raw_schema = parsed.get("raw_schema", parsed)
+                schema_content = json.dumps(raw_schema)
+                schema_hash = hashlib.sha256(schema_content.encode()).hexdigest()
+                new_schema = Schema(
+                    account_id=account_id,
+                    business_class=business_class,
+                    schema_json=schema_content,
+                    schema_hash=schema_hash,
+                    version_number=1,
+                    is_active=True,
+                    source="local_swagger",
+                    operations_json=json.dumps(parsed.get("operations", [])),
+                    required_fields_json=json.dumps(raw_schema.get("required", []))
+                )
+                db.add(new_schema)
+                db.commit()
+                db.refresh(new_schema)
+                logger.info(f"Auto-created schema for {business_class} (account {account_id}) from local swagger")
+                return new_schema
+        except Exception as e:
+            logger.warning(f"Auto-fetch schema failed for {business_class}: {e}")
+        
+        return None
     
     @staticmethod
     def get_schema_by_version(

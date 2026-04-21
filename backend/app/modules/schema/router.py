@@ -9,6 +9,39 @@ import logging
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+
+@router.get("/available-business-classes")
+def get_available_business_classes(
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """
+    Get all business class names that have schemas available
+    (from stored schemas + local swagger files).
+    """
+    from pathlib import Path
+    from app.models.schema import Schema
+
+    classes = set()
+
+    # From stored schemas for this account
+    stored = db.query(Schema.business_class).filter(
+        Schema.account_id == account_id
+    ).distinct().all()
+    for row in stored:
+        classes.add(row[0])
+
+    # From local swagger files (Conversion + Setup)
+    swagger_base = Path(__file__).parent.parent.parent.parent.parent / "FSM_Swagger"
+    for folder in ["Conversion", "Setup"]:
+        folder_path = swagger_base / folder
+        if folder_path.exists():
+            for f in folder_path.glob("*.json"):
+                classes.add(f.stem)
+
+    return {"business_classes": sorted(classes)}
+
+
 @router.post("/fetch", response_model=SchemaResponse)
 async def fetch_schema(
     request: SchemaFetchRequest,
@@ -181,13 +214,23 @@ def get_schema_fields(
 
 
 @router.get("/{business_class}/latest", response_model=SchemaResponse)
-def get_latest_schema(
+async def get_latest_schema(
     business_class: str,
     account_id: int = Depends(get_current_account_id),
     db: Session = Depends(get_db)
 ):
-    """Get latest schema version for business class"""
+    """Get latest schema version for business class. Auto-fetches from local swagger if not found."""
     schema = SchemaService.get_latest_schema(db, account_id, business_class)
+    
+    if not schema:
+        # Auto-fetch from local swagger file for this account
+        try:
+            schema = await SchemaService.fetch_and_store_schema(db, account_id, business_class)
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No schema found for {business_class}"
+            )
     
     if not schema:
         raise HTTPException(

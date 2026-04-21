@@ -1,0 +1,20 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID
+AHF,202512_0076,1,76,0,76,100008,JE,01/06/2026,-8-2,To record merchant service fee,USD,0.00,-437.19,GL,12/31/2025,               ,76000          ,     ,I802,147439581
+AHF,202512_0076,2,76,0,76,100008,JE,01/06/2026,-8-4,To record charges for Athena b,USD,0.00,-968.43,GL,12/31/2025,               ,76000          ,     ,I804,147439583
+AHF,202512_0076,3,76,0,76,100008,JE,01/06/2026,-8-5,To record the monthly deposits,USD,0.00,10497.74,GL,12/31/2025,               ,76000          ,     ,I805,147439584
+AHF,202512_0076,4,76,0,76,101219,JE,01/06/2026,-8-10,To record Gross Charges and Ad,USD,0.00,3427.00,GL,12/31/2025,               ,76000          ,     ,I8010,147439589
+AHF,202512_0076,5,76,0,76,102284,JE,01/06/2026,-8-6,To record the monthly deposits,USD,0.00,-4366.74,GL,12/31/2025,               ,76000          ,     ,I806,147439585
+AHF,202512_0076,6,76,0,76,102284,JE,01/07/2026,-700010-1,To adjust reserve based on AR ,USD,0.00,940.00,GL,12/31/2025,               ,76000          ,     ,I70001001,147486196
+AHF,202512_0076,7,76,0,76,105075,ZB,12/01/2025,GL190-3-4,Auto Offset From Zone 75      ,USD,0.00,-260.30,GL,12/01/2025,               ,76000          ,     ,R304,147110438
+AHF,202512_0076,8,76,0,76,105075,ZB,12/24/2025,GL190-100014-186,Auto Offset From Zone 75      ,USD,0.00,-8.65,GL,12/31/2025,               ,76000          ,     ,I1000140186,147205739
+AHF,202512_0076,9,76,0,76,105075,ZB,01/06/2026,GL190-8-15,Auto Offset From Zone 75      ,USD,0.00,-8152.38,GL,12/31/2025,               ,76000          ,     ,I8015,147444104
+AHF,202512_0076,10,76,0,76,105075,ZB,01/06/2026,GL190-9-5,Auto Offset From Zone 75      ,USD,0.00,212.95,GL,12/31/2025,               ,76000          ,     ,I905,147444108
+AHF,202512_0076,11,76,0,76,105075,ZB,01/07/2026,GL190-700010-4,Auto Offset From Zone 75      ,USD,0.00,-940.00,GL,12/31/2025,               ,76000          ,     ,I70001004,147498334
+AHF,202512_0076,12,76,0,76,105075,ZB,01/23/2026,GL190-83-5,Auto Offset From Zone 75      ,USD,0.00,-46664.34,GL,12/31/2025,               ,76000          ,     ,N8305,147843401
+AHF,202512_0076,13,76,0,76,201000,JE,12/01/2025,-3-1,To record charges for Athena b,USD,0.00,260.30,GL,12/01/2025,               ,76000          ,     ,R301,146988162
+AHF,202512_0076,14,76,0,76,201000,JE,01/06/2026,-9-2,To record charges for Athena b,USD,0.00,-212.95,GL,12/31/2025,               ,76000          ,     ,I902,147441396
+AHF,202512_0076,15,76,0,76,202000,JE,01/23/2026,-83-2,Write off payroll accrual     ,USD,0.00,46664.34,GL,12/31/2025,               ,76000          ,     ,N8302,147842836
+AHF,202512_0076,16,76,0,76,300000,JE,02/16/2026,-100169-3,YE Fund Balance Transfer      ,USD,0.00,-22498566.47,GL,12/31/2025,               ,76000          ,     ,I10016903,148482659
+AHF,202512_0076,17,76,0,76,300020,JE,02/16/2026,-100169-4,YE Fund Balance Transfer      ,USD,0.00,22498566.47,GL,12/31/2025,               ,76000          ,     ,I10016904,148482660
+AHF,202512_0076,18,76,0,76,732000,JE,12/24/2025,-100014-183,YEQ121151                     ,USD,0.00,8.65,GL,12/31/2025,               ,76700          ,     ,I1000140183,147200757
+

@@ -1,0 +1,13 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID
+AHF,202501_0043,1,43,0,43,100072,AP,01/16/2025,      1499-2-1,Cash Disbursement             ,USD,0.00,-262.95,AP,01/16/2025,               ,43001          ,     ,N201,139766294
+AHF,202501_0043,2,43,0,43,104000,CB,02/05/2025,GL40-100064-3,Auto offset from company 0010 ,USD,0.00,-178.41,GL,01/31/2025,               ,43001          ,     ,I10006403,140869489
+AHF,202501_0043,3,43,0,43,104000,CB,02/05/2025,GL40-100068-2,Auto offset from company 0010 ,USD,0.00,-179.00,GL,01/31/2025,               ,43001          ,     ,I10006802,140871726
+AHF,202501_0043,4,43,0,43,104000,CB,02/07/2025,GL40-100093-2,Auto offset from company 0010 ,USD,0.00,-3.74,GL,01/31/2025,               ,43001          ,     ,I10009302,140903256
+AHF,202501_0043,5,43,0,43,200000,AC,12/31/2024,AP175-1-1,Accounts Payable Accrual      ,USD,0.00,-262.95,AP,01/08/2025,               ,43001          ,     ,N101,139703990
+AHF,202501_0043,6,43,0,43,200000,AP,01/16/2025,      1499-2-2,Payment Accrual               ,USD,0.00,262.95,AP,01/16/2025,               ,43001          ,     ,N202,139766295
+AHF,202501_0043,7,43,0,43,701140,AD,12/31/2024,     26251-1-2,    36957RETRIEVEX HOLDINGS CO,USD,0.00,262.95,AP,01/08/2025,               ,43010          ,     ,N102,139703991
+AHF,202501_0043,8,43,0,43,701450,JE,02/05/2025,-100068-1,AULTMAN SPEC KEY BANK FEES    ,USD,0.00,179.00,GL,01/31/2025,               ,43010          ,     ,I10006801,140871724
+AHF,202501_0043,9,43,0,43,732000,JE,02/07/2025,-100093-1,UPQ104076                     ,USD,0.00,3.74,GL,01/31/2025,               ,43010          ,     ,I10009301,140903254
+AHF,202501_0043,10,43,0,43,742030,JE,02/05/2025,-100064-1,Malpractice/Reinsurance Chg Ou,USD,0.00,25.92,GL,01/31/2025,               ,43010          ,     ,I10006401,140869486
+AHF,202501_0043,11,43,0,43,743000,JE,02/05/2025,-100064-2,Malpractice/Reinsurance Chg Ou,USD,0.00,152.49,GL,01/31/2025,               ,43010          ,     ,I10006402,140869487
+

@@ -29,6 +29,7 @@ class ValidationRuleSet(Base):
     is_common = Column(Boolean, default=False, nullable=False)  # Original Default rule set
     is_user_default = Column(Boolean, default=False, nullable=False)  # User-selected default
     is_active = Column(Boolean, default=True, nullable=False)
+    account_id = Column(Integer, nullable=True, index=True)  # NULL = global (visible to all), set = account-specific
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
     

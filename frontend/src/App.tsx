@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import Login from './pages/Login';
 import ConversionWorkflow from './pages/ConversionWorkflow';
+import BatchUpload from './pages/BatchUpload';
 import SetupDataManagement from './pages/SetupDataManagement';
 import RulesManagement from './pages/RulesManagement';
 import SchemaManagement from './pages/SchemaManagement';
 import api from './services/api';
 import { theme } from './theme';
 
-type Page = 'login' | 'dashboard' | 'conversion' | 'setup' | 'rules' | 'schema';
+type Page = 'login' | 'dashboard' | 'conversion' | 'batch' | 'setup' | 'rules' | 'schema';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('login');
@@ -135,6 +136,14 @@ function App() {
             {!sidebarCollapsed && 'Conversions'}
           </button>
           <button
+            onClick={() => setCurrentPage('batch')}
+            style={currentPage === 'batch' ? styles.navItemActive : styles.navItem}
+            title="Batch Upload"
+          >
+            <span style={styles.navIcon}>📦</span>
+            {!sidebarCollapsed && 'Batch Upload'}
+          </button>
+          <button
             onClick={() => setCurrentPage('setup')}
             style={currentPage === 'setup' ? styles.navItemActive : styles.navItem}
             title="Reference Data"
@@ -169,6 +178,7 @@ function App() {
       <div style={styles.main}>
         {currentPage === 'dashboard' && <Dashboard onNewConversion={() => setCurrentPage('conversion')} onSetupData={() => setCurrentPage('setup')} onViewRules={() => setCurrentPage('rules')} />}
         {currentPage === 'conversion' && <ConversionWorkflow onBack={() => setCurrentPage('dashboard')} />}
+        {currentPage === 'batch' && <BatchUpload />}
         {currentPage === 'setup' && <SetupDataManagement />}
         {currentPage === 'rules' && <RulesManagement />}
         {currentPage === 'schema' && <SchemaManagement />}

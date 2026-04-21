@@ -1,0 +1,24 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID
+AHF,202511_0076,1,76,0,76,100008,JE,12/01/2025,-2-2,To record merchant service fee,USD,0.00,-445.10,GL,11/30/2025,               ,76000          ,     ,I202,146801422
+AHF,202511_0076,2,76,0,76,100008,JE,12/01/2025,-2-4,To record charges for Athena b,USD,0.00,-981.41,GL,11/30/2025,               ,76000          ,     ,I204,146801424
+AHF,202511_0076,3,76,0,76,100008,JE,12/01/2025,-2-6,To record Athena fee - Periope,USD,0.00,-1.39,GL,11/30/2025,               ,76000          ,     ,I206,146801426
+AHF,202511_0076,4,76,0,76,100008,JE,12/01/2025,-2-7,To record the monthly deposits,USD,0.00,8434.47,GL,11/30/2025,               ,76000          ,     ,I207,146801427
+AHF,202511_0076,5,76,0,76,101219,JE,12/01/2025,-2-12,To record Gross Charges and Ad,USD,0.00,-6466.00,GL,11/30/2025,               ,76000          ,     ,I2012,146801432
+AHF,202511_0076,6,76,0,76,102284,JE,12/01/2025,-2-8,To record the monthly deposits,USD,0.00,-1671.58,GL,11/30/2025,               ,76000          ,     ,I208,146801428
+AHF,202511_0076,7,76,0,76,102284,JE,12/04/2025,-13-22,To adjust reserve based on AR ,USD,0.00,6584.00,GL,11/30/2025,               ,76000          ,     ,I13022,146904434
+AHF,202511_0076,8,76,0,76,105075,ZB,11/04/2025,GL190-7-4,Auto Offset From Zone 75      ,USD,0.00,-267.53,GL,11/01/2025,               ,76000          ,     ,R704,146564733
+AHF,202511_0076,9,76,0,76,105075,ZB,11/14/2025,GL190-113-29,Auto Offset From Zone 75      ,USD,0.00,-117.20,AP,11/17/2025,               ,76000          ,     ,N113029,146655662
+AHF,202511_0076,10,76,0,76,105075,ZB,07/21/2025,GL190-168-21,Auto Offset From Zone 75      ,USD,0.00,-97.20,AP,11/30/2025,               ,76000          ,     ,N168021,146694447
+AHF,202511_0076,11,76,0,76,105075,ZB,12/01/2025,GL190-2-18,Auto Offset From Zone 75      ,USD,0.00,1131.01,GL,11/30/2025,               ,76000          ,     ,I2018,146808728
+AHF,202511_0076,12,76,0,76,105075,ZB,12/01/2025,GL190-3-5,Auto Offset From Zone 75      ,USD,0.00,260.30,GL,11/30/2025,               ,76000          ,     ,I305,146808732
+AHF,202511_0076,13,76,0,76,105075,ZB,12/04/2025,GL190-13-27,Auto Offset From Zone 75      ,USD,0.00,-7025.00,GL,11/30/2025,               ,76000          ,     ,I13027,146904760
+AHF,202511_0076,14,76,0,76,200000,AC,08/21/2025,AP175-166-1,Accounts Payable Accrual      ,USD,0.00,655.25,AP,11/28/2025,               ,76000          ,     ,N16601,146683647
+AHF,202511_0076,15,76,0,76,201000,JE,11/04/2025,-7-1,To record charges for Athena b,USD,0.00,267.53,GL,11/01/2025,               ,76000          ,     ,R701,146409549
+AHF,202511_0076,16,76,0,76,201000,JE,12/01/2025,-3-2,To record charges for Athena b,USD,0.00,-260.30,GL,11/30/2025,               ,76000          ,     ,I302,146801536
+AHF,202511_0076,17,76,0,76,710100,AD,11/14/2025,     52105-113-26,    12993JEDMED INSTRUMENT CO ,USD,0.00,97.20,AP,11/17/2025,               ,76721          ,     ,N113026,146654433
+AHF,202511_0076,18,76,0,76,710100,AD,11/14/2025,     52105-113-27,    12993JEDMED INSTRUMENT CO ,USD,0.00,20.00,AP,11/17/2025,               ,76721          ,     ,N113027,146654434
+AHF,202511_0076,19,76,0,76,710100,AD,11/24/2025,     52822-168-19,    12993JEDMED INSTRUMENT CO ,USD,0.00,97.20,AP,11/30/2025,               ,76721          ,     ,N168019,146684773
+AHF,202511_0076,20,76,0,76,710100,JE,12/04/2025,-13-24,To reclass ACMF to AMG        ,USD,0.00,-214.00,GL,11/30/2025,               ,76721          ,     ,I13024,146904658
+AHF,202511_0076,21,76,0,76,710150,AD,08/21/2025,     52814-166-2,    13802MEDLINE INDUSTRIES LP,USD,0.00,-655.25,AP,11/28/2025,               ,76720          ,     ,N16602,146683648
+AHF,202511_0076,22,76,0,76,710150,JE,12/04/2025,-13-23,To reclass ACMF to AMG        ,USD,0.00,655.00,GL,11/30/2025,               ,76720          ,     ,I13023,146904657
+

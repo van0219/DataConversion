@@ -1,0 +1,4 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID
+AHF,202512_0084,1,84,0,84,105110,ZB,01/07/2026,GL190-93-43,Auto Offset From Zone 10      ,USD,0.00,-100.00,GL,12/31/2025,               ,84000          ,     ,I93043,147485502
+AHF,202512_0084,2,84,0,84,701450,JE,01/07/2026,-93-22,AULTMAN INNO KEY BANK FEES    ,USD,0.00,100.00,GL,12/31/2025,               ,84010          ,     ,I93022,147482912
+

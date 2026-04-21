@@ -1,0 +1,10 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID
+AHF,202506_0084,1,84,0,84,100008,JE,06/11/2025,-30-1,2025-6MSA PYMT                ,USD,0.00,11174.58,GL,06/30/2025,               ,84000          ,     ,N3001,143424569
+AHF,202506_0084,2,84,0,84,103190,JE,07/03/2025,-202-1,P6 Pomerene AUG 2025 MSA      ,USD,0.00,11174.58,GL,06/30/2025,               ,84000          ,     ,N20201,143798846
+AHF,202506_0084,3,84,0,84,103190,JE,07/03/2025,-206-1,P6 Pomerene MSA Correction    ,USD,0.00,-11174.58,GL,06/30/2025,               ,84000          ,     ,N20601,143798995
+AHF,202506_0084,4,84,0,84,103190,JE,06/11/2025,-30-2,2025-6MSA PYMT                ,USD,0.00,-11174.58,GL,06/30/2025,               ,84000          ,     ,N3002,143424570
+AHF,202506_0084,5,84,0,84,105110,ZB,07/07/2025,GL190-94-41,Auto Offset From Zone 10      ,USD,0.00,-94.00,GL,06/30/2025,               ,84000          ,     ,I94041,143825708
+AHF,202506_0084,6,84,0,84,490407,JE,07/03/2025,-206-2,P6 Pomerene MSA Correction    ,USD,0.00,11174.58,GL,06/30/2025,               ,84020          ,     ,N20602,143798996
+AHF,202506_0084,7,84,0,84,490407,JE,07/03/2025,-202-2,P6 Pomerene AUG 2025 MSA      ,USD,0.00,-11174.58,GL,06/30/2025,               ,84020          ,     ,N20202,143798847
+AHF,202506_0084,8,84,0,84,701450,JE,07/07/2025,-94-20,AULTMAN INNO KEY BANK FEES    ,USD,0.00,94.00,GL,06/30/2025,               ,84010          ,     ,I94020,143825089
+

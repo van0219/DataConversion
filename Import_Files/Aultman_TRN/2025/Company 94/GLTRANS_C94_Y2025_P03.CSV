@@ -1,0 +1,5 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID
+AHF,202503_0094,1,94,0,94,105110,ZB,04/03/2025,GL190-213-6,Auto Offset From Zone 10      ,USD,0.00,-225149.70,GL,03/31/2025,               ,94000          ,     ,N21306,142160122
+AHF,202503_0094,2,94,0,94,117115,JE,04/03/2025,-213-2,Main to Aultman North Surgical,USD,0.00,41916.17,GL,03/31/2025,               ,94000          ,     ,N21302,142159031
+AHF,202503_0094,3,94,0,94,117115,JE,04/03/2025,-213-1,Main to ASC Holdings          ,USD,0.00,183233.53,GL,03/31/2025,               ,94000          ,     ,N21301,142159030
+

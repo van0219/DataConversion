@@ -155,15 +155,15 @@ class StreamingEngine:
     @staticmethod
     def estimate_record_count(file_path: Path) -> int:
         """
-        Estimate total record count by counting lines.
-        Fast estimation without parsing CSV.
+        Estimate total record count by counting non-blank data lines.
+        Excludes header and blank lines.
         """
         try:
             with open(file_path, 'r', encoding='utf-8-sig') as f:
                 # Skip header
                 next(f)
-                # Count remaining lines
-                count = sum(1 for _ in f)
+                # Count non-blank lines only
+                count = sum(1 for line in f if line.strip())
                 return count
         except Exception as e:
             logger.error(f"Failed to estimate record count: {str(e)}")

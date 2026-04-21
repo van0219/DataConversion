@@ -1,0 +1,6 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID
+AHF,202508_0094,1,94,0,94,103190,JE,09/09/2025,-279-3,To Clear Out 2016 Audit Adj   ,USD,0.00,-46417.00,GL,08/31/2025,               ,94000          ,     ,N27903,145106788
+AHF,202508_0094,2,94,0,94,103190,JE,09/09/2025,-278-2,To Recl Cap Contr to Invest In,USD,0.00,-83463.78,GL,08/31/2025,               ,94000          ,     ,N27802,145106704
+AHF,202508_0094,3,94,0,94,105110,ZB,09/09/2025,GL190-279-5,Auto Offset From Zone 10      ,USD,0.00,46417.00,GL,08/31/2025,               ,94000          ,     ,N27905,145108745
+AHF,202508_0094,4,94,0,94,117115,JE,09/09/2025,-278-1,To Recl Cap Contr to Invest In,USD,0.00,83463.78,GL,08/31/2025,               ,94000          ,     ,N27801,145106703
+

@@ -167,9 +167,10 @@ class SnapshotService:
             ).delete()
             db.commit()
             
-            # Insert fresh records in batches
+            # Insert fresh records in batches (deduplicate by primary key — keep last occurrence)
             records_stored = 0
             batch_size = 500
+            seen_keys = set()
             
             batch = []
             for i, record in enumerate(records):
@@ -178,6 +179,10 @@ class SnapshotService:
                 if not primary_key:
                     logger.warning(f"Record missing key field '{setup_class.key_field}' for {setup_class.name}, skipping")
                     continue
+                
+                if primary_key in seen_keys:
+                    continue
+                seen_keys.add(primary_key)
                 
                 batch.append(SnapshotRecord(
                     account_id=account_id,

@@ -23,11 +23,12 @@ class ValidationService:
         business_class: str,
         mapping: Dict,
         enable_rules: bool = True,
-        selected_rule_set_id: Optional[int] = None
+        selected_rule_set_id: Optional[int] = None,
+        date_source_format: Optional[str] = None
     ):
         """
         Start validation process with streaming architecture.
-        Pipeline: Stream → Normalize → Schema Validation → Rule Validation → Persist
+        Pipeline: Stream → Normalize → Date Transform → Rule Validation → Persist
         
         Args:
             selected_rule_set_id: Optional rule set to apply (in addition to Default rule set)
@@ -95,6 +96,10 @@ class ValidationService:
                     
                     # Apply field mapping: CSV columns → FSM field names
                     mapped_record = MappingEngine.apply_mapping(record, mapping)
+                    
+                    # Apply date format transform if configured (in-memory only, original file untouched)
+                    if date_source_format:
+                        mapped_record = ValidationService._apply_date_transform(mapped_record, date_source_format)
                     
                     # Validate only against the selected Rule Set
                     rule_errors = []
@@ -354,14 +359,52 @@ class ValidationService:
         if not errors:
             return
         
-        # Errors are already in dictionary format for bulk insert
-        # Just ensure conversion_job_id is set correctly
         for error in errors:
             error['conversion_job_id'] = job_id
         
-        # Bulk insert - much faster than individual inserts
         db.bulk_insert_mappings(ValidationErrorModel, errors)
         db.commit()
+    
+    @staticmethod
+    def _apply_date_transform(record: Dict, source_format: str) -> Dict:
+        """
+        Transform date field values from source format to FSM format (YYYYMMDD).
+        Operates in-memory only — original CSV files are never modified.
+        
+        Supported source formats:
+        - MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD, MM-DD-YYYY, DD-MM-YYYY, M/D/YYYY
+        """
+        from datetime import datetime as dt
+        
+        # Map format strings to Python strptime patterns
+        format_map = {
+            "MM/DD/YYYY": "%m/%d/%Y",
+            "DD/MM/YYYY": "%d/%m/%Y",
+            "YYYY-MM-DD": "%Y-%m-%d",
+            "MM-DD-YYYY": "%m-%d-%Y",
+            "DD-MM-YYYY": "%d-%m-%Y",
+            "M/D/YYYY": "%m/%d/%Y",  # Python's %m/%d handles single digits too
+        }
+        
+        py_format = format_map.get(source_format)
+        if not py_format:
+            return record
+        
+        transformed = {}
+        for key, value in record.items():
+            if value and isinstance(value, str) and not key.startswith('_'):
+                stripped = value.strip()
+                # Only attempt transform on values that look like dates (contain / or -)
+                if ('/' in stripped or '-' in stripped) and len(stripped) >= 6 and len(stripped) <= 10:
+                    try:
+                        parsed = dt.strptime(stripped, py_format)
+                        transformed[key] = parsed.strftime("%Y%m%d")
+                        continue
+                    except (ValueError, TypeError):
+                        pass
+            transformed[key] = value
+        
+        return transformed
     
     @staticmethod
     def get_progress(db: Session, account_id: int, job_id: int) -> Optional[Dict]:

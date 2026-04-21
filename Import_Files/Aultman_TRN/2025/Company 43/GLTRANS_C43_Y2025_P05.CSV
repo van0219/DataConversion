@@ -1,0 +1,9 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID
+AHF,202505_0043,1,43,0,43,100072,AP,05/09/2025,      1227-1-1,Cash Disbursement             ,USD,0.00,-257.14,AP,05/09/2025,               ,43001          ,     ,N101,142828678
+AHF,202505_0043,2,43,0,43,104000,CB,06/03/2025,GL40-100055-3,Auto offset from company 0010 ,USD,0.00,-178.41,GL,05/31/2025,               ,43001          ,     ,I10005503,143242810
+AHF,202505_0043,3,43,0,43,104000,CB,06/05/2025,GL40-100116-2,Auto offset from company 0010 ,USD,0.00,-195.00,GL,05/31/2025,               ,43001          ,     ,I10011602,143292280
+AHF,202505_0043,4,43,0,43,200000,AP,05/09/2025,      1227-1-2,Payment Accrual               ,USD,0.00,257.14,AP,05/09/2025,               ,43001          ,     ,N102,142828679
+AHF,202505_0043,5,43,0,43,701450,JE,06/05/2025,-100116-1,AULTMAN SPEC KEY BANK FEES    ,USD,0.00,195.00,GL,05/31/2025,               ,43010          ,     ,I10011601,143292278
+AHF,202505_0043,6,43,0,43,742030,JE,06/03/2025,-100055-1,Malpractice/Reinsurance Chg Ou,USD,0.00,25.92,GL,05/31/2025,               ,43010          ,     ,I10005501,143242807
+AHF,202505_0043,7,43,0,43,743000,JE,06/03/2025,-100055-2,Malpractice/Reinsurance Chg Ou,USD,0.00,152.49,GL,05/31/2025,               ,43010          ,     ,I10005502,143242808
+

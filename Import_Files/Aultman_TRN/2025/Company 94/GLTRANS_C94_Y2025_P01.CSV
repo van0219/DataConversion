@@ -1,0 +1,8 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID
+AHF,202501_0094,1,94,0,94,103190,JE,2/11/2025,-313,ASC Equipment Loan Draw       ,USD,0,244950,GL,1/31/2025,               ,94000,     ,N31003,141016617
+AHF,202501_0094,2,94,0,94,103190,JE,2/11/2025,-311,ASC Equipment Loan Draw       ,USD,0,50000,GL,1/31/2025,               ,94000,     ,N31001,141016615
+AHF,202501_0094,3,94,0,94,105110,ZB,2/11/2025,GL190-310-6,Auto Offset From Zone 10      ,USD,0,-294950,GL,1/31/2025,               ,94000,     ,N31006,141023057
+AHF,202501_0094,4,94,0,94,117230,JE,2/11/2025,-700029,Intercompany Clear Out        ,USD,0,44538388.48,GL,1/31/2025,               ,94000,     ,I70002801,141017271
+AHF,202501_0094,5,94,0,94,117230,JE,2/11/2025,-131,Intercompany Clear Out Reverse,USD,0,-44538388.48,GL,1/31/2025,               ,94000,     ,I12605,141017477
+AHF,202501_0094,6,94,0,94,300015,JE,2/11/2025,-700030,Intercompany Clear Out        ,USD,0,-44538388.48,GL,1/31/2025,               ,94000,     ,I70002802,141017272
+AHF,202501_0094,7,94,0,94,300015,JE,2/11/2025,-132,Intercompany Clear Out Reverse,USD,0,44538388.48,GL,1/31/2025,               ,94000,     ,I12606,141017478

@@ -1,0 +1,12 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID
+AHF,202506_0043,1,43,0,43,104000,CB,07/09/2025,GL40-100137-3,Auto offset from company 0010 ,USD,0.00,178.41,GL,06/30/2025,               ,43001          ,     ,I10013703,143860929
+AHF,202506_0043,2,43,0,43,104000,CB,07/07/2025,GL40-100094-2,Auto offset from company 0010 ,USD,0.00,-195.00,GL,06/30/2025,               ,43001          ,     ,I10009402,143825105
+AHF,202506_0043,3,43,0,43,104000,CB,07/07/2025,GL40-100093-3,Auto offset from company 0010 ,USD,0.00,-178.41,GL,06/30/2025,               ,43001          ,     ,I10009303,143825291
+AHF,202506_0043,4,43,0,43,200000,AC,05/31/2025,AP175-1-1,Accounts Payable Accrual      ,USD,0.00,-257.14,AP,06/04/2025,               ,43001          ,     ,N101,143300805
+AHF,202506_0043,5,43,0,43,701140,AD,05/31/2025,     26255-1-2,    36957RETRIEVEX HOLDINGS CO,USD,0.00,257.14,AP,06/04/2025,               ,43010          ,     ,N102,143300806
+AHF,202506_0043,6,43,0,43,701450,JE,07/07/2025,-100094-1,AULTMAN SPEC KEY BANK FEES    ,USD,0.00,195.00,GL,06/30/2025,               ,43010          ,     ,I10009401,143825103
+AHF,202506_0043,7,43,0,43,742030,JE,07/07/2025,-100093-1,Malpractice/Reinsurance Chg Ou,USD,0.00,25.92,GL,06/30/2025,               ,43010          ,     ,I10009301,143825288
+AHF,202506_0043,8,43,0,43,742030,JE,07/09/2025,-100137-1,Malpractice/Reinsurance Chg Ou,USD,0.00,-25.92,GL,06/30/2025,               ,43010          ,     ,I10013701,143860926
+AHF,202506_0043,9,43,0,43,743000,JE,07/07/2025,-100093-2,Malpractice/Reinsurance Chg Ou,USD,0.00,152.49,GL,06/30/2025,               ,43010          ,     ,I10009302,143825289
+AHF,202506_0043,10,43,0,43,743000,JE,07/09/2025,-100137-2,Malpractice/Reinsurance Chg Ou,USD,0.00,-152.49,GL,06/30/2025,               ,43010          ,     ,I10013702,143860927
+

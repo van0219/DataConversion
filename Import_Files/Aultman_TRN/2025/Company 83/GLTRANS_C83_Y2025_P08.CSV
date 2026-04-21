@@ -1,0 +1,16 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID
+AHF,202508_0083,1,83,0,83,100000,MR,08/13/2025,MEDIPAC-2-1,MEDIPAC DAILY                 ,USD,0.00,300.00,GL,08/12/2025,               ,83000          ,     ,N201,144708980
+AHF,202508_0083,2,83,0,83,100000,MR,08/14/2025,MEDIPAC-3-1,MEDIPAC DAILY                 ,USD,0.00,-300.00,GL,08/13/2025,               ,83000          ,     ,N301,144731664
+AHF,202508_0083,3,83,0,83,100000,MR,08/16/2025,MEDIPAC-4-1,MEDIPAC DAILY                 ,USD,0.00,50.00,GL,08/15/2025,               ,83000          ,     ,N401,144747554
+AHF,202508_0083,4,83,0,83,101010,MR,08/05/2025,MEDIPAC-1-1,MEDIPAC DAILY                 ,USD,0.00,-18079.65,GL,08/04/2025,               ,83000          ,     ,N101,144430983
+AHF,202508_0083,5,83,0,83,101010,MR,08/16/2025,MEDIPAC-4-2,MEDIPAC DAILY                 ,USD,0.00,-50.00,GL,08/15/2025,               ,83000          ,     ,N402,144747555
+AHF,202508_0083,6,83,0,83,101010,MR,08/19/2025,MEDIPAC-5-1,MEDIPAC DAILY                 ,USD,0.00,50.00,GL,08/18/2025,               ,83000          ,     ,N501,144757226
+AHF,202508_0083,7,83,0,83,102250,JE,09/03/2025,-7-1,P8 Write off allowances       ,USD,0.00,18079.65,GL,08/31/2025,               ,83000          ,     ,N701,145008468
+AHF,202508_0083,8,83,0,83,411160,JE,09/03/2025,-7-2,P8 Write off allowances       ,USD,0.00,-18079.65,GL,08/31/2025,               ,83021          ,     ,N702,145008469
+AHF,202508_0083,9,83,0,83,411415,MR,08/05/2025,MEDIPAC-1-2,MEDIPAC DAILY                 ,USD,0.00,18079.65,GL,08/04/2025,               ,83021          ,     ,N102,144430984
+AHF,202508_0083,10,83,0,83,411415,MR,08/19/2025,MEDIPAC-5-2,MEDIPAC DAILY                 ,USD,0.00,-50.00,GL,08/18/2025,               ,83021          ,     ,N502,144757227
+AHF,202508_0083,11,83,0,83,412255,MR,08/14/2025,MEDIPAC-3-3,MEDIPAC DAILY                 ,USD,0.00,300.00,GL,08/13/2025,               ,83021          ,     ,N303,144731666
+AHF,202508_0083,12,83,0,83,412355,MR,08/13/2025,MEDIPAC-2-2,MEDIPAC DAILY                 ,USD,0.00,-300.00,GL,08/12/2025,               ,83021          ,     ,N202,144708981
+AHF,202508_0083,13,83,0,83,412455,MR,08/14/2025,MEDIPAC-3-4,MEDIPAC DAILY                 ,USD,0.00,-300.00,GL,08/13/2025,               ,83021          ,     ,N304,144731667
+AHF,202508_0083,14,83,0,83,412480,MR,08/14/2025,MEDIPAC-3-5,MEDIPAC DAILY                 ,USD,0.00,300.00,GL,08/13/2025,               ,83021          ,     ,N305,144731668
+

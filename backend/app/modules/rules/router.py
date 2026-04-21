@@ -192,7 +192,7 @@ def get_rule_sets(
     Returns Common rule set first, then others alphabetically.
     Includes rule count for each set.
     """
-    rule_sets = RuleSetService.get_all_rule_sets(db, business_class)
+    rule_sets = RuleSetService.get_all_rule_sets(db, business_class, account_id=account_id)
     
     # Add rule count to each set
     result = []
@@ -206,6 +206,7 @@ def get_rule_sets(
             "is_common": rule_set.is_common,
             "is_user_default": rule_set.is_user_default,
             "is_active": rule_set.is_active,
+            "account_id": rule_set.account_id,
             "created_at": rule_set.created_at,
             "updated_at": rule_set.updated_at,
             "rule_count": rule_count
@@ -237,6 +238,7 @@ def get_rule_set(
         "is_common": rule_set.is_common,
         "is_user_default": rule_set.is_user_default,
         "is_active": rule_set.is_active,
+        "account_id": rule_set.account_id,
         "created_at": rule_set.created_at,
         "updated_at": rule_set.updated_at,
         "rule_count": len(rules),
@@ -256,7 +258,8 @@ def create_rule_set(
             name=rule_set.name,
             business_class=rule_set.business_class,
             description=rule_set.description,
-            is_active=rule_set.is_active
+            is_active=rule_set.is_active,
+            account_id=account_id
         )
         
         rule_count = RuleSetService.get_rule_count(db, created_set.id)
@@ -269,6 +272,7 @@ def create_rule_set(
             "is_common": created_set.is_common,
             "is_user_default": created_set.is_user_default,
             "is_active": created_set.is_active,
+            "account_id": created_set.account_id,
             "created_at": created_set.created_at,
             "updated_at": created_set.updated_at,
             "rule_count": rule_count
@@ -422,6 +426,36 @@ def get_rule_set_fields(
                 Schema.business_class == business_class,
                 Schema.is_active == True
             ).order_by(Schema.version_number.desc()).first()
+        
+        if not schema:
+            # Auto-fetch from local swagger file (sync — no FSM API call needed)
+            try:
+                from app.modules.schema.service import SchemaService
+                import hashlib
+                swagger_json = SchemaService._load_local_swagger(business_class)
+                if swagger_json:
+                    parsed = SchemaService._parse_local_swagger(swagger_json, business_class)
+                    # Use raw_schema which has the OpenAPI format with 'properties' and 'required'
+                    raw_schema = parsed.get("raw_schema", parsed)
+                    schema_content = json.dumps(raw_schema)
+                    schema_hash_val = hashlib.sha256(schema_content.encode()).hexdigest()
+                    new_schema = Schema(
+                        account_id=account_id,
+                        business_class=business_class,
+                        schema_json=schema_content,
+                        schema_hash=schema_hash_val,
+                        version_number=1,
+                        is_active=True,
+                        source="local_swagger",
+                        operations_json=json.dumps(parsed.get("operations", [])),
+                        required_fields_json=json.dumps(raw_schema.get("required", []))
+                    )
+                    db.add(new_schema)
+                    db.commit()
+                    db.refresh(new_schema)
+                    schema = new_schema
+            except Exception:
+                pass
         
         if not schema:
             raise HTTPException(
@@ -604,6 +638,7 @@ async def import_rule_set(
             business_class=rs["business_class"],
             description=rs.get("description") or f"Imported from {file.filename}",
             is_active=rs.get("is_active", True),
+            account_id=account_id,
         )
 
         imported_count = 0

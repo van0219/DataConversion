@@ -31,6 +31,7 @@ class RuleSetResponse(BaseModel):
     is_common: bool
     is_user_default: bool
     is_active: bool
+    account_id: Optional[int] = None
     created_at: datetime
     updated_at: datetime
     rule_count: Optional[int] = 0  # Number of rules in this set

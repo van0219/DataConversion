@@ -305,3 +305,187 @@ async def interface_job_transactions(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Interface failed: {str(e)}"
         )
+
+
+# ── Batch Upload Endpoints ───────────────────────────────────────────────────
+
+from fastapi import BackgroundTasks
+from typing import List as TypingList
+import uuid, asyncio, shutil, os
+
+
+@router.post("/batch")
+async def start_batch_upload(
+    background_tasks: BackgroundTasks,
+    files: TypingList[UploadFile] = File(...),
+    business_class: str = Form(""),
+    rule_set_id: int = Form(0),
+    date_source_format: str = Form(""),
+    account_id: int = Depends(get_current_account_id),
+    db: Session = Depends(get_db)
+):
+    """
+    Accept multiple CSV files and process them sequentially in the background.
+    Each file goes through: upload → auto-map → validate.
+    Returns a batch_id for polling progress.
+    """
+    from app.services.batch_progress import batch_progress
+    from app.core.database import SessionLocal
+    from app.modules.accounts.service import AccountService
+    from app.modules.upload.service import UploadService
+    from app.modules.mapping.service import MappingService
+    from app.modules.validation.service import ValidationService
+    from app.core.logging import logger
+
+    if not files:
+        raise HTTPException(status_code=400, detail="No files provided")
+
+    batch_id = str(uuid.uuid4())[:12]
+    filenames = [f.filename for f in files]
+    batch_progress.start(batch_id, filenames)
+
+    # Save files temporarily using UploadService.UPLOAD_DIR (same as single upload)
+    UploadService._ensure_upload_dir()
+    saved_files = {}
+    for f in files:
+        temp_path = str(UploadService.UPLOAD_DIR / f"batch_{batch_id}_{f.filename}")
+        content = await f.read()
+        with open(temp_path, "wb") as out:
+            out.write(content)
+        saved_files[f.filename] = temp_path
+
+    # Get account credentials
+    account = AccountService.get_account_by_id(db, account_id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    credentials = AccountService.get_decrypted_credentials(account)
+
+    # Capture business class and rule set for background task
+    batch_bc = business_class.strip() if business_class.strip() else None
+    batch_rs_id = rule_set_id if rule_set_id > 0 else None
+    batch_date_fmt = date_source_format.strip() if date_source_format.strip() else None
+
+    async def process_batch():
+        for filename in filenames:
+            if batch_progress.is_cancelled(batch_id):
+                break
+
+            temp_path = saved_files.get(filename)
+            if not temp_path:
+                batch_progress.fail_file(batch_id, filename, "File not found")
+                continue
+
+            batch_db = SessionLocal()
+            try:
+                # Step 1: Upload
+                batch_progress.update_file(batch_id, filename, status="uploading")
+                logger.info(f"Batch {batch_id}: uploading {filename}")
+
+                # Use user-provided business class, fallback to filename detection
+                bc_name = batch_bc or (filename.split('_')[0] if '_' in filename else filename.replace('.csv', ''))
+
+                # Create job via upload service (from saved file path)
+                from app.models.job import ConversionJob
+                from app.services.streaming_engine import StreamingEngine
+                from pathlib import Path
+
+                UploadService._ensure_upload_dir()
+
+                job = ConversionJob(
+                    account_id=account_id,
+                    business_class=bc_name,
+                    filename=filename,
+                    total_records=0,
+                    status="pending"
+                )
+                batch_db.add(job)
+                batch_db.commit()
+                batch_db.refresh(job)
+                job_id = job.id
+
+                # Copy temp file to uploads/ with job_id name
+                stored_path = UploadService.UPLOAD_DIR / f"{job_id}.csv"
+                shutil.copy2(temp_path, str(stored_path))
+
+                headers = StreamingEngine.get_csv_headers(stored_path)
+                total_records = StreamingEngine.estimate_record_count(stored_path)
+                job.total_records = total_records
+                batch_db.commit()
+
+                batch_progress.update_file(batch_id, filename, job_id=job_id, records=total_records)
+
+                # Step 2: Auto-map
+                batch_progress.update_file(batch_id, filename, status="mapping")
+                logger.info(f"Batch {batch_id}: mapping {filename} (job {job_id})")
+
+                mapping_result = await MappingService.auto_map(batch_db, account_id, job_id, bc_name)
+                mapping = mapping_result.get("mapping", {})
+
+                # Store mapping in batch progress for later use during load
+                batch_progress.update_file(batch_id, filename, mapping=mapping)
+
+                # Step 3: Validate
+                batch_progress.update_file(batch_id, filename, status="validating")
+                logger.info(f"Batch {batch_id}: validating {filename} (job {job_id})")
+
+                # Get rule set: use user-selected or fall back to default
+                from app.modules.rules.rule_set_service import RuleSetService
+                rs_id = batch_rs_id
+                if not rs_id:
+                    default_rs = RuleSetService.get_common_rule_set(batch_db, bc_name)
+                    rs_id = default_rs.id if default_rs else None
+
+                await ValidationService.start_validation(
+                    batch_db, account_id, job_id, bc_name, mapping,
+                    enable_rules=True, selected_rule_set_id=rs_id,
+                    date_source_format=batch_date_fmt
+                )
+
+                # Read final job stats
+                from app.models.job import ConversionJob
+                job = batch_db.query(ConversionJob).filter(ConversionJob.id == job_id).first()
+                valid = job.valid_records if job else 0
+                invalid = job.invalid_records if job else 0
+
+                batch_progress.complete_file(
+                    batch_id, filename,
+                    records=valid + invalid, valid=valid, invalid=invalid, errors=invalid
+                )
+                logger.info(f"Batch {batch_id}: {filename} done — {valid} valid, {invalid} invalid")
+
+                # Brief pause between files to avoid hammering FSM
+                await asyncio.sleep(1.5)
+
+            except Exception as e:
+                logger.error(f"Batch {batch_id}: {filename} failed — {e}")
+                batch_progress.fail_file(batch_id, filename, str(e)[:200])
+            finally:
+                batch_db.close()
+
+        batch_progress.finish(batch_id)
+        logger.info(f"Batch {batch_id} complete")
+
+    background_tasks.add_task(process_batch)
+
+    return {"batch_id": batch_id, "total": len(filenames)}
+
+
+@router.get("/batch-status")
+def get_batch_status(batch_id: str):
+    """Get progress of a batch upload."""
+    from app.services.batch_progress import batch_progress
+    result = batch_progress.get(batch_id)
+    if not result:
+        return {"running": False, "files": {}, "completed": 0, "total": 0}
+    return result
+
+
+class BatchCancelRequest(BaseModel):
+    batch_id: str
+
+@router.post("/batch-cancel")
+def cancel_batch(request: BatchCancelRequest):
+    """Cancel a running batch."""
+    from app.services.batch_progress import batch_progress
+    batch_progress.cancel(request.batch_id)
+    return {"status": "cancelled"}

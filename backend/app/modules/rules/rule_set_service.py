@@ -8,16 +8,27 @@ class RuleSetService:
     """Service for managing validation rule sets"""
     
     @staticmethod
-    def get_all_rule_sets(db: Session, business_class: Optional[str] = None) -> List[ValidationRuleSet]:
+    def get_all_rule_sets(db: Session, business_class: Optional[str] = None, account_id: Optional[int] = None) -> List[ValidationRuleSet]:
         """
         Get all rule sets, optionally filtered by business class.
+        Shows global rule sets (account_id IS NULL) + current account's rule sets.
         Returns Common rule set first, then others alphabetically.
         """
+        from sqlalchemy import or_
         query = db.query(ValidationRuleSet)
         
         # Filter by business class if provided and not empty
         if business_class is not None and business_class.strip():
             query = query.filter(ValidationRuleSet.business_class == business_class)
+        
+        # Filter: global (NULL account_id) + current account's rule sets
+        if account_id is not None:
+            query = query.filter(
+                or_(
+                    ValidationRuleSet.account_id == None,
+                    ValidationRuleSet.account_id == account_id
+                )
+            )
         
         # Order: Common first, then by name
         rule_sets = query.order_by(
@@ -86,16 +97,19 @@ class RuleSetService:
         name: str,
         business_class: str,
         description: Optional[str] = None,
-        is_active: bool = True
+        is_active: bool = True,
+        account_id: Optional[int] = None
     ) -> ValidationRuleSet:
         """
         Create a new rule set.
         Cannot create additional Common rule sets (one per business class).
+        account_id: set to tie this rule set to a specific account (NULL = global).
         """
-        # Check if name already exists for this business class
+        # Check if name already exists for this business class AND account
         existing = db.query(ValidationRuleSet).filter(
             ValidationRuleSet.business_class == business_class,
-            ValidationRuleSet.name == name
+            ValidationRuleSet.name == name,
+            ValidationRuleSet.account_id == account_id
         ).first()
         
         if existing:
@@ -109,15 +123,16 @@ class RuleSetService:
             name=name,
             business_class=business_class,
             description=description,
-            is_common=False,  # User-created sets are never Common
-            is_active=is_active
+            is_common=False,
+            is_active=is_active,
+            account_id=account_id
         )
         
         db.add(rule_set)
         db.commit()
         db.refresh(rule_set)
         
-        logger.info(f"Created rule set: {name} for {business_class}")
+        logger.info(f"Created rule set: {name} for {business_class} (account_id={account_id})")
         return rule_set
     
     @staticmethod

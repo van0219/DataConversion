@@ -1,0 +1,11 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID
+AHF,202504_0043,1,43,0,43,100072,AP,04/10/2025,      1501-2-1,Cash Disbursement             ,USD,0.00,-262.95,AP,04/10/2025,               ,43001          ,     ,N201,142266290
+AHF,202504_0043,2,43,0,43,104000,CB,05/02/2025,GL40-100058-3,Auto offset from company 0010 ,USD,0.00,-178.41,GL,04/30/2025,               ,43001          ,     ,I10005803,142706471
+AHF,202504_0043,3,43,0,43,104000,CB,05/06/2025,GL40-100111-2,Auto offset from company 0010 ,USD,0.00,-195.00,GL,04/30/2025,               ,43001          ,     ,I10011102,142764054
+AHF,202504_0043,4,43,0,43,200000,AC,03/31/2025,AP175-1-1,Accounts Payable Accrual      ,USD,0.00,-257.14,AP,04/04/2025,               ,43001          ,     ,N101,142220423
+AHF,202504_0043,5,43,0,43,200000,AP,04/10/2025,      1501-2-2,Payment Accrual               ,USD,0.00,262.95,AP,04/10/2025,               ,43001          ,     ,N202,142266291
+AHF,202504_0043,6,43,0,43,701140,AD,03/31/2025,     26254-1-2,    36957RETRIEVEX HOLDINGS CO,USD,0.00,257.14,AP,04/04/2025,               ,43010          ,     ,N102,142220424
+AHF,202504_0043,7,43,0,43,701450,JE,05/06/2025,-100111-1,AULTMAN SPEC KEY BANK FEES    ,USD,0.00,195.00,GL,04/30/2025,               ,43010          ,     ,I10011101,142764052
+AHF,202504_0043,8,43,0,43,742030,JE,05/02/2025,-100058-1,Malpractice/Reinsurance Chg Ou,USD,0.00,25.92,GL,04/30/2025,               ,43010          ,     ,I10005801,142706468
+AHF,202504_0043,9,43,0,43,743000,JE,05/02/2025,-100058-2,Malpractice/Reinsurance Chg Ou,USD,0.00,152.49,GL,04/30/2025,               ,43010          ,     ,I10005802,142706469
+

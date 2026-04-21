@@ -1,0 +1,10 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID
+AHF,202505_0084,1,84,0,84,100008,JE,05/28/2025,-77-1,2024 PROD BONUS               ,USD,0.00,48944.67,GL,05/31/2025,               ,84000          ,     ,N7701,143061708
+AHF,202505_0084,2,84,0,84,100008,JE,05/07/2025,-15-1,2025-5MSA PYMT                ,USD,0.00,11174.58,GL,05/31/2025,               ,84000          ,     ,N1501,142804294
+AHF,202505_0084,3,84,0,84,103190,JE,05/28/2025,-77-3,2024 HMA PRODUCTION BONUS PYMT,USD,0.00,-48944.67,GL,05/31/2025,               ,84000          ,     ,N7703,143061709
+AHF,202505_0084,4,84,0,84,103190,JE,05/07/2025,-15-2,2025-5MSA PYMT                ,USD,0.00,-11174.58,GL,05/31/2025,               ,84000          ,     ,N1502,142804295
+AHF,202505_0084,5,84,0,84,103190,JE,06/03/2025,-133-1,P5 Pomerene JULY 2025 MSA     ,USD,0.00,11174.58,GL,05/31/2025,               ,84000          ,     ,N13301,143216235
+AHF,202505_0084,6,84,0,84,105110,ZB,06/05/2025,GL190-116-43,Auto Offset From Zone 10      ,USD,0.00,-90.00,GL,05/31/2025,               ,84000          ,     ,I116043,143299956
+AHF,202505_0084,7,84,0,84,490407,JE,06/03/2025,-133-2,P5 Pomerene JULY 2025 MSA     ,USD,0.00,-11174.58,GL,05/31/2025,               ,84020          ,     ,N13302,143216236
+AHF,202505_0084,8,84,0,84,701450,JE,06/05/2025,-116-22,AULTMAN INNO KEY BANK FEES    ,USD,0.00,90.00,GL,05/31/2025,               ,84010          ,     ,I116022,143292264
+

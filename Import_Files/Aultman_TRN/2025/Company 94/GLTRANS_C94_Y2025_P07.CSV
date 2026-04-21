@@ -1,0 +1,5 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID
+AHF,202507_0094,1,94,0,94,103190,JE,08/11/2025,-371-3,P7 ASC Loan Draw              ,USD,0.00,15539.22,GL,07/31/2025,               ,94000          ,     ,N37103,144515644
+AHF,202507_0094,2,94,0,94,103190,JE,08/11/2025,-371-1,P7 ASC Loan Draw              ,USD,0.00,67924.56,GL,07/31/2025,               ,94000          ,     ,N37101,144515642
+AHF,202507_0094,3,94,0,94,105110,ZB,08/11/2025,GL190-371-6,Auto Offset From Zone 10      ,USD,0.00,-83463.78,GL,07/31/2025,               ,94000          ,     ,N37106,144515752
+
