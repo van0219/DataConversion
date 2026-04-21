@@ -1,5 +1,5 @@
 import httpx
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Callable
 from datetime import datetime, timedelta
 from app.core.logging import logger
 
@@ -341,91 +341,157 @@ class FSMClient:
                 logger.error(f"Single record create error: {str(e)}")
                 raise Exception(f"Single record create error: {str(e)}")
     
-    async def fetch_setup_data(self, endpoint_url: str) -> List[Dict]:
+    async def fetch_setup_data(self, endpoint_url: str, on_page_fetched: Optional[Callable] = None, on_page_starting: Optional[Callable] = None) -> List[Dict]:
         """
         Fetch setup data from FSM using configured list endpoint.
-        Automatically paginates to retrieve all records.
         
-        Args:
-            endpoint_url: Relative endpoint path (e.g., "soap/classes/Currency/lists/PrimaryCurrencyList?...")
-        
-        Returns:
-            List of records from _records array in response
+        Strategy:
+        - Single-phase: fetch with page_size=5000, adaptive downsize on timeout
+        - No probe overhead — just fetch and stop on partial/empty page
+        - Connection pooling with keep-alive for speed
         """
         await self._ensure_authenticated()
         
-        base = self.base_url.rstrip('/')
-        full_url = f"{base}/{self.tenant_id}/FSM/fsm/{endpoint_url}"
-        
-        logger.info(f"Fetching setup data from: {full_url}")
-        
-        all_records = []
-        offset = 0
-        page_size = 10000
-        
-        # Parse the limit from the URL to use as page size
         import re
-        limit_match = re.search(r'_limit=(\d+)', endpoint_url)
-        if limit_match:
-            page_size = int(limit_match.group(1))
+        import asyncio
         
-        async with httpx.AsyncClient(timeout=300.0) as client:
-            while True:
-                # Add or replace _offset in the URL
-                if '_offset=' in full_url:
-                    page_url = re.sub(r'_offset=\d+', f'_offset={offset}', full_url)
-                elif '?' in full_url:
-                    page_url = f"{full_url}&_offset={offset}"
-                else:
-                    page_url = f"{full_url}?_offset={offset}"
+        base = self.base_url.rstrip('/')
+        base_url = f"{base}/{self.tenant_id}/FSM/fsm/{endpoint_url}"
+        
+        # Strip _limit, _offset — we manage them
+        base_url = re.sub(r'[&?]_limit=\d+', '', base_url)
+        base_url = re.sub(r'[&?]_offset=\d+', '', base_url)
+        
+        logger.info(f"Fetching setup data from: {base_url}")
+        
+        page_size = 5000
+        min_page_size = 200
+        max_retries = 3
+        max_records_cap = 500_000
+        
+        all_records: List[Dict] = []
+        offset = 0
+        pages_fetched = 0
+        
+        limits = httpx.Limits(max_connections=5, max_keepalive_connections=3)
+        async with httpx.AsyncClient(timeout=180.0, limits=limits) as client:
+            while len(all_records) < max_records_cap:
+                page_num = pages_fetched + 1
+                if on_page_starting:
+                    on_page_starting(page_num, page_size, len(all_records))
                 
-                try:
-                    logger.info(f"Fetching page at offset {offset} (page_size={page_size})")
-                    response = await client.get(
-                        page_url,
-                        headers={"Authorization": f"Bearer {self.access_token}"}
-                    )
-                    response.raise_for_status()
-                    
-                    data = response.json()
-                    page_records = self._extract_records(data)
-                    
-                    if not page_records:
-                        break
-                    
-                    all_records.extend(page_records)
-                    logger.info(f"Page fetched: {len(page_records)} records (total so far: {len(all_records)})")
-                    
-                    # If we got fewer records than the page size, we've reached the end
-                    if len(page_records) < page_size:
-                        break
-                    
-                    offset += page_size
-                    
-                except httpx.HTTPStatusError as e:
-                    logger.error(f"Failed to fetch setup data: {e.response.status_code} - {e.response.text}")
-                    raise Exception(f"Failed to fetch setup data: {e.response.status_code}")
-                except Exception as e:
-                    logger.error(f"Setup data fetch error: {str(e)}")
-                    raise Exception(f"Setup data fetch error: {str(e)}")
+                page_records = await self._fetch_page(
+                    client, base_url, offset, page_size, min_page_size, max_retries
+                )
+                
+                if page_records is None:
+                    raise Exception(f"Failed to fetch page at offset {offset} after {max_retries} retries")
+                
+                if not page_records:
+                    break
+                
+                all_records.extend(page_records)
+                pages_fetched += 1
+                
+                logger.info(f"Page {pages_fetched}: {len(page_records)} records (total: {len(all_records)})")
+                
+                if on_page_fetched:
+                    on_page_fetched(len(all_records), pages_fetched, page_size)
+                
+                # Partial page = last page
+                if len(page_records) < page_size:
+                    break
+                
+                offset += page_size
         
-        logger.info(f"Fetched {len(all_records)} total records from setup endpoint")
+        logger.info(f"Fetched {len(all_records)} total records ({pages_fetched} pages)")
         return all_records
     
+    async def _fetch_page(
+        self,
+        client: httpx.AsyncClient,
+        base_url: str,
+        offset: int,
+        page_size: int,
+        min_page_size: int,
+        max_retries: int
+    ) -> Optional[List[Dict]]:
+        """Fetch a single page with adaptive retry and backoff."""
+        import asyncio
+        
+        retries = 0
+        current_size = page_size
+        
+        while retries < max_retries:
+            try:
+                sep = '&' if '?' in base_url else '?'
+                url = f"{base_url}{sep}_limit={current_size}&_offset={offset}"
+                
+                response = await client.get(
+                    url,
+                    headers={"Authorization": f"Bearer {self.access_token}"}
+                )
+                response.raise_for_status()
+                
+                data = response.json()
+                records, _ = self._extract_records_with_count(data)
+                return records
+                
+            except (httpx.HTTPStatusError, httpx.ReadTimeout, httpx.ConnectTimeout) as e:
+                is_timeout = isinstance(e, (httpx.ReadTimeout, httpx.ConnectTimeout))
+                is_504 = isinstance(e, httpx.HTTPStatusError) and e.response.status_code == 504
+                
+                if (is_timeout or is_504) and current_size > min_page_size:
+                    old_size = current_size
+                    current_size = max(min_page_size, current_size // 2)
+                    retries += 1
+                    backoff = 2 ** retries  # Exponential backoff: 2s, 4s, 8s
+                    logger.warning(
+                        f"Timeout/504 at offset {offset} (size={old_size}). "
+                        f"Reducing to {current_size}, retry {retries}/{max_retries} after {backoff}s"
+                    )
+                    await asyncio.sleep(backoff)
+                    continue
+                
+                if isinstance(e, httpx.HTTPStatusError):
+                    logger.error(f"HTTP {e.response.status_code} at offset {offset}")
+                    raise Exception(f"Failed to fetch: HTTP {e.response.status_code}")
+                else:
+                    logger.error(f"Timeout at offset {offset}: {e}")
+                    raise Exception(f"Fetch timeout after {max_retries} retries")
+            
+            except Exception as e:
+                logger.error(f"Fetch error at offset {offset}: {e}")
+                raise
+        
+        return None
+    
     def _extract_records(self, data) -> List[Dict]:
-        """Extract and flatten records from FSM API response."""
+        """Extract and flatten records from FSM API response.
+        Returns a tuple-like: call _extract_records_with_count for (records, total_count)."""
+        records, _ = self._extract_records_with_count(data)
+        return records
+
+    def _extract_records_with_count(self, data) -> tuple:
+        """Extract and flatten records from FSM API response.
+        Returns (records, total_count) where total_count is from _count metadata or None."""
+        total_count = None
         if isinstance(data, list):
             flattened_records = []
             for i, record in enumerate(data):
                 if isinstance(record, dict):
-                    if "_count" in record or ("_links" in record and "_fields" not in record):
+                    if "_count" in record:
+                        total_count = record["_count"]
+                        continue
+                    if "_links" in record and "_fields" not in record:
                         continue
                     if "_fields" in record:
                         flattened_records.append(record["_fields"])
                     else:
                         flattened_records.append(record)
-            return flattened_records
+            return flattened_records, total_count
         elif isinstance(data, dict):
+            total_count = data.get("_count", None)
             records = data.get("_records", [])
             flattened_records = []
             for record in records:
@@ -433,10 +499,10 @@ class FSMClient:
                     flattened_records.append(record["_fields"])
                 else:
                     flattened_records.append(record)
-            return flattened_records
+            return flattened_records, total_count
         else:
             logger.error(f"Unexpected response type: {type(data)}")
-            return []
+            return [], None
     
     async def interface_transactions(
         self,

@@ -14,6 +14,42 @@ from app.modules.rules.schemas import (
 
 router = APIRouter()
 
+
+@router.get("/required-fields/{business_class}")
+def get_required_fields(
+    business_class: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Get all required field names for a business class from its rule sets.
+    Returns fields that have REQUIRED_FIELD or REQUIRED_OVERRIDE rules
+    in the Default (is_common=True) rule set.
+    """
+    from app.models.validation_rule_set import ValidationRuleSet
+    from app.models.rule import ValidationRuleTemplate
+
+    # Find the Default rule set for this business class
+    default_set = db.query(ValidationRuleSet).filter(
+        ValidationRuleSet.business_class == business_class,
+        ValidationRuleSet.is_common == True
+    ).first()
+
+    if not default_set:
+        return {"required_fields": []}
+
+    # Get all REQUIRED rules from the default set
+    rules = db.query(ValidationRuleTemplate).filter(
+        ValidationRuleTemplate.rule_set_id == default_set.id,
+        ValidationRuleTemplate.rule_type.in_(["REQUIRED_FIELD", "REQUIRED_OVERRIDE"]),
+        ValidationRuleTemplate.field_name != "_file_level_"
+    ).all()
+
+    return {
+        "required_fields": [r.field_name for r in rules],
+        "rule_set_name": default_set.name
+    }
+
+
 # Rule Templates
 
 @router.post("/templates", response_model=RuleTemplateResponse)
@@ -373,11 +409,19 @@ def get_rule_set_fields(
         business_class = rule_set.business_class
         
         # Get latest active schema for this business class
+        # Try current account first, then fall back to any account's schema
+        # (schemas are the same regardless of account — they come from swagger files)
         schema = db.query(Schema).filter(
             Schema.account_id == account_id,
             Schema.business_class == business_class,
             Schema.is_active == True
         ).order_by(Schema.version_number.desc()).first()
+        
+        if not schema:
+            schema = db.query(Schema).filter(
+                Schema.business_class == business_class,
+                Schema.is_active == True
+            ).order_by(Schema.version_number.desc()).first()
         
         if not schema:
             raise HTTPException(

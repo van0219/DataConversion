@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Session
-from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from typing import List, Dict, Optional
 from datetime import datetime
 from pathlib import Path
@@ -140,61 +139,72 @@ class SnapshotService:
     ) -> Dict:
         """
         Sync a single setup business class using configured endpoint.
-        Stores records in unified snapshot_records table.
+        Full replace strategy: delete old records, insert fresh data, count actual rows.
         """
         logger.info(f"Syncing {setup_class.name} using endpoint: {setup_class.endpoint_url}")
         
         try:
+            from app.services.sync_progress import sync_progress
+            
+            sync_progress.start(setup_class.name)
+            
+            # Progress callback for fetch_setup_data
+            def on_page(records_fetched, pages_fetched, page_size):
+                sync_progress.update_fetch(setup_class.name, records_fetched, pages_fetched, page_size)
+            
+            def on_page_start(page_num, page_size, records_so_far):
+                sync_progress.update_fetching_page(setup_class.name, page_num, page_size, records_so_far)
+            
             # Fetch records from FSM using configured endpoint
-            records = await fsm_client.fetch_setup_data(setup_class.endpoint_url)
+            records = await fsm_client.fetch_setup_data(setup_class.endpoint_url, on_page_fetched=on_page, on_page_starting=on_page_start)
             
             logger.info(f"Fetched {len(records)} records for {setup_class.name}")
             
-            # Store records in snapshot_records table
+            # Delete existing records for this account+class before inserting fresh data
+            db.query(SnapshotRecord).filter(
+                SnapshotRecord.account_id == account_id,
+                SnapshotRecord.business_class == setup_class.name
+            ).delete()
+            db.commit()
+            
+            # Insert fresh records in batches
             records_stored = 0
-            batch_size = 100  # Commit every 100 records
+            batch_size = 500
             
             batch = []
             for i, record in enumerate(records):
-                # Extract primary key using configured key_field
                 primary_key = str(record.get(setup_class.key_field, ""))
                 
                 if not primary_key:
-                    logger.warning(f"Record missing key field '{setup_class.key_field}', skipping: {record}")
+                    logger.warning(f"Record missing key field '{setup_class.key_field}' for {setup_class.name}, skipping")
                     continue
                 
-                batch.append({
-                    "account_id": account_id,
-                    "business_class": setup_class.name,
-                    "primary_key": primary_key,
-                    "last_modified_date": datetime.now(),
-                    "raw_json": json.dumps(record)
-                })
+                batch.append(SnapshotRecord(
+                    account_id=account_id,
+                    business_class=setup_class.name,
+                    primary_key=primary_key,
+                    last_modified_date=datetime.now(),
+                    raw_json=json.dumps(record)
+                ))
                 records_stored += 1
 
-                # Upsert every batch_size records
                 if len(batch) >= batch_size:
-                    stmt = sqlite_insert(SnapshotRecord).values(batch)
-                    stmt = stmt.on_conflict_do_update(
-                        index_elements=["account_id", "business_class", "primary_key"],
-                        set_={"raw_json": stmt.excluded.raw_json, "last_modified_date": stmt.excluded.last_modified_date}
-                    )
-                    db.execute(stmt)
+                    db.bulk_save_objects(batch)
                     db.commit()
-                    logger.debug(f"Upserted batch of {len(batch)} records for {setup_class.name}")
+                    sync_progress.update_store(setup_class.name, records_stored, len(records))
                     batch = []
 
-            # Upsert remaining records
             if batch:
-                stmt = sqlite_insert(SnapshotRecord).values(batch)
-                stmt = stmt.on_conflict_do_update(
-                    index_elements=["account_id", "business_class", "primary_key"],
-                    set_={"raw_json": stmt.excluded.raw_json, "last_modified_date": stmt.excluded.last_modified_date}
-                )
-                db.execute(stmt)
+                db.bulk_save_objects(batch)
                 db.commit()
             
-            # Update registry
+            # Count actual rows in DB for accuracy
+            actual_count = db.query(SnapshotRecord).filter(
+                SnapshotRecord.account_id == account_id,
+                SnapshotRecord.business_class == setup_class.name
+            ).count()
+            
+            # Update registry with actual count
             registry = db.query(SnapshotRegistry).filter(
                 SnapshotRegistry.account_id == account_id,
                 SnapshotRegistry.business_class == setup_class.name
@@ -202,29 +212,33 @@ class SnapshotService:
             
             if registry:
                 registry.last_sync_timestamp = datetime.now()
-                registry.record_count = records_stored
+                registry.record_count = actual_count
             else:
                 registry = SnapshotRegistry(
                     account_id=account_id,
                     business_class=setup_class.name,
                     last_sync_timestamp=datetime.now(),
-                    record_count=records_stored
+                    record_count=actual_count
                 )
                 db.add(registry)
             
             db.commit()
             
-            logger.info(f"Stored {records_stored} records for {setup_class.name}")
+            logger.info(f"Stored {actual_count} records for {setup_class.name} (fetched {len(records)}, stored {records_stored})")
+            
+            sync_progress.complete(setup_class.name, actual_count)
             
             return {
                 "business_class": setup_class.name,
                 "status": "success",
-                "record_count": records_stored,
+                "record_count": actual_count,
                 "last_sync": datetime.now().isoformat()
             }
             
         except Exception as e:
             logger.error(f"Failed to sync {setup_class.name}: {str(e)}")
+            from app.services.sync_progress import sync_progress
+            sync_progress.fail(setup_class.name, str(e))
             raise
     
     @staticmethod

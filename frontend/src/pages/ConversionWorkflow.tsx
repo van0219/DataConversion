@@ -165,6 +165,16 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
   // Helper function to handle step click
   const handleStepClick = (step: 'upload' | 'mapping' | 'validation' | 'load' | 'postValidation' | 'completed') => {
     if (canNavigateToStep(step) && step !== currentStep) {
+      // Block navigation to load/completed if zero valid records
+      if ((step === 'load' || step === 'completed') && validationProgress && validationProgress.valid_records === 0 && validationProgress.total_records > 0) {
+        window.alert(
+          `❌ Cannot proceed to Load.\n\n` +
+          `All ${validationProgress.total_records.toLocaleString()} records have validation errors. ` +
+          `There are no valid records to send to FSM.\n\n` +
+          `Please fix the source data and re-upload, or adjust your validation rules.`
+        );
+        return;
+      }
       changeStep(step);
     }
   };
@@ -198,6 +208,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
   });
   const [fetchingSchema, setFetchingSchema] = useState(false);
   const [autoMapping, setAutoMapping] = useState(false);
+  const [requiredFields, setRequiredFields] = useState<string[]>([]);
+  const [missingRequiredFields, setMissingRequiredFields] = useState<string[]>([]);
   const [searchDropdownOpen, setSearchDropdownOpen] = useState<string | null>(null); // Track which dropdown is open
   const [searchQuery, setSearchQuery] = useState<Record<string, string>>({}); // Track search query per field
   
@@ -510,21 +522,30 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
         business_class: effectiveBusinessClass
       });
 
-      // Inject filename-as-RunGroup: find any mapped FSM field containing "rungroup" (case-insensitive)
-      // and override its value with the filename (without extension), capped at 30 chars.
+      // RunGroup is always derived from the filename, never from the CSV.
+      // Remove any CSV-based RunGroup mapping and replace with a synthetic filename entry.
       const filenameForRunGroup = file?.name
-        ? file.name.replace(/\.[^/.]+$/, '').slice(0, 30)
+        ? file.name.replace(/\.[^/.]+$/, '').replace(/\s+/g, '_').slice(0, 30)
         : '';
       const mappingWithRunGroup = { ...mappingResponse.data.mapping };
-      Object.entries(mappingWithRunGroup).forEach(([csvCol, fsmData]: [string, any]) => {
+      
+      // Remove any CSV column that mapped to a RunGroup FSM field
+      Object.keys(mappingWithRunGroup).forEach(csvCol => {
+        const fsmData = mappingWithRunGroup[csvCol] as any;
         if (fsmData.fsm_field && fsmData.fsm_field.toLowerCase().includes('rungroup')) {
-          mappingWithRunGroup[csvCol] = {
-            ...fsmData,
-            run_group_value: filenameForRunGroup,
-            confidence: 'filename',
-          };
+          delete mappingWithRunGroup[csvCol];
         }
       });
+
+      // Always add the synthetic filename-based RunGroup entry
+      if (filenameForRunGroup) {
+        mappingWithRunGroup['_auto_rungroup_'] = {
+          fsm_field: 'GLTransactionInterface.RunGroup',
+          confidence: 'filename',
+          score: 0,
+          run_group_value: filenameForRunGroup,
+        };
+      }
 
       setMappingData({ ...mappingResponse.data, mapping: mappingWithRunGroup });
       
@@ -534,6 +555,21 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
         uiMapping[fsmData.fsm_field] = csvCol;
       });
       setMapping(uiMapping);
+
+      // Fetch required fields from rule set and check for missing mappings
+      try {
+        const reqResp = await api.get(`/rules/required-fields/${encodeURIComponent(effectiveBusinessClass)}`);
+        const reqFields: string[] = reqResp.data.required_fields || [];
+        setRequiredFields(reqFields);
+        
+        // Check which required fields are not mapped (use mappingWithRunGroup which includes synthetic RunGroup)
+        const mappedFsmFields = new Set(
+          Object.values(mappingWithRunGroup)
+            .map((m: any) => m.fsm_field)
+        );
+        const missing = reqFields.filter(f => !mappedFsmFields.has(f));
+        setMissingRequiredFields(missing);
+      } catch { /* ignore — non-critical */ }
       
     } catch (error: any) {
       console.error('Automatic mapping failed:', error);
@@ -1921,6 +1957,33 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
             </div>
           )}
 
+          {/* Missing Required Fields Warning */}
+          {missingRequiredFields.length > 0 && (
+            <div style={{
+              backgroundColor: '#3b0a0a',
+              border: '2px solid #dc2626',
+              borderRadius: '8px',
+              padding: '16px 20px',
+              marginBottom: '20px'
+            }}>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: '#dc2626', marginBottom: '8px' }}>
+                ⚠️ {missingRequiredFields.length} Required Field{missingRequiredFields.length > 1 ? 's' : ''} Not Mapped
+              </div>
+              <p style={{ fontSize: '13px', color: '#f87171', marginBottom: '10px' }}>
+                The following fields are required by the validation rule set but have no matching column in your CSV file. 
+                All records will fail validation for these fields.
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {missingRequiredFields.map(f => (
+                  <span key={f} style={{
+                    padding: '3px 10px', borderRadius: '4px', fontSize: '12px',
+                    backgroundColor: '#dc2626', color: '#fff', fontWeight: '500'
+                  }}>{f}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Continue Button */}
           {Object.keys(mappingData.mapping || {}).length > 0 && (
             <div style={{ marginBottom: '20px' }}>
@@ -2022,7 +2085,13 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
 
               {/* Table Rows */}
               <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                {Object.entries(mappingData.mapping || {}).map(([csvColumn, mappingInfo], index) => {
+                {Object.entries(mappingData.mapping || {})
+                .sort(([, a], [, b]) => {
+                  const aIsRG = a.fsm_field?.toLowerCase().includes('rungroup') ? 0 : 1;
+                  const bIsRG = b.fsm_field?.toLowerCase().includes('rungroup') ? 0 : 1;
+                  return aIsRG - bIsRG;
+                })
+                .map(([csvColumn, mappingInfo], index) => {
                   const isEnabled = mappingInfo.enabled !== false;
                   const isRunGroup = mappingInfo.fsm_field?.toLowerCase().includes('rungroup');
                   return (
@@ -2136,7 +2205,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                           onBlur={(e) => {
                             e.target.style.borderColor = isEnabled ? theme.background.quaternary : theme.background.secondary;
                             e.target.style.boxShadow = 'none';
-                            setTimeout(() => setSearchDropdownOpen(null), 150);
+                            setTimeout(() => setSearchDropdownOpen(null), 250);
                           }}
                         />
                         {/* Dropdown List */}
@@ -2176,7 +2245,8 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
                               return filteredFields.slice(0, 50).map(field => (
                                 <div
                                   key={field}
-                                  onClick={() => {
+                                  onMouseDown={(e) => {
+                                    e.preventDefault(); // Prevent blur from firing
                                     setMapping(prev => {
                                       const newMapping = { ...prev };
                                       Object.keys(newMapping).forEach(key => {
@@ -2455,10 +2525,19 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
 
                 <button
                   onClick={() => {
+                    if (validationProgress && validationProgress.valid_records === 0) {
+                      window.alert(
+                        `❌ Cannot proceed to Load.\n\n` +
+                        `All ${validationProgress.total_records.toLocaleString()} records have validation errors. ` +
+                        `There are no valid records to send to FSM.\n\n` +
+                        `Please fix the source data and re-upload, or adjust your validation rules.`
+                      );
+                      return;
+                    }
                     if (validationProgress && validationProgress.errors_found > 0) {
                       const confirmed = window.confirm(
                         `⚠️ Warning: ${validationProgress.errors_found.toLocaleString()} validation error(s) found.\n\n` +
-                        `Records with errors will be skipped during load. Only valid records will be sent to FSM.\n\n` +
+                        `Records with errors will be skipped during load. Only ${validationProgress.valid_records.toLocaleString()} valid records will be sent to FSM.\n\n` +
                         `Do you want to continue to the Load step?`
                       );
                       if (!confirmed) return;

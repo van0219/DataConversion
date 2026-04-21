@@ -37,7 +37,17 @@ interface ClassSyncStatus {
   status: SyncStatus;
   recordCount?: number;
   error?: string;
+  progressMessage?: string;
 }
+
+const AnimatedDots: React.FC = () => {
+  const [dotCount, setDotCount] = useState(1);
+  useEffect(() => {
+    const id = setInterval(() => setDotCount(prev => (prev % 3) + 1), 400);
+    return () => clearInterval(id);
+  }, []);
+  return <>{'.'.repeat(dotCount)}</>;
+};
 
 const SetupDataManagement: React.FC = () => {
   const [setupClasses, setSetupClasses] = useState<SetupBusinessClass[]>([]);
@@ -52,6 +62,18 @@ const SetupDataManagement: React.FC = () => {
   const [availableSwaggerFiles, setAvailableSwaggerFiles] = useState<any[]>([]);
   const [selectedSwagger, setSelectedSwagger] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // View Records modal state
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [viewClassName, setViewClassName] = useState('');
+  const [viewRecords, setViewRecords] = useState<any[]>([]);
+  const [viewColumns, setViewColumns] = useState<string[]>([]);
+  const [viewTotal, setViewTotal] = useState(0);
+  const [viewPage, setViewPage] = useState(1);
+  const [viewTotalPages, setViewTotalPages] = useState(1);
+  const [viewSearch, setViewSearch] = useState('');
+  const [viewLoading, setViewLoading] = useState(false);
+  const [viewPageSize, setViewPageSize] = useState(50);
   const [syncingClasses, setSyncingClasses] = useState<Set<number>>(new Set());
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
@@ -72,6 +94,40 @@ const SetupDataManagement: React.FC = () => {
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
+
+  // Debounced search for view modal
+  useEffect(() => {
+    if (!viewModalOpen) return;
+    const timer = setTimeout(() => {
+      fetchViewRecords(viewClassName, 1, viewSearch);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [viewSearch]);
+
+  const fetchViewRecords = async (businessClass: string, page: number, search: string, pageSize?: number) => {
+    try {
+      setViewLoading(true);
+      const resp = await api.get(`/snapshot/records/${encodeURIComponent(businessClass)}`, {
+        params: { page, page_size: pageSize ?? viewPageSize, search }
+      });
+      setViewRecords(resp.data.records);
+      setViewColumns(resp.data.columns);
+      setViewTotal(resp.data.total);
+      setViewPage(resp.data.page);
+      setViewTotalPages(resp.data.total_pages);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to load records');
+    } finally {
+      setViewLoading(false);
+    }
+  };
+
+  const openViewModal = (businessClass: string) => {
+    setViewClassName(businessClass);
+    setViewSearch('');
+    setViewModalOpen(true);
+    fetchViewRecords(businessClass, 1, '');
+  };
 
   const loadSetupClasses = async () => {
     try {
@@ -108,73 +164,78 @@ const SetupDataManagement: React.FC = () => {
       setSyncing(true);
       setError('');
       
-      // Get active classes
-      const activeClasses = setupClasses.filter(c => c.is_active);
+      // Fire background sync — returns immediately
+      await api.post('/snapshot/sync/all-background');
       
-      // Initialize sync statuses - all queued
-      const initialStatuses = new Map<string, ClassSyncStatus>();
-      activeClasses.forEach((cls) => {
-        initialStatuses.set(cls.name, {
-          name: cls.name,
-          status: 'queued'
-        });
-      });
-      setSyncStatuses(initialStatuses);
-      
-      // Sync each class individually for real-time progress
-      for (const cls of activeClasses) {
-        try {
-          // Update to syncing
-          setSyncStatuses(prev => {
-            const updated = new Map(prev);
-            updated.set(cls.name, {
-              name: cls.name,
-              status: 'syncing'
-            });
-            return updated;
-          });
-          
-          // Sync this class
-          const response = await api.post('/snapshot/sync/single', {
-            business_class_name: cls.name
-          });
-          
-          // Update to completed
-          const result = response.data.classes_synced[0];
-          setSyncStatuses(prev => {
-            const updated = new Map(prev);
-            updated.set(cls.name, {
-              name: cls.name,
-              status: result.status === 'success' ? 'completed' : 'failed',
-              recordCount: result.record_count,
-              error: result.error
-            });
-            return updated;
-          });
-          
-        } catch (err: any) {
-          // Mark this class as failed
-          setSyncStatuses(prev => {
-            const updated = new Map(prev);
-            updated.set(cls.name, {
-              name: cls.name,
-              status: 'failed',
-              error: err.response?.data?.detail || 'Sync failed'
-            });
-            return updated;
-          });
-        }
-      }
-      
-      // Reload registry to show updated last sync times
-      await loadRegistry();
+      // Start polling batch status
+      startBatchPolling();
       
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Sync failed');
-    } finally {
-      setSyncing(false);
+      const detail = err.response?.data?.detail;
+      if (err.response?.status === 409) {
+        // Already running — just start polling
+        startBatchPolling();
+      } else {
+        setError(detail || 'Sync failed');
+        setSyncing(false);
+      }
     }
   };
+
+  const batchPollRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startBatchPolling = () => {
+    // Clear any existing poll
+    if (batchPollRef.current) clearInterval(batchPollRef.current);
+
+    setSyncing(true);
+
+    batchPollRef.current = setInterval(async () => {
+      try {
+        const resp = await api.get('/snapshot/sync/batch-status');
+        const batch = resp.data;
+        if (!batch || !batch.classes) return;
+
+        const updated = new Map<string, ClassSyncStatus>();
+        for (const [name, status] of Object.entries(batch.classes)) {
+          const result = batch.results?.[name] as any;
+          updated.set(name, {
+            name,
+            status: status as SyncStatus,
+            recordCount: result?.record_count,
+            error: result?.error
+          });
+        }
+        setSyncStatuses(updated);
+
+        // Refresh registry when any class completes
+        await loadRegistry();
+
+        // Stop polling when batch is done
+        if (!batch.running) {
+          if (batchPollRef.current) clearInterval(batchPollRef.current);
+          batchPollRef.current = null;
+          setSyncing(false);
+        }
+      } catch { /* ignore polling errors */ }
+    }, 1000);
+  };
+
+  // On mount: check if a batch sync is already running (e.g., user navigated away and came back)
+  useEffect(() => {
+    const checkRunningBatch = async () => {
+      try {
+        const resp = await api.get('/snapshot/sync/batch-status');
+        if (resp.data?.running) {
+          startBatchPolling();
+        }
+      } catch { /* ignore */ }
+    };
+    checkRunningBatch();
+    return () => {
+      if (batchPollRef.current) clearInterval(batchPollRef.current);
+    };
+  }, []);
 
   const getRegistryForClass = (className: string): SnapshotRegistryItem | undefined => {
     return registry.find(r => r.business_class === className);
@@ -210,8 +271,14 @@ const SetupDataManagement: React.FC = () => {
         display: 'inline-block'
       }}>
         {config.text}
+        {syncStatus.status === 'syncing' && syncStatus.progressMessage && (
+          <span style={{ marginLeft: '5px' }}>{syncStatus.progressMessage}</span>
+        )}
         {syncStatus.recordCount !== undefined && syncStatus.status === 'completed' && (
-          <span style={{ marginLeft: '5px' }}>({syncStatus.recordCount} records)</span>
+          <span style={{ marginLeft: '5px' }}>({syncStatus.recordCount.toLocaleString()} records)</span>
+        )}
+        {syncStatus.status === 'failed' && syncStatus.error && (
+          <span style={{ marginLeft: '5px' }} title={syncStatus.error}>⚠</span>
         )}
       </div>
     );
@@ -333,17 +400,68 @@ const SetupDataManagement: React.FC = () => {
 
     try {
       setSyncingClasses(prev => new Set(prev).add(setupClass.id));
+      setSyncStatuses(prev => {
+        const updated = new Map(prev);
+        updated.set(setupClass.name, { name: setupClass.name, status: 'syncing', progressMessage: 'Starting sync...' });
+        return updated;
+      });
       setError('');
+
+      // Start polling progress
+      const progressInterval = setInterval(async () => {
+        try {
+          const prog = await api.get(`/snapshot/sync/progress/${setupClass.name}`);
+          if (prog.data && prog.data.phase) {
+            const isDone = prog.data.done === true;
+            const isError = prog.data.phase === 'error';
+            setSyncStatuses(prev => {
+              const updated = new Map(prev);
+              updated.set(setupClass.name, {
+                name: setupClass.name,
+                status: isError ? 'failed' : (isDone ? 'completed' : 'syncing'),
+                recordCount: prog.data.records_stored || prog.data.records_fetched || 0,
+                progressMessage: isDone ? undefined : prog.data.message,
+                error: isError ? prog.data.error : undefined
+              });
+              return updated;
+            });
+          }
+        } catch { /* ignore polling errors */ }
+      }, 1000);
 
       const response = await api.post('/snapshot/sync/single', {
         business_class_name: setupClass.name
       });
 
-      // Reload registry to show updated sync time
+      clearInterval(progressInterval);
+
+      // Update to completed
+      const result = response.data.classes_synced?.[0];
+      setSyncStatuses(prev => {
+        const updated = new Map(prev);
+        updated.set(setupClass.name, {
+          name: setupClass.name,
+          status: 'completed',
+          recordCount: result?.record_count || 0,
+          progressMessage: `Done — ${(result?.record_count || 0).toLocaleString()} records`
+        });
+        return updated;
+      });
+
       await loadRegistry();
 
     } catch (err: any) {
       setError(err.response?.data?.detail || `Failed to sync ${setupClass.name}`);
+      setSyncStatuses(prev => {
+        const updated = new Map(prev);
+        updated.set(setupClass.name, {
+          name: setupClass.name,
+          status: 'failed',
+          error: err.response?.data?.detail || 'Sync failed',
+          progressMessage: 'Failed'
+        });
+        return updated;
+      });
     } finally {
       setSyncingClasses(prev => {
         const newSet = new Set(prev);
@@ -395,7 +513,7 @@ const SetupDataManagement: React.FC = () => {
             fontWeight: '500'
           }}
         >
-          {syncing ? 'Syncing...' : 'Sync All Active Classes'}
+          Sync All Active Classes
         </button>
         
         <button
@@ -440,7 +558,7 @@ const SetupDataManagement: React.FC = () => {
         borderRadius: '4px',
         overflow: 'hidden'
       }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <thead>
             <tr style={{ backgroundColor: theme.background.tertiary, borderBottom: `1px solid ${theme.background.quaternary}` }}>
               <th style={{ padding: '12px', textAlign: 'left', color: theme.text.secondary, fontWeight: '500' }}>
@@ -458,7 +576,7 @@ const SetupDataManagement: React.FC = () => {
               <th style={{ padding: '12px', textAlign: 'left', color: theme.text.secondary, fontWeight: '500' }}>
                 Last Sync
               </th>
-              <th style={{ padding: '12px', textAlign: 'center', color: theme.text.secondary, fontWeight: '500' }}>
+              <th style={{ padding: '12px', textAlign: 'center', color: theme.text.secondary, fontWeight: '500', width: '280px', minWidth: '280px' }}>
                 Actions
               </th>
             </tr>
@@ -519,7 +637,7 @@ const SetupDataManagement: React.FC = () => {
                     <td style={{ padding: '12px', color: theme.text.secondary, fontSize: '14px' }}>
                       {formatDate(registryItem?.last_sync_timestamp || null)}
                     </td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                    <td style={{ padding: '12px', textAlign: 'center', width: '280px', minWidth: '280px' }}>
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
                         {/* Primary Action: Sync */}
                         <button
@@ -530,7 +648,10 @@ const SetupDataManagement: React.FC = () => {
                             backgroundColor: (() => {
                               const syncStatus = syncStatuses.get(setupClass.name);
                               if (syncStatus?.status === 'failed') return '#dc2626';
-                              return isSyncing ? '#6b7280' : theme.primary.main;
+                              if (syncStatus?.status === 'completed') return '#064e3b';
+                              if (isSyncing) return '#6b7280';
+                              if (!syncStatus && registryItem && registryItem.record_count > 0) return '#064e3b';
+                              return theme.primary.main;
                             })(),
                             color: theme.background.secondary,
                             border: 'none',
@@ -538,9 +659,15 @@ const SetupDataManagement: React.FC = () => {
                             cursor: setupClass.is_active && !isSyncing ? 'pointer' : 'not-allowed',
                             fontSize: '12px',
                             opacity: setupClass.is_active ? 1 : 0.5,
-                            display: 'flex',
+                            display: 'inline-flex',
                             alignItems: 'center',
-                            gap: '4px'
+                            gap: '4px',
+                            minWidth: '120px',
+                            maxWidth: '220px',
+                            justifyContent: 'center',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap' as const
                           }}
                           title="Sync this business class from FSM"
                         >
@@ -551,16 +678,20 @@ const SetupDataManagement: React.FC = () => {
                                 case 'queued':
                                   return 'Queued';
                                 case 'syncing':
-                                  return 'Syncing...';
+                                  return <>Fetching<AnimatedDots /></>;
                                 case 'completed':
-                                  return `Completed (${syncStatus.recordCount || 0})`;
+                                  return `✓ ${(syncStatus.recordCount || 0).toLocaleString()}`;
                                 case 'failed':
                                   return '⟳ Retry';
                                 default:
                                   return 'Sync';
                               }
                             }
-                            return isSyncing ? 'Syncing...' : 'Sync';
+                            return isSyncing ? <>Fetching<AnimatedDots /></> : (
+                              registryItem && registryItem.record_count > 0
+                                ? `✓ ${registryItem.record_count.toLocaleString()}`
+                                : 'Sync'
+                            );
                           })()}
                         </button>
 
@@ -603,6 +734,31 @@ const SetupDataManagement: React.FC = () => {
                               minWidth: '180px'
                             }}
                           >
+                            {/* View Records */}
+                            <button
+                              onClick={() => {
+                                setOpenMenuId(null);
+                                openViewModal(setupClass.name);
+                              }}
+                              style={{
+                                width: '100%',
+                                padding: '10px 15px',
+                                backgroundColor: 'transparent',
+                                color: theme.text.primary,
+                                border: 'none',
+                                textAlign: 'left',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.background.quaternary}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                            >
+                              👁 View Data
+                            </button>
+
                             {/* Edit */}
                             <button
                               onClick={() => {
@@ -1063,6 +1219,181 @@ const SetupDataManagement: React.FC = () => {
               >
                 Save Changes
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Records Modal */}
+      {viewModalOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 2000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{
+            backgroundColor: theme.background.primary,
+            borderRadius: '12px',
+            width: '95vw', maxWidth: '1400px', height: '90vh',
+            display: 'flex', flexDirection: 'column',
+            border: `1px solid ${theme.background.quaternary}`,
+            overflow: 'hidden'
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: '16px 24px',
+              borderBottom: `1px solid ${theme.background.quaternary}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              flexShrink: 0
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{
+                  padding: '4px 10px', borderRadius: '4px', fontSize: '12px',
+                  backgroundColor: theme.primary.main, color: '#fff'
+                }}>{viewClassName}</span>
+                <span style={{ color: theme.text.secondary, fontSize: '14px' }}>
+                  {viewTotal.toLocaleString()} records
+                </span>
+              </div>
+              <button onClick={() => setViewModalOpen(false)} style={{
+                background: 'none', border: 'none', color: theme.text.secondary,
+                fontSize: '24px', cursor: 'pointer', padding: '4px 8px'
+              }}>✕</button>
+            </div>
+
+            {/* Search bar */}
+            <div style={{ padding: '12px 24px', borderBottom: `1px solid ${theme.background.quaternary}`, flexShrink: 0 }}>
+              <input
+                type="text"
+                placeholder="Search across all fields..."
+                value={viewSearch}
+                onChange={(e) => setViewSearch(e.target.value)}
+                style={{
+                  width: '100%', padding: '10px 14px',
+                  backgroundColor: theme.background.secondary,
+                  border: `1px solid ${theme.background.quaternary}`,
+                  borderRadius: '6px', color: theme.text.primary,
+                  fontSize: '14px', outline: 'none'
+                }}
+              />
+            </div>
+
+            {/* Table */}
+            <div style={{ flex: 1, overflow: 'auto' }}>
+              {viewLoading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: theme.text.secondary }}>
+                  Loading...
+                </div>
+              ) : viewRecords.length === 0 ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: theme.text.secondary }}>
+                  {viewSearch ? 'No records match your search' : 'No records synced yet'}
+                </div>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: theme.background.tertiary, position: 'sticky', top: 0, zIndex: 1 }}>
+                      <th style={{ padding: '8px 12px', textAlign: 'left', color: theme.text.secondary, fontWeight: '500', fontSize: '11px', borderBottom: `1px solid ${theme.background.quaternary}` }}>#</th>
+                      {viewColumns.map(col => (
+                        <th key={col} style={{
+                          padding: '8px 12px', textAlign: 'left', color: theme.text.secondary,
+                          fontWeight: '500', fontSize: '11px', whiteSpace: 'nowrap',
+                          borderBottom: `1px solid ${theme.background.quaternary}`
+                        }}>{col}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {viewRecords.map((record, idx) => (
+                      <tr key={idx} style={{ borderBottom: `1px solid ${theme.background.quaternary}` }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.background.tertiary}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <td style={{ padding: '6px 12px', color: theme.text.secondary, fontSize: '12px' }}>
+                          {(viewPage - 1) * viewPageSize + idx + 1}
+                        </td>
+                        {viewColumns.map(col => (
+                          <td key={col} style={{
+                            padding: '6px 12px', color: theme.text.primary,
+                            maxWidth: '250px', overflow: 'hidden',
+                            textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                          }} title={String(record[col] ?? '')}>
+                            {String(record[col] ?? '')}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {/* Pagination */}
+            <div style={{
+              padding: '12px 24px',
+              borderTop: `1px solid ${theme.background.quaternary}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              flexShrink: 0, fontSize: '13px'
+            }}>
+              <span style={{ color: theme.text.secondary }}>
+                Page {viewPage} of {viewTotalPages} ({viewTotal.toLocaleString()} records, {viewColumns.length} columns)
+              </span>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <select
+                  value={viewPageSize}
+                  onChange={(e) => {
+                    const newSize = Number(e.target.value);
+                    setViewPageSize(newSize);
+                    setViewPage(1);
+                    fetchViewRecords(viewClassName, 1, viewSearch, newSize);
+                  }}
+                  style={{
+                    padding: '6px 8px', borderRadius: '4px',
+                    border: `1px solid ${theme.background.quaternary}`,
+                    backgroundColor: theme.background.secondary,
+                    color: theme.text.primary, fontSize: '12px', cursor: 'pointer'
+                  }}
+                >
+                  {[25, 50, 100, 200, 500].map(n => (
+                    <option key={n} value={n}>{n} / page</option>
+                  ))}
+                </select>
+                <button
+                  disabled={viewPage <= 1}
+                  onClick={() => { setViewPage(1); fetchViewRecords(viewClassName, 1, viewSearch); }}
+                  style={{
+                    padding: '6px 12px', borderRadius: '4px', border: `1px solid ${theme.background.quaternary}`,
+                    backgroundColor: theme.background.secondary, color: viewPage <= 1 ? theme.text.secondary : theme.text.primary,
+                    cursor: viewPage <= 1 ? 'not-allowed' : 'pointer', fontSize: '12px', opacity: viewPage <= 1 ? 0.5 : 1
+                  }}
+                >First</button>
+                <button
+                  disabled={viewPage <= 1}
+                  onClick={() => { const p = viewPage - 1; setViewPage(p); fetchViewRecords(viewClassName, p, viewSearch); }}
+                  style={{
+                    padding: '6px 12px', borderRadius: '4px', border: `1px solid ${theme.background.quaternary}`,
+                    backgroundColor: theme.background.secondary, color: viewPage <= 1 ? theme.text.secondary : theme.text.primary,
+                    cursor: viewPage <= 1 ? 'not-allowed' : 'pointer', fontSize: '12px', opacity: viewPage <= 1 ? 0.5 : 1
+                  }}
+                >Previous</button>
+                <button
+                  disabled={viewPage >= viewTotalPages}
+                  onClick={() => { const p = viewPage + 1; setViewPage(p); fetchViewRecords(viewClassName, p, viewSearch); }}
+                  style={{
+                    padding: '6px 12px', borderRadius: '4px', border: `1px solid ${theme.background.quaternary}`,
+                    backgroundColor: theme.background.secondary, color: viewPage >= viewTotalPages ? theme.text.secondary : theme.text.primary,
+                    cursor: viewPage >= viewTotalPages ? 'not-allowed' : 'pointer', fontSize: '12px', opacity: viewPage >= viewTotalPages ? 0.5 : 1
+                  }}
+                >Next</button>
+                <button
+                  disabled={viewPage >= viewTotalPages}
+                  onClick={() => { setViewPage(viewTotalPages); fetchViewRecords(viewClassName, viewTotalPages, viewSearch); }}
+                  style={{
+                    padding: '6px 12px', borderRadius: '4px', border: `1px solid ${theme.background.quaternary}`,
+                    backgroundColor: theme.background.secondary, color: viewPage >= viewTotalPages ? theme.text.secondary : theme.text.primary,
+                    cursor: viewPage >= viewTotalPages ? 'not-allowed' : 'pointer', fontSize: '12px', opacity: viewPage >= viewTotalPages ? 0.5 : 1
+                  }}
+                >Last</button>
+              </div>
             </div>
           </div>
         </div>

@@ -751,12 +751,24 @@ const RulesManagement = () => {
     if (availableBusinessClasses.length > 0) return;
     
     try {
-      const response = await api.get('/schema/list');
-      const schemas = response.data.schemas || [];
+      // Gather business classes from both schemas and rule sets
+      const classSet = new Set<string>();
       
-      // Extract unique business classes from schemas
-      const businessClasses = [...new Set<string>(schemas.map((s: any) => s.business_class as string))];
-      setAvailableBusinessClasses(businessClasses);
+      // From schemas
+      try {
+        const schemaResponse = await api.get('/schema/list');
+        const schemas = schemaResponse.data.schemas || [];
+        schemas.forEach((s: any) => { if (s.business_class) classSet.add(s.business_class); });
+      } catch { /* schema list may be empty */ }
+      
+      // From rule sets (covers cases where rules exist but no schema imported)
+      try {
+        const rsResponse = await api.get('/rules/rule-sets');
+        const rsets = rsResponse.data || [];
+        rsets.forEach((rs: any) => { if (rs.business_class) classSet.add(rs.business_class); });
+      } catch { /* ignore */ }
+      
+      setAvailableBusinessClasses([...classSet].sort());
     } catch (error) {
       console.error('Failed to load business classes:', error);
     }

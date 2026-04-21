@@ -182,7 +182,7 @@ export default function Login() {
           <div style={styles.versionInfo}>
             <span style={styles.versionText}>Version 1.0.0</span>
             <span style={styles.versionDivider}>•</span>
-            <span style={styles.versionText}>March 2026</span>
+            <span style={styles.versionText}>{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
           </div>
         </div>
       </div>
@@ -426,7 +426,7 @@ function CreateAccount({ onBack, onSuccess }: { onBack: () => void; onSuccess: (
           <div style={styles.versionInfo}>
             <span style={styles.versionText}>Version 1.0.0</span>
             <span style={styles.versionDivider}>•</span>
-            <span style={styles.versionText}>March 2026</span>
+            <span style={styles.versionText}>{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
           </div>
         </div>
       </div>
