@@ -1,0 +1,1729 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Infor GenAI API",
+    "version": "0.1.0"
+  },
+  "servers": [
+    {
+      "url": "https://mingle-ionapi.inforcloudsuite.com/TAMICS10_AX1/GENAI/chatsvc",
+      "variables": {
+        "basePath": {
+          "default": "/chatsvc"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/api/v1/chat": {
+      "post": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "Run Chat",
+        "operationId": "run_chat_chatsvc_api_v1_chat_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/src__schemas__conversation__ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/api/v1/chat/sync": {
+      "post": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "Run Chat Sync",
+        "operationId": "run_chat_sync_chatsvc_api_v1_chat_sync_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/src__schemas__conversation__ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/api/v2/chat": {
+      "post": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "Run Chat Stream",
+        "operationId": "run_chat_stream_chatsvc_api_v2_chat_post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "accept",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Accept"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/src__schemas__v2__conversation__ChatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/info": {
+      "get": {
+        "tags": [
+          "info"
+        ],
+        "summary": "Get Info",
+        "operationId": "get_info_chatsvc_info_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/v1/models": {
+      "get": {
+        "tags": [
+          "models"
+        ],
+        "summary": "Get Model List",
+        "operationId": "get_model_list_chatsvc_api_v1_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ModelDetail"
+                  },
+                  "type": "array",
+                  "title": "Response Get Model List Chatsvc Api V1 Models Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/api/v1/models/tools": {
+      "get": {
+        "tags": [
+          "models"
+        ],
+        "summary": "Get Tool Model List",
+        "operationId": "get_tool_model_list_chatsvc_api_v1_models_tools_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolModelResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/api/v1/sessions": {
+      "get": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Get Sessions",
+        "operationId": "get_sessions_chatsvc_api_v1_sessions_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "schema_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 2,
+              "minimum": 1,
+              "default": 1,
+              "title": "Schema Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChatSession"
+                  },
+                  "title": "Response Get Sessions Chatsvc Api V1 Sessions Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Create Session",
+        "operationId": "create_session_chatsvc_api_v1_sessions_post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "schema_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 2,
+              "minimum": 1,
+              "default": 1,
+              "title": "Schema Version"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{sesion_id}/messages": {
+      "get": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Get Session Messages",
+        "operationId": "get_session_messages_chatsvc_api_v1_sessions__sesion_id__messages_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sesion_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sesion Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 50,
+              "title": "Size"
+            }
+          },
+          {
+            "name": "schema_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 2,
+              "minimum": 1,
+              "default": 1,
+              "title": "Schema Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_Message_"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/latest": {
+      "get": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Get Latest User Messages",
+        "operationId": "get_latest_user_messages_chatsvc_api_v1_sessions_latest_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "schema_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 2,
+              "minimum": 1,
+              "default": 1,
+              "title": "Schema Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}": {
+      "put": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Update Session",
+        "operationId": "update_session_chatsvc_api_v1_sessions__session_id__put",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Delete Session",
+        "operationId": "delete_session_chatsvc_api_v1_sessions__session_id__delete",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApprovalDecision": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "edit",
+              "reject"
+            ],
+            "title": "Type",
+            "description": "Approval decision (approve/reject)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "title": "ApprovalDecision",
+        "description": "Single approval decision for an interrupt action."
+      },
+      "ChatResponse": {
+        "properties": {
+          "warnings": {
+            "items": {},
+            "type": "array",
+            "title": "Warnings",
+            "default": []
+          },
+          "session": {
+            "type": "string",
+            "title": "Session",
+            "description": "Unique identifier for chat session"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique identifier for chat message"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content",
+            "description": "Chat message response"
+          },
+          "links": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Hyperlink"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Links",
+            "description": "List of hyperlinks for the response"
+          },
+          "followups": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Followups",
+            "description": "List of followups"
+          },
+          "screen_navigation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Screen Navigation",
+            "description": "Screen ID or URL for screen navigation"
+          },
+          "streamData": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Streamdata",
+            "description": "Stream data for the response"
+          }
+        },
+        "type": "object",
+        "required": [
+          "session",
+          "id"
+        ],
+        "title": "ChatResponse"
+      },
+      "ChatSession": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "ID for session"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Name of the session."
+          },
+          "messages": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaginatedResponse_Message_"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "List of messages for a particular session"
+          },
+          "updatedOn": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedon",
+            "description": "Date the session was last updated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "updatedOn"
+        ],
+        "title": "ChatSession"
+      },
+      "CreateSessionRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Name of the session"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "CreateSessionRequest"
+      },
+      "EolDetail": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "title": "Date",
+            "description": "Date of EOL"
+          },
+          "replacement_model_id": {
+            "type": "string",
+            "title": "Replacement Model Id",
+            "description": "Replacement model id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "replacement_model_id"
+        ],
+        "title": "EolDetail"
+      },
+      "ExecutionNotification": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "userId": {
+            "type": "string",
+            "title": "Userid"
+          },
+          "traceId": {
+            "type": "string",
+            "title": "Traceid"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "createdOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdon"
+          },
+          "sessionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sessionid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "userId",
+          "traceId",
+          "message",
+          "createdOn"
+        ],
+        "title": "ExecutionNotification"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Hyperlink": {
+        "properties": {
+          "index": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Index"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "url"
+        ],
+        "title": "Hyperlink"
+      },
+      "Level": {
+        "type": "string",
+        "enum": [
+          "UP",
+          "DOWN"
+        ],
+        "title": "Level"
+      },
+      "Message": {
+        "properties": {
+          "guid": {
+            "type": "string",
+            "title": "Guid"
+          },
+          "userId": {
+            "type": "string",
+            "title": "Userid"
+          },
+          "sessionId": {
+            "type": "string",
+            "title": "Sessionid"
+          },
+          "traceId": {
+            "type": "string",
+            "title": "Traceid"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "sender": {
+            "$ref": "#/components/schemas/Sender"
+          },
+          "citations": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Citations",
+            "default": ""
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Rating"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdOn": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdon"
+          },
+          "updatedOn": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedon"
+          },
+          "suggestions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggestions"
+          },
+          "history": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ExecutionNotification"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "History"
+          },
+          "link": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Hyperlink"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "followups": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Followups"
+          },
+          "screen_navigation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Screen Navigation"
+          },
+          "stream_data": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "guid",
+          "userId",
+          "sessionId",
+          "traceId",
+          "content",
+          "sender",
+          "createdOn",
+          "updatedOn"
+        ],
+        "title": "Message"
+      },
+      "ModelDetail": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Name of a llm model"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider",
+            "description": "Name of company that provides the specific model"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/VersionDetail"
+            },
+            "type": "array",
+            "title": "Versions",
+            "description": "Version detials of the specific model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "versions"
+        ],
+        "title": "ModelDetail"
+      },
+      "ModelType": {
+        "type": "string",
+        "enum": [
+          "SIMPLE",
+          "INTERMEDIATE",
+          "ADVANCED",
+          "HYBRID"
+        ],
+        "title": "ModelType"
+      },
+      "PaginatedResponse_Message_": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count",
+            "description": "Number of total items"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "List of items returned in a paginated response"
+          },
+          "next_page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Page",
+            "description": "index of the next page if it exists"
+          },
+          "previous_page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Page",
+            "description": "index of the previous page if it exists"
+          }
+        },
+        "type": "object",
+        "required": [
+          "count",
+          "items"
+        ],
+        "title": "PaginatedResponse[Message]"
+      },
+      "Rating": {
+        "properties": {
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "offensive": {
+            "type": "boolean",
+            "title": "Offensive"
+          },
+          "irrelevant": {
+            "type": "boolean",
+            "title": "Irrelevant"
+          },
+          "unhelpful": {
+            "type": "boolean",
+            "title": "Unhelpful"
+          },
+          "feedback": {
+            "type": "string",
+            "title": "Feedback"
+          }
+        },
+        "type": "object",
+        "required": [
+          "level",
+          "offensive",
+          "irrelevant",
+          "unhelpful",
+          "feedback"
+        ],
+        "title": "Rating"
+      },
+      "Sender": {
+        "type": "string",
+        "enum": [
+          "LLM",
+          "User"
+        ],
+        "title": "Sender"
+      },
+      "ToolInfo": {
+        "properties": {
+          "stub": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stub",
+            "description": "Respond with the stubbed api response for the tool",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "ToolInfo"
+      },
+      "ToolModelDetail": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Name of a model"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "Name of the model"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "Version of the model"
+          },
+          "default": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default",
+            "description": "Optional value determining if this model is default. Only one model should be the default"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "model",
+          "version"
+        ],
+        "title": "ToolModelDetail",
+        "description": "Model to configure llm for tool or agent use"
+      },
+      "ToolModelResponse": {
+        "properties": {
+          "tools": {
+            "items": {
+              "$ref": "#/components/schemas/ToolModelDetail"
+            },
+            "type": "array",
+            "title": "Tools",
+            "description": "List of tool models"
+          },
+          "agents": {
+            "items": {
+              "$ref": "#/components/schemas/ToolModelDetail"
+            },
+            "type": "array",
+            "title": "Agents",
+            "description": "List of agent models"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tools",
+          "agents"
+        ],
+        "title": "ToolModelResponse",
+        "description": "Response for list of tools available for tool or agent use"
+      },
+      "UpdateSessionRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Name of the session"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "UpdateSessionRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VersionDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Specific id of model version"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Description of the specific model version"
+          },
+          "token_context_size": {
+            "type": "integer",
+            "title": "Token Context Size",
+            "description": "Context token size of the model version"
+          },
+          "eol": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EolDetail"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "End of life details"
+          },
+          "enabled": {
+            "type": "string",
+            "title": "Enabled",
+            "description": "Whether the version is enabled"
+          },
+          "isFamilyDefault": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isfamilydefault",
+            "description": "Whether this version is the default for its family"
+          },
+          "isDefault": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isdefault",
+            "description": "Whether this version is the global default"
+          },
+          "images": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Images",
+            "description": "Whether the version supports images"
+          },
+          "rateLimit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ratelimit",
+            "description": "Rate limit for the version"
+          },
+          "documents": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Documents",
+            "description": "Whether the version supports documents"
+          },
+          "iddpRateLimit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iddpratelimit",
+            "description": "IDDP rate limit for the version"
+          },
+          "reasoning": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning",
+            "description": "Whether the version supports reasoning"
+          },
+          "cache": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache",
+            "description": "Whether the version supports caching"
+          },
+          "standardGuardrail": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Standardguardrail",
+            "description": "Whether the version supports standard guardrails"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "enabled"
+        ],
+        "title": "VersionDetail"
+      },
+      "src__schemas__conversation__ChatRequest": {
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Prompt",
+            "description": "Prompt to provide to the LLM"
+          },
+          "session": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session",
+            "description": "Session ID of current conversation."
+          },
+          "tools": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tools",
+            "description": "List of tools to use for the prompt. If empty, uses all active tools."
+          },
+          "config": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModelType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "[DEPRECATED as of 2024.12 this field has no effect] Configuration for type of chat model to use.",
+            "deprecated": true
+          },
+          "toolInfo": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/ToolInfo"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Toolinfo",
+            "description": "Extra information for the available tools sent"
+          },
+          "ibcPayload": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ibcpayload",
+            "description": "IBC Payload"
+          },
+          "focusMode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Focusmode",
+            "description": "Name of focus mode to use."
+          }
+        },
+        "type": "object",
+        "required": [
+          "prompt"
+        ],
+        "title": "ChatRequest"
+      },
+      "src__schemas__v2__conversation__ChatRequest": {
+        "properties": {
+          "prompt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 5000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt",
+            "description": "Prompt to provide to the LLM"
+          },
+          "session": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session",
+            "description": "Session ID of current conversation."
+          },
+          "tools": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tools",
+            "description": "List of agents to use. If empty, all active agents are searched."
+          },
+          "ibcPayload": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ibcpayload",
+            "description": "IBC Payload"
+          },
+          "approvals": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "items": {
+                    "$ref": "#/components/schemas/ApprovalDecision"
+                  },
+                  "type": "array"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approvals",
+            "description": "Approvals for interrupt actions, keyed by interrupt ID"
+          },
+          "focusMode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Focusmode",
+            "description": "Name of focus mode to use."
+          }
+        },
+        "type": "object",
+        "title": "ChatRequest"
+      }
+    },
+    "securitySchemes": {
+      "APIKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization"
+      }
+    }
+  }
+}

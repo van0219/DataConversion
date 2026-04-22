@@ -25,7 +25,7 @@ class RuleSetService:
         if account_id is not None:
             query = query.filter(
                 or_(
-                    ValidationRuleSet.account_id == None,
+                    ValidationRuleSet.account_id.is_(None),
                     ValidationRuleSet.account_id == account_id
                 )
             )

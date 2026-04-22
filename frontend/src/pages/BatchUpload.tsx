@@ -237,7 +237,8 @@ const BatchUpload: React.FC = () => {
         job_id: info.job_id,
         business_class: businessClass,
         mapping: mapping,
-        chunk_size: loadChunkSize
+        chunk_size: loadChunkSize,
+        date_source_format: dateTransformEnabled ? dateSourceFormat : undefined
       });
       const result = resp.data;
       setFileStatuses(prev => ({

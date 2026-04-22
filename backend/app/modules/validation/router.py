@@ -45,7 +45,8 @@ async def start_validation(
             request.business_class,
             request.mapping,
             request.enable_rules,
-            request.selected_rule_set_id
+            request.selected_rule_set_id,
+            request.date_source_format
         )
         
         logger.info(f"DEBUG: Validation complete, returning response")

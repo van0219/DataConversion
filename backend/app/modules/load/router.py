@@ -13,6 +13,8 @@ class LoadStartRequest(BaseModel):
     business_class: str
     mapping: dict
     chunk_size: int = 1000
+    run_group_override: Optional[str] = None
+    date_source_format: Optional[str] = None
     trigger_interface: bool = False
     # Interface parameters (used when trigger_interface is True)
     interface_params: Optional[dict] = None
@@ -59,7 +61,9 @@ async def start_load(
             request.mapping,
             request.chunk_size,
             request.trigger_interface,
-            request.interface_params
+            request.interface_params,
+            run_group_override=request.run_group_override,
+            date_source_format=request.date_source_format
         )
         
         # Transform response to match frontend expectations

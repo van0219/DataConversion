@@ -18,9 +18,11 @@ class LoadService:
         job_id: int,
         business_class: str,
         mapping: Dict,
-        chunk_size: int = 100,
+        chunk_size: int = 1000,
         trigger_interface: bool = False,
-        interface_params: Optional[Dict] = None
+        interface_params: Optional[Dict] = None,
+        run_group_override: Optional[str] = None,
+        date_source_format: Optional[str] = None
     ):
         """
         Load validated records to FSM in chunks.
@@ -89,13 +91,15 @@ class LoadService:
         
         logger.info(f"Starting load for job {job_id}. Skipping {len(invalid_row_numbers)} invalid rows.")
         
-        # Derive RunGroup from the original filename (without extension), capped at 30 chars.
-        # This matches the user's expectation: the filename IS the RunGroup identifier.
-        from pathlib import Path as _Path
-        raw_run_group = _Path(job.filename).stem if job.filename else business_class
-        run_group = raw_run_group[:30]
-        
-        logger.info(f"RunGroup derived from filename: {run_group} (length: {len(run_group)})")
+        # Use override RunGroup if provided (from Step 2 mapping), otherwise derive from filename
+        if run_group_override and run_group_override.strip():
+            run_group = run_group_override.strip()[:30]
+            logger.info(f"RunGroup from override: {run_group}")
+        else:
+            from pathlib import Path as _Path
+            raw_run_group = _Path(job.filename).stem if job.filename else business_class
+            run_group = raw_run_group[:30]
+            logger.info(f"RunGroup derived from filename: {run_group} (length: {len(run_group)})")
         
         # Process file in chunks
         chunk_buffer = []
@@ -114,6 +118,11 @@ class LoadService:
                 
                 # Apply field mapping
                 mapped_record = MappingEngine.apply_mapping(record, mapping)
+                
+                # Apply date format transform if configured (in-memory only)
+                if date_source_format:
+                    from app.modules.validation.service import ValidationService
+                    mapped_record = ValidationService._apply_date_transform(mapped_record, date_source_format)
                 
                 # Inject RunGroup from filename into the mapped record.
                 # Find the RunGroup field name from the schema mapping if it exists,
