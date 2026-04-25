@@ -1,0 +1,173 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID,Column1
+AHF,202504_0019,1,19,0,19,100072,JE,5/2/2025,-197,Cash - 04/30/2025             ,USD,0,1400,GL,4/30/2025,               ,19000,     ,N120077,142702468,Global Ledger Transaction Interface created
+AHF,202504_0019,2,19,0,19,100072,JE,5/2/2025,-195,Check - 04/30/2025            ,USD,0,3611,GL,4/30/2025,               ,19000,     ,N120075,142702466,Global Ledger Transaction Interface created
+AHF,202504_0019,3,19,0,19,100072,JE,5/2/2025,-194,Credit Card - 04/30/2025      ,USD,0,7592.5,GL,4/30/2025,               ,19000,     ,N120074,142702465,Global Ledger Transaction Interface created
+AHF,202504_0019,4,19,0,19,100072,JE,5/2/2025,-193,SFA L Altern - 04/30/2025     ,USD,0,6500,GL,4/30/2025,               ,19000,     ,N120073,142702464,Global Ledger Transaction Interface created
+AHF,202504_0019,5,19,0,19,100072,JE,5/2/2025,-192,SFA VA - 04/24/2025           ,USD,0,100,GL,4/30/2025,               ,19000,     ,N120072,142702463,Global Ledger Transaction Interface created
+AHF,202504_0019,6,19,0,19,100072,JE,5/2/2025,-170,Credit Card - 04/17/2025      ,USD,0,20763.75,GL,4/30/2025,               ,19000,     ,N120050,142702441,Global Ledger Transaction Interface created
+AHF,202504_0019,7,19,0,19,100072,JE,5/2/2025,-168,SFA L Altern - 04/17/2025     ,USD,0,4243,GL,4/30/2025,               ,19000,     ,N120048,142702439,Global Ledger Transaction Interface created
+AHF,202504_0019,8,19,0,19,100072,JE,5/2/2025,-144,Tax on Transcript - 04/30/2025,USD,0,0.92,GL,4/30/2025,               ,19000,     ,N120024,142702415,Global Ledger Transaction Interface created
+AHF,202504_0019,9,19,0,19,100072,JE,5/2/2025,-143,Transcript - cc 4/30/25       ,USD,0,9.39,GL,4/30/2025,               ,19000,     ,N120023,142702414,Global Ledger Transaction Interface created
+AHF,202504_0019,10,19,0,19,100072,JE,5/2/2025,-142,Logostore Tax - 04/30/2025    ,USD,0,0.73,GL,4/30/2025,               ,19000,     ,N120022,142702413,Global Ledger Transaction Interface created
+AHF,202504_0019,11,19,0,19,100072,JE,5/2/2025,-141,Logostore - cc 4/30/25        ,USD,0,11.27,GL,4/30/2025,               ,19000,     ,N120021,142702412,Global Ledger Transaction Interface created
+AHF,202504_0019,12,19,0,19,100072,JE,5/2/2025,-140,Marker Replacement - ca 4/30/2,USD,0,10,GL,4/30/2025,               ,19000,     ,N120020,142702411,Global Ledger Transaction Interface created
+AHF,202504_0019,13,19,0,19,100072,JE,5/2/2025,-139,Transcript - ca 4/30/25       ,USD,0,4.69,GL,4/30/2025,               ,19000,     ,N120019,142702410,Global Ledger Transaction Interface created
+AHF,202504_0019,14,19,0,19,100072,JE,5/2/2025,-138,Accuplacer - cc 4/24/25       ,USD,0,20,GL,4/30/2025,               ,19000,     ,N120018,142702409,Global Ledger Transaction Interface created
+AHF,202504_0019,15,19,0,19,100072,JE,5/2/2025,-137,Tax on Transcript - 04/24/2025,USD,0,1.53,GL,4/30/2025,               ,19000,     ,N120017,142702408,Global Ledger Transaction Interface created
+AHF,202504_0019,16,19,0,19,100072,JE,5/2/2025,-136,Transcript - cc 4/24/25       ,USD,0,23.47,GL,4/30/2025,               ,19000,     ,N120016,142702407,Global Ledger Transaction Interface created
+AHF,202504_0019,17,19,0,19,100072,JE,5/2/2025,-135,CCP Books - ck 4/24/25        ,USD,0,201.15,GL,4/30/2025,               ,19000,     ,N120015,142702406,Global Ledger Transaction Interface created
+AHF,202504_0019,18,19,0,19,100072,JE,5/2/2025,-134,Marker Replacement - ca 4/24/2,USD,0,10,GL,4/30/2025,               ,19000,     ,N120014,142702405,Global Ledger Transaction Interface created
+AHF,202504_0019,19,19,0,19,100072,JE,5/2/2025,-133,Accuplacer - cc 4/17/25       ,USD,0,60,GL,4/30/2025,               ,19000,     ,N120013,142702404,Global Ledger Transaction Interface created
+AHF,202504_0019,20,19,0,19,100072,JE,5/2/2025,-132,Marker Replacement - cc 4/17/2,USD,0,25,GL,4/30/2025,               ,19000,     ,N120012,142702403,Global Ledger Transaction Interface created
+AHF,202504_0019,21,19,0,19,100072,JE,5/2/2025,-131,Tax on Transcript - 04/17/2025,USD,0,3.66,GL,4/30/2025,               ,19000,     ,N120011,142702402,Global Ledger Transaction Interface created
+AHF,202504_0019,22,19,0,19,100072,JE,5/2/2025,-130,Transcript - cc 4/17/25       ,USD,0,46.95,GL,4/30/2025,               ,19000,     ,N120010,142702401,Global Ledger Transaction Interface created
+AHF,202504_0019,23,19,0,19,100072,JE,5/2/2025,-129,Logostore Tax - 04/17/2025    ,USD,0,2.38,GL,4/30/2025,               ,19000,     ,N12009,142702400,Global Ledger Transaction Interface created
+AHF,202504_0019,24,19,0,19,100072,JE,5/2/2025,-128,Logostore - cc 4/17/25        ,USD,0,36.62,GL,4/30/2025,               ,19000,     ,N12008,142702399,Global Ledger Transaction Interface created
+AHF,202504_0019,25,19,0,19,100072,JE,5/2/2025,-127,CCP Books - ck 04/17/25       ,USD,0,375.36,GL,4/30/2025,               ,19000,     ,N12007,142702398,Global Ledger Transaction Interface created
+AHF,202504_0019,26,19,0,19,100072,JE,5/2/2025,-126,Outside Scholarships - ck 04/1,USD,0,6500,GL,4/30/2025,               ,19000,     ,N12006,142702397,Global Ledger Transaction Interface created
+AHF,202504_0019,27,19,0,19,100072,JE,5/2/2025,-125,Hotel Room for OSRT - ck 04/17,USD,0,808.04,GL,4/30/2025,               ,19000,     ,N12005,142702396,Global Ledger Transaction Interface created
+AHF,202504_0019,28,19,0,19,100072,JE,5/2/2025,-124,Accuplacer - ca 04/17/25      ,USD,0,20,GL,4/30/2025,               ,19000,     ,N12004,142702395,Global Ledger Transaction Interface created
+AHF,202504_0019,29,19,0,19,100072,JE,5/2/2025,-123,Transcript - ca 04/17/25      ,USD,0,9.39,GL,4/30/2025,               ,19000,     ,N12003,142702394,Global Ledger Transaction Interface created
+AHF,202504_0019,30,19,0,19,100072,JE,5/1/2025,-110,Interco transfer 4/21/25      ,USD,0,-25000,GL,4/30/2025,               ,19000,     ,N10901,142668811,Global Ledger Transaction Interface created
+AHF,202504_0019,31,19,0,19,100072,JE,4/23/2025,-10,P3 Sales Tax pd 4.2025        ,USD,0,-13.03,GL,4/30/2025,               ,19000,     ,I901,142517529,Global Ledger Transaction Interface created
+AHF,202504_0019,32,19,0,19,100072,JE,5/3/2025,-157,3.31 Merch Fee-6883 CON       ,USD,0,-2243.55,GL,4/30/2025,               ,19000,     ,N138019,142717166,Global Ledger Transaction Interface created
+AHF,202504_0019,33,19,0,19,100072,JE,4/30/2025,-24,CC Payment - Aultman College  ,USD,0,-4906.71,GL,4/30/2025,               ,19000,     ,I2004,142555458,Global Ledger Transaction Interface created
+AHF,202504_0019,34,19,0,19,100072,JE,5/2/2025,-185,Check - 04/24/2025            ,USD,0,32752.09,GL,4/30/2025,               ,19000,     ,N120065,142702456,Global Ledger Transaction Interface created
+AHF,202504_0019,35,19,0,19,100072,JE,5/2/2025,-184,Credit Card - 04/24/2025      ,USD,0,2851.25,GL,4/30/2025,               ,19000,     ,N120064,142702455,Global Ledger Transaction Interface created
+AHF,202504_0019,36,19,0,19,100072,JE,5/2/2025,-181,SFA VA - 04/17/2025           ,USD,0,9940,GL,4/30/2025,               ,19000,     ,N120061,142702452,Global Ledger Transaction Interface created
+AHF,202504_0019,37,19,0,19,100072,JE,5/2/2025,-173,Cash - 04/17/2025             ,USD,0,317,GL,4/30/2025,               ,19000,     ,N120053,142702444,Global Ledger Transaction Interface created
+AHF,202504_0019,38,19,0,19,100072,JE,5/2/2025,-171,Check - 04/17/2025            ,USD,0,5596,GL,4/30/2025,               ,19000,     ,N120051,142702442,Global Ledger Transaction Interface created
+AHF,202504_0019,39,19,0,19,103921,JE,5/7/2025,-287,College AR Reclass            ,USD,0,-200,GL,4/30/2025,               ,19000,     ,N28601,142813883,Global Ledger Transaction Interface created
+AHF,202504_0019,40,19,0,19,103921,JE,5/2/2025,-169,SFA G FSEOG - 04/17/2025      ,USD,0,200,GL,4/30/2025,               ,19000,     ,N120049,142702440,Global Ledger Transaction Interface created
+AHF,202504_0019,41,19,0,19,103933,JE,5/2/2025,-189,ASN RSVP Fee - 04/24/2025     ,USD,0,100,GL,4/30/2025,               ,19000,     ,N120069,142702460,Global Ledger Transaction Interface created
+AHF,202504_0019,42,19,0,19,103933,JE,5/2/2025,-188,ASHS RSVP Fee - 04/24/2025    ,USD,0,300,GL,4/30/2025,               ,19000,     ,N120068,142702459,Global Ledger Transaction Interface created
+AHF,202504_0019,43,19,0,19,103933,JE,5/2/2025,-187,MA RSVP Fee - 04/24/2025      ,USD,0,100,GL,4/30/2025,               ,19000,     ,N120067,142702458,Global Ledger Transaction Interface created
+AHF,202504_0019,44,19,0,19,103933,JE,5/2/2025,-182,AASR Book Fees - 04/24/2025   ,USD,0,137.47,GL,4/30/2025,               ,19000,     ,N120062,142702453,Global Ledger Transaction Interface created
+AHF,202504_0019,45,19,0,19,103933,JE,5/2/2025,-180,Student Refund - 04/17/2025   ,USD,0,8052.97,GL,4/30/2025,               ,19000,     ,N120060,142702451,Global Ledger Transaction Interface created
+AHF,202504_0019,46,19,0,19,103933,JE,5/2/2025,-178,BSN RSVP Fee - 04/17/2025     ,USD,0,100,GL,4/30/2025,               ,19000,     ,N120058,142702449,Global Ledger Transaction Interface created
+AHF,202504_0019,47,19,0,19,103933,JE,5/2/2025,-177,ASN RSVP Fee - 04/17/2025     ,USD,0,100,GL,4/30/2025,               ,19000,     ,N120057,142702448,Global Ledger Transaction Interface created
+AHF,202504_0019,48,19,0,19,103933,JE,5/2/2025,-176,ASHS RSVP Fee - 04/17/2025    ,USD,0,700,GL,4/30/2025,               ,19000,     ,N120056,142702447,Global Ledger Transaction Interface created
+AHF,202504_0019,49,19,0,19,103933,JE,5/2/2025,-175,MA RSVP Fee - 04/17/2025      ,USD,0,100,GL,4/30/2025,               ,19000,     ,N120055,142702446,Global Ledger Transaction Interface created
+AHF,202504_0019,50,19,0,19,103933,JE,5/2/2025,-174,AASR RSVP Fee - 04/17/2025    ,USD,0,100,GL,4/30/2025,               ,19000,     ,N120054,142702445,Global Ledger Transaction Interface created
+AHF,202504_0019,51,19,0,19,103933,JE,5/7/2025,-289,College AR Reclass            ,USD,0,3028.45,GL,4/30/2025,               ,19000,     ,N28603,142813885,Global Ledger Transaction Interface created
+AHF,202504_0019,52,19,0,19,103933,JE,5/2/2025,-138,Spread 2025 Spring Rev        ,USD,0,490618.12,GL,4/30/2025,               ,19000,     ,N121017,142703039,Global Ledger Transaction Interface created
+AHF,202504_0019,53,19,0,19,103933,JE,5/2/2025,-231,Cash - 04/30/2025             ,USD,0,-1400,GL,4/30/2025,               ,19000,     ,N1200111,142702512,Global Ledger Transaction Interface created
+AHF,202504_0019,54,19,0,19,103933,JE,5/2/2025,-230,Paypal - 04/30/2025           ,USD,0,-150,GL,4/30/2025,               ,19000,     ,N1200110,142702511,Global Ledger Transaction Interface created
+AHF,202504_0019,55,19,0,19,103933,JE,5/2/2025,-229,Check - 04/30/2025            ,USD,0,-3611,GL,4/30/2025,               ,19000,     ,N1200109,142702510,Global Ledger Transaction Interface created
+AHF,202504_0019,56,19,0,19,103933,JE,5/2/2025,-228,Credit Card - 04/30/2025      ,USD,0,-7592.5,GL,4/30/2025,               ,19000,     ,N1200108,142702509,Global Ledger Transaction Interface created
+AHF,202504_0019,57,19,0,19,103933,JE,5/2/2025,-227,SFA L Altern - 04/30/2025     ,USD,0,-6500,GL,4/30/2025,               ,19000,     ,N1200107,142702508,Global Ledger Transaction Interface created
+AHF,202504_0019,58,19,0,19,103933,JE,5/2/2025,-226,SFA VA - 04/24/2025           ,USD,0,-100,GL,4/30/2025,               ,19000,     ,N1200106,142702507,Global Ledger Transaction Interface created
+AHF,202504_0019,59,19,0,19,103933,JE,5/2/2025,-220,Paypal - 04/24/2025           ,USD,0,-99,GL,4/30/2025,               ,19000,     ,N1200100,142702501,Global Ledger Transaction Interface created
+AHF,202504_0019,60,19,0,19,103933,JE,5/2/2025,-219,Check - 04/24/2025            ,USD,0,-32752.09,GL,4/30/2025,               ,19000,     ,N120099,142702500,Global Ledger Transaction Interface created
+AHF,202504_0019,61,19,0,19,103933,JE,5/2/2025,-218,Credit Card - 04/24/2025      ,USD,0,-2851.25,GL,4/30/2025,               ,19000,     ,N120098,142702499,Global Ledger Transaction Interface created
+AHF,202504_0019,62,19,0,19,103933,JE,5/2/2025,-217,COLLECT FEES - 04/24/2025     ,USD,0,-73.6,GL,4/30/2025,               ,19000,     ,N120097,142702498,Global Ledger Transaction Interface created
+AHF,202504_0019,63,19,0,19,103933,JE,5/2/2025,-215,SFA VA - 04/17/2025           ,USD,0,-9940,GL,4/30/2025,               ,19000,     ,N120095,142702496,Global Ledger Transaction Interface created
+AHF,202504_0019,64,19,0,19,103933,JE,5/2/2025,-213,SFA Scholar O - 04/17/2025    ,USD,0,-3250,GL,4/30/2025,               ,19000,     ,N120093,142702494,Global Ledger Transaction Interface created
+AHF,202504_0019,65,19,0,19,103933,JE,5/2/2025,-167,AASR Book Fees - 04/17/2025   ,USD,0,197.86,GL,4/30/2025,               ,19000,     ,N120047,142702438,Global Ledger Transaction Interface created
+AHF,202504_0019,66,19,0,19,103933,JE,5/2/2025,-190,BSN RSVP Fee - 04/24/2025     ,USD,0,100,GL,4/30/2025,               ,19000,     ,N120070,142702461,Global Ledger Transaction Interface created
+AHF,202504_0019,67,19,0,19,103933,JE,5/2/2025,-191,Student Refund - 04/24/2025   ,USD,0,1796,GL,4/30/2025,               ,19000,     ,N120071,142702462,Global Ledger Transaction Interface created
+AHF,202504_0019,68,19,0,19,103933,JE,5/2/2025,-198,ASHS RSVP Fee - 04/30/2025    ,USD,0,300,GL,4/30/2025,               ,19000,     ,N120078,142702469,Global Ledger Transaction Interface created
+AHF,202504_0019,69,19,0,19,103933,JE,5/2/2025,-199,ASN RSVP Fee - 04/30/2025     ,USD,0,600,GL,4/30/2025,               ,19000,     ,N120079,142702470,Global Ledger Transaction Interface created
+AHF,202504_0019,70,19,0,19,103933,JE,5/2/2025,-200,ADSC RSVP Fee - 04/30/2025    ,USD,0,1100,GL,4/30/2025,               ,19000,     ,N120080,142702471,Global Ledger Transaction Interface created
+AHF,202504_0019,71,19,0,19,103933,JE,5/2/2025,-202,SFA L Altern - 04/17/2025     ,USD,0,-4243,GL,4/30/2025,               ,19000,     ,N120082,142702473,Global Ledger Transaction Interface created
+AHF,202504_0019,72,19,0,19,103933,JE,5/2/2025,-203,SFA G FSEOG - 04/17/2025      ,USD,0,-200,GL,4/30/2025,               ,19000,     ,N120083,142702474,Global Ledger Transaction Interface created
+AHF,202504_0019,73,19,0,19,103933,JE,5/2/2025,-204,Credit Card - 04/17/2025      ,USD,0,-20763.75,GL,4/30/2025,               ,19000,     ,N120084,142702475,Global Ledger Transaction Interface created
+AHF,202504_0019,74,19,0,19,103933,JE,5/2/2025,-205,Check - 04/17/2025            ,USD,0,-5596,GL,4/30/2025,               ,19000,     ,N120085,142702476,Global Ledger Transaction Interface created
+AHF,202504_0019,75,19,0,19,103933,JE,5/2/2025,-206,Paypal - 04/17/2025           ,USD,0,-2579.45,GL,4/30/2025,               ,19000,     ,N120086,142702477,Global Ledger Transaction Interface created
+AHF,202504_0019,76,19,0,19,103933,JE,5/2/2025,-207,Cash - 04/17/2025             ,USD,0,-317,GL,4/30/2025,               ,19000,     ,N120087,142702478,Global Ledger Transaction Interface created
+AHF,202504_0019,77,19,0,19,103943,JE,5/2/2025,-196,Paypal - 04/30/2025           ,USD,0,150,GL,4/30/2025,               ,19000,     ,N120076,142702467,Global Ledger Transaction Interface created
+AHF,202504_0019,78,19,0,19,103943,JE,5/2/2025,-186,Paypal - 04/24/2025           ,USD,0,99,GL,4/30/2025,               ,19000,     ,N120066,142702457,Global Ledger Transaction Interface created
+AHF,202504_0019,79,19,0,19,103943,JE,5/2/2025,-172,Paypal - 04/17/2025           ,USD,0,2579.45,GL,4/30/2025,               ,19000,     ,N120052,142702443,Global Ledger Transaction Interface created
+AHF,202504_0019,80,19,0,19,103943,JE,5/7/2025,-288,College AR Reclass            ,USD,0,-2828.45,GL,4/30/2025,               ,19000,     ,N28602,142813884,Global Ledger Transaction Interface created
+AHF,202504_0019,81,19,0,19,105110,JE,5/7/2025,-305,P4 College Exp. Reduction     ,USD,0,-505961.43,GL,4/30/2025,               ,19000,     ,N285020,142813624,Global Ledger Transaction Interface created
+AHF,202504_0019,82,19,0,19,105110,ZB,5/5/2025,GL190-213-66,Auto Offset From Zone 10      ,USD,0,17900.76,GL,4/30/2025,               ,19000,     ,N213066,142730899,Global Ledger Transaction Interface created
+AHF,202504_0019,83,19,0,19,105110,ZB,5/3/2025,GL190-138-38,Auto Offset From Zone 10      ,USD,0,2243.55,GL,4/30/2025,               ,19000,     ,N138038,142720549,Global Ledger Transaction Interface created
+AHF,202504_0019,84,19,0,19,105110,ZB,4/30/2025,GL190-20-82,Auto Offset From Zone 10      ,USD,0,4906.71,GL,4/30/2025,               ,19000,     ,I20082,142558456,Global Ledger Transaction Interface created
+AHF,202504_0019,85,19,0,19,105110,ZB,3/3/2025,GL190-46-222,Auto Offset From Zone 10      ,USD,0,-2302,AP,4/18/2025,               ,19000,     ,I460222,142456655,Global Ledger Transaction Interface created
+AHF,202504_0019,86,19,0,19,105110,ZB,4/17/2025,GL190-333-3,Auto Offset To Zone 10        ,USD,0,14177,AP,4/17/2025,               ,19000,     ,N33303,142446402,Global Ledger Transaction Interface created
+AHF,202504_0019,87,19,0,19,105110,ZB,5/1/2025,GL190-109-4,Auto Offset From Zone 10      ,USD,0,25000,GL,4/30/2025,               ,19000,     ,N10904,142672159,Global Ledger Transaction Interface created
+AHF,202504_0019,88,19,0,19,105110,ZB,5/2/2025,GL190-120-116,Auto Offset From Zone 10      ,USD,0,-1353.04,GL,4/30/2025,               ,19000,     ,N1200116,142703161,Global Ledger Transaction Interface created
+AHF,202504_0019,89,19,0,19,107050,JE,5/2/2025,-151,Logostore Tax - 04/17/2025    ,USD,0,-2.38,GL,4/30/2025,               ,19000,     ,N120031,142702422,Global Ledger Transaction Interface created
+AHF,202504_0019,90,19,0,19,107050,JE,5/2/2025,-153,Tax on Transcript - 04/17/2025,USD,0,-3.66,GL,4/30/2025,               ,19000,     ,N120033,142702424,Global Ledger Transaction Interface created
+AHF,202504_0019,91,19,0,19,107050,JE,5/2/2025,-159,Tax on Transcript - 04/24/2025,USD,0,-1.53,GL,4/30/2025,               ,19000,     ,N120039,142702430,Global Ledger Transaction Interface created
+AHF,202504_0019,92,19,0,19,107050,JE,5/2/2025,-164,Logostore Tax - 04/30/2025    ,USD,0,-0.73,GL,4/30/2025,               ,19000,     ,N120044,142702435,Global Ledger Transaction Interface created
+AHF,202504_0019,93,19,0,19,107050,JE,5/2/2025,-166,Tax on Transcript - 04/30/2025,USD,0,-0.92,GL,4/30/2025,               ,19000,     ,N120046,142702437,Global Ledger Transaction Interface created
+AHF,202504_0019,94,19,0,19,107050,JE,4/23/2025,-11,P3 Sales Tax pd 4.2025        ,USD,0,13.12,GL,4/30/2025,               ,19000,     ,I902,142517530,Global Ledger Transaction Interface created
+AHF,202504_0019,95,19,0,19,115380,JE,5/5/2025,-263,P4 Invest-Vanguard CON        ,USD,0,-17900.76,GL,4/30/2025,               ,19000,     ,N213050,142730554,Global Ledger Transaction Interface created
+AHF,202504_0019,96,19,0,19,200000,AC,2/25/2025,AP175-356-1,Accounts Payable Accrual      ,USD,0,14177,AP,4/17/2025,               ,19000,     ,N35601,142448594,Global Ledger Transaction Interface created
+AHF,202504_0019,97,19,0,19,200000,VP,4/17/2025,     63788-333-2,Void Payment                  ,USD,0,-14177,AP,4/17/2025,               ,19000,     ,N33302,142443346,Global Ledger Transaction Interface created
+AHF,202504_0019,98,19,0,19,200220,JE,5/2/2025,-121,Student Refund to Restricted f,USD,0,500,GL,4/30/2025,               ,19000,     ,N12001,142702392,Global Ledger Transaction Interface created
+AHF,202504_0019,99,19,0,19,200220,AD,4/17/2025,   3106101-46-214,    46850GILLIAN EDWARDS      ,USD,0,901,AP,4/18/2025,               ,19000,     ,I460214,142455443,Global Ledger Transaction Interface created
+AHF,202504_0019,100,19,0,19,200220,AD,4/17/2025,   3106100-46-213,    46849ABIGAYLE EDWARDS     ,USD,0,901,AP,4/18/2025,               ,19000,     ,I460213,142455442,Global Ledger Transaction Interface created
+AHF,202504_0019,101,19,0,19,200220,AD,4/17/2025,   3106099-46-212,    43704EMILY KRAUSE         ,USD,0,500,AP,4/18/2025,               ,19000,     ,I460212,142455441,Global Ledger Transaction Interface created
+AHF,202504_0019,102,19,0,19,200220,AD,2/25/2025,   3088804-356-2,    45945DESTINY SHOWALTER    ,USD,0,-14177,AP,4/17/2025,               ,19000,     ,N35602,142448595,Global Ledger Transaction Interface created
+AHF,202504_0019,103,19,0,19,200220,JE,5/2/2025,-214,Student Refund - 04/17/2025   ,USD,0,-8052.97,GL,4/30/2025,               ,19000,     ,N120094,142702495,Global Ledger Transaction Interface created
+AHF,202504_0019,104,19,0,19,200220,JE,5/2/2025,-225,Student Refund - 04/24/2025   ,USD,0,-1796,GL,4/30/2025,               ,19000,     ,N1200105,142702506,Global Ledger Transaction Interface created
+AHF,202504_0019,105,19,0,19,203000,JE,5/2/2025,-148,Outside Scholarships - ck 04/1,USD,0,-6500,GL,4/30/2025,               ,19000,     ,N120028,142702419,Global Ledger Transaction Interface created
+AHF,202504_0019,106,19,0,19,203000,JE,5/2/2025,-179,SFA Scholar O - 04/17/2025    ,USD,0,3250,GL,4/30/2025,               ,19000,     ,N120059,142702450,Global Ledger Transaction Interface created
+AHF,202504_0019,107,19,0,19,430320,JE,4/23/2025,-12,P3 Sales Tax pd 4.2025        ,USD,0,-0.04,GL,4/30/2025,               ,19032,     ,I903,142517531,Global Ledger Transaction Interface created
+AHF,202504_0019,108,19,0,19,430320,JE,4/23/2025,-13,P3 Sales Tax pd 4.2025        ,USD,0,-0.05,GL,4/30/2025,               ,19041,     ,I904,142517532,Global Ledger Transaction Interface created
+AHF,202504_0019,109,19,0,19,430530,JE,5/2/2025,-127,Spread 2025 Spring Rev        ,USD,0,-12600,GL,4/30/2025,               ,19045,     ,N12106,142703028,Global Ledger Transaction Interface created
+AHF,202504_0019,110,19,0,19,490000,JE,5/2/2025,-183,COLLECT FEES - 04/24/2025     ,USD,0,73.6,GL,4/30/2025,               ,19031,     ,N120063,142702454,Global Ledger Transaction Interface created
+AHF,202504_0019,111,19,0,19,490000,JE,5/2/2025,-149,CCP Books - ck 04/17/25       ,USD,0,-375.36,GL,4/30/2025,               ,19035,     ,N120029,142702420,Global Ledger Transaction Interface created
+AHF,202504_0019,112,19,0,19,490000,JE,5/2/2025,-157,CCP Books - ck 4/24/25        ,USD,0,-201.15,GL,4/30/2025,               ,19035,     ,N120037,142702428,Global Ledger Transaction Interface created
+AHF,202504_0019,113,19,0,19,490020,JE,5/2/2025,-136,Spread 2025 Spring Rev        ,USD,0,11552.25,GL,4/30/2025,               ,19035,     ,N121015,142703037,Global Ledger Transaction Interface created
+AHF,202504_0019,114,19,0,19,490020,JE,5/2/2025,-137,Spread 2025 Spring Rev        ,USD,0,717.38,GL,4/30/2025,               ,19051,     ,N121016,142703038,Global Ledger Transaction Interface created
+AHF,202504_0019,115,19,0,19,490020,JE,5/2/2025,-135,Spread 2025 Spring Rev        ,USD,0,2355.75,GL,4/30/2025,               ,19043,     ,N121014,142703036,Global Ledger Transaction Interface created
+AHF,202504_0019,116,19,0,19,490020,JE,5/2/2025,-134,Spread 2025 Spring Rev        ,USD,0,70160.25,GL,4/30/2025,               ,19050,     ,N121013,142703035,Global Ledger Transaction Interface created
+AHF,202504_0019,117,19,0,19,490150,JE,5/2/2025,-122,Spread 2025 Spring Rev        ,USD,0,-6275,GL,4/30/2025,               ,19031,     ,N12101,142703023,Global Ledger Transaction Interface created
+AHF,202504_0019,118,19,0,19,490290,JE,5/2/2025,-210,ASHS RSVP Fee - 04/17/2025    ,USD,0,-700,GL,4/30/2025,               ,19035,     ,N120090,142702481,Global Ledger Transaction Interface created
+AHF,202504_0019,119,19,0,19,490290,JE,5/2/2025,-222,ASHS RSVP Fee - 04/24/2025    ,USD,0,-300,GL,4/30/2025,               ,19035,     ,N1200102,142702503,Global Ledger Transaction Interface created
+AHF,202504_0019,120,19,0,19,490290,JE,5/2/2025,-232,ASHS RSVP Fee - 04/30/2025    ,USD,0,-300,GL,4/30/2025,               ,19035,     ,N1200112,142702513,Global Ledger Transaction Interface created
+AHF,202504_0019,121,19,0,19,490290,JE,5/2/2025,-211,ASN RSVP Fee - 04/17/2025     ,USD,0,-100,GL,4/30/2025,               ,19050,     ,N120091,142702492,Global Ledger Transaction Interface created
+AHF,202504_0019,122,19,0,19,490290,JE,5/2/2025,-212,BSN RSVP Fee - 04/17/2025     ,USD,0,-100,GL,4/30/2025,               ,19050,     ,N120092,142702493,Global Ledger Transaction Interface created
+AHF,202504_0019,123,19,0,19,490290,JE,5/2/2025,-223,ASN RSVP Fee - 04/24/2025     ,USD,0,-100,GL,4/30/2025,               ,19050,     ,N1200103,142702504,Global Ledger Transaction Interface created
+AHF,202504_0019,124,19,0,19,490290,JE,5/2/2025,-224,BSN RSVP Fee - 04/24/2025     ,USD,0,-100,GL,4/30/2025,               ,19050,     ,N1200104,142702505,Global Ledger Transaction Interface created
+AHF,202504_0019,125,19,0,19,490290,JE,5/2/2025,-233,ASN RSVP Fee - 04/30/2025     ,USD,0,-600,GL,4/30/2025,               ,19050,     ,N1200113,142702514,Global Ledger Transaction Interface created
+AHF,202504_0019,126,19,0,19,490290,JE,5/2/2025,-208,AASR RSVP Fee - 04/17/2025    ,USD,0,-100,GL,4/30/2025,               ,19043,     ,N120088,142702479,Global Ledger Transaction Interface created
+AHF,202504_0019,127,19,0,19,490290,JE,5/2/2025,-234,ADSC RSVP Fee - 04/30/2025    ,USD,0,-1100,GL,4/30/2025,               ,19055,     ,N1200114,142702515,Global Ledger Transaction Interface created
+AHF,202504_0019,128,19,0,19,490290,JE,5/2/2025,-209,MA RSVP Fee - 04/17/2025      ,USD,0,-100,GL,4/30/2025,               ,19052,     ,N120089,142702480,Global Ledger Transaction Interface created
+AHF,202504_0019,129,19,0,19,490290,JE,5/2/2025,-221,MA RSVP Fee - 04/24/2025      ,USD,0,-100,GL,4/30/2025,               ,19052,     ,N1200101,142702502,Global Ledger Transaction Interface created
+AHF,202504_0019,130,19,0,19,490330,JE,5/2/2025,-150,Logostore - cc 4/17/25        ,USD,0,-36.62,GL,4/30/2025,               ,19032,     ,N120030,142702421,Global Ledger Transaction Interface created
+AHF,202504_0019,131,19,0,19,490330,JE,5/2/2025,-163,Logostore - cc 4/30/25        ,USD,0,-11.27,GL,4/30/2025,               ,19032,     ,N120043,142702434,Global Ledger Transaction Interface created
+AHF,202504_0019,132,19,0,19,490360,JE,5/2/2025,-145,Transcript - ca 04/17/25      ,USD,0,-9.39,GL,4/30/2025,               ,19041,     ,N120025,142702416,Global Ledger Transaction Interface created
+AHF,202504_0019,133,19,0,19,490360,JE,5/2/2025,-152,Transcript - cc 4/17/25       ,USD,0,-46.95,GL,4/30/2025,               ,19041,     ,N120032,142702423,Global Ledger Transaction Interface created
+AHF,202504_0019,134,19,0,19,490360,JE,5/2/2025,-158,Transcript - cc 4/24/25       ,USD,0,-23.47,GL,4/30/2025,               ,19041,     ,N120038,142702429,Global Ledger Transaction Interface created
+AHF,202504_0019,135,19,0,19,490360,JE,5/2/2025,-161,Transcript - ca 4/30/25       ,USD,0,-4.69,GL,4/30/2025,               ,19041,     ,N120041,142702432,Global Ledger Transaction Interface created
+AHF,202504_0019,136,19,0,19,490360,JE,5/2/2025,-165,Transcript - cc 4/30/25       ,USD,0,-9.39,GL,4/30/2025,               ,19041,     ,N120045,142702436,Global Ledger Transaction Interface created
+AHF,202504_0019,137,19,0,19,490370,JE,5/2/2025,-130,Spread 2025 Spring Rev        ,USD,0,-80498.75,GL,4/30/2025,               ,19035,     ,N12109,142703031,Global Ledger Transaction Interface created
+AHF,202504_0019,138,19,0,19,490370,JE,5/2/2025,-133,Spread 2025 Spring Rev        ,USD,0,-19095.75,GL,4/30/2025,               ,19052,     ,N121012,142703034,Global Ledger Transaction Interface created
+AHF,202504_0019,139,19,0,19,490370,JE,5/2/2025,-132,Spread 2025 Spring Rev        ,USD,0,-2391.25,GL,4/30/2025,               ,19051,     ,N121011,142703033,Global Ledger Transaction Interface created
+AHF,202504_0019,140,19,0,19,490370,JE,5/2/2025,-201,AASR Book Fees - 04/17/2025   ,USD,0,-197.86,GL,4/30/2025,               ,19043,     ,N120081,142702472,Global Ledger Transaction Interface created
+AHF,202504_0019,141,19,0,19,490370,JE,5/2/2025,-216,AASR Book Fees - 04/24/2025   ,USD,0,-137.47,GL,4/30/2025,               ,19043,     ,N120096,142702497,Global Ledger Transaction Interface created
+AHF,202504_0019,142,19,0,19,490370,JE,5/2/2025,-129,Spread 2025 Spring Rev        ,USD,0,-78550.75,GL,4/30/2025,               ,19043,     ,N12108,142703030,Global Ledger Transaction Interface created
+AHF,202504_0019,143,19,0,19,490370,JE,5/2/2025,-128,Spread 2025 Spring Rev        ,USD,0,-355371.25,GL,4/30/2025,               ,19050,     ,N12107,142703029,Global Ledger Transaction Interface created
+AHF,202504_0019,144,19,0,19,490370,JE,5/2/2025,-131,Spread 2025 Spring Rev        ,USD,0,-6808.5,GL,4/30/2025,               ,19050,     ,N121010,142703032,Global Ledger Transaction Interface created
+AHF,202504_0019,145,19,0,19,490385,JE,5/2/2025,-123,Spread 2025 Spring Rev        ,USD,0,-1387.5,GL,4/30/2025,               ,19050,     ,N12102,142703024,Global Ledger Transaction Interface created
+AHF,202504_0019,146,19,0,19,499070,JE,5/2/2025,-125,Spread 2025 Spring Rev        ,USD,0,-7350,GL,4/30/2025,               ,19050,     ,N12104,142703026,Global Ledger Transaction Interface created
+AHF,202504_0019,147,19,0,19,499070,JE,5/2/2025,-126,Spread 2025 Spring Rev        ,USD,0,-1837.5,GL,4/30/2025,               ,19043,     ,N12105,142703027,Global Ledger Transaction Interface created
+AHF,202504_0019,148,19,0,19,499075,JE,5/2/2025,-146,Accuplacer - ca 04/17/25      ,USD,0,-20,GL,4/30/2025,               ,19033,     ,N120026,142702417,Global Ledger Transaction Interface created
+AHF,202504_0019,149,19,0,19,499075,JE,5/2/2025,-155,Accuplacer - cc 4/17/25       ,USD,0,-60,GL,4/30/2025,               ,19033,     ,N120035,142702426,Global Ledger Transaction Interface created
+AHF,202504_0019,150,19,0,19,499075,JE,5/2/2025,-160,Accuplacer - cc 4/24/25       ,USD,0,-20,GL,4/30/2025,               ,19033,     ,N120040,142702431,Global Ledger Transaction Interface created
+AHF,202504_0019,151,19,0,19,499120,JE,5/2/2025,-124,Spread 2025 Spring Rev        ,USD,0,-3237.5,GL,4/30/2025,               ,19031,     ,N12103,142703025,Global Ledger Transaction Interface created
+AHF,202504_0019,152,19,0,19,748000,JE,5/7/2025,-306,P4 College Exp. Reduction     ,USD,0,41700.01,GL,4/30/2025,               ,19031,     ,N285021,142813625,Global Ledger Transaction Interface created
+AHF,202504_0019,153,19,0,19,748000,JE,5/7/2025,-319,P4 College Exp. Reduction     ,USD,0,20160.77,GL,4/30/2025,               ,19026,     ,N285034,142813638,Global Ledger Transaction Interface created
+AHF,202504_0019,154,19,0,19,748000,JE,5/7/2025,-320,P4 College Exp. Reduction     ,USD,0,197.57,GL,4/30/2025,               ,19027,     ,N285035,142813639,Global Ledger Transaction Interface created
+AHF,202504_0019,155,19,0,19,748000,JE,5/7/2025,-307,P4 College Exp. Reduction     ,USD,0,11877.46,GL,4/30/2025,               ,19033,     ,N285022,142813626,Global Ledger Transaction Interface created
+AHF,202504_0019,156,19,0,19,748000,JE,5/7/2025,-308,P4 College Exp. Reduction     ,USD,0,539.71,GL,4/30/2025,               ,19034,     ,N285023,142813627,Global Ledger Transaction Interface created
+AHF,202504_0019,157,19,0,19,748000,JE,5/7/2025,-309,P4 College Exp. Reduction     ,USD,0,75566.33,GL,4/30/2025,               ,19035,     ,N285024,142813628,Global Ledger Transaction Interface created
+AHF,202504_0019,158,19,0,19,748000,JE,5/7/2025,-310,P4 College Exp. Reduction     ,USD,0,14759.36,GL,4/30/2025,               ,19037,     ,N285025,142813629,Global Ledger Transaction Interface created
+AHF,202504_0019,159,19,0,19,748000,JE,5/7/2025,-311,P4 College Exp. Reduction     ,USD,0,59301.02,GL,4/30/2025,               ,19038,     ,N285026,142813630,Global Ledger Transaction Interface created
+AHF,202504_0019,160,19,0,19,748000,JE,5/7/2025,-312,P4 College Exp. Reduction     ,USD,0,14121.67,GL,4/30/2025,               ,19041,     ,N285027,142813631,Global Ledger Transaction Interface created
+AHF,202504_0019,161,19,0,19,748000,JE,5/7/2025,-313,P4 College Exp. Reduction     ,USD,0,35337.62,GL,4/30/2025,               ,19042,     ,N285028,142813632,Global Ledger Transaction Interface created
+AHF,202504_0019,162,19,0,19,748000,JE,5/7/2025,-318,P4 College Exp. Reduction     ,USD,0,36703.19,GL,4/30/2025,               ,19043,     ,N285033,142813637,Global Ledger Transaction Interface created
+AHF,202504_0019,163,19,0,19,748000,JE,5/7/2025,-316,P4 College Exp. Reduction     ,USD,0,57625.6,GL,4/30/2025,               ,19044,     ,N285031,142813635,Global Ledger Transaction Interface created
+AHF,202504_0019,164,19,0,19,748000,JE,5/7/2025,-321,P4 College Exp. Reduction     ,USD,0,74042.44,GL,4/30/2025,               ,19050,     ,N285036,142813640,Global Ledger Transaction Interface created
+AHF,202504_0019,165,19,0,19,748000,JE,5/7/2025,-322,P4 College Exp. Reduction     ,USD,0,663.9,GL,4/30/2025,               ,19051,     ,N285037,142813641,Global Ledger Transaction Interface created
+AHF,202504_0019,166,19,0,19,748000,JE,5/7/2025,-323,P4 College Exp. Reduction     ,USD,0,3000,GL,4/30/2025,               ,19052,     ,N285038,142813642,Global Ledger Transaction Interface created
+AHF,202504_0019,167,19,0,19,748000,JE,5/7/2025,-324,P4 College Exp. Reduction     ,USD,0,6030.34,GL,4/30/2025,               ,19053,     ,N285039,142813643,Global Ledger Transaction Interface created
+AHF,202504_0019,168,19,0,19,748000,JE,5/7/2025,-314,P4 College Exp. Reduction     ,USD,0,50830.62,GL,4/30/2025,               ,19045,     ,N285029,142813633,Global Ledger Transaction Interface created
+AHF,202504_0019,169,19,0,19,748000,JE,5/7/2025,-315,P4 College Exp. Reduction     ,USD,0,244.19,GL,4/30/2025,               ,19046,     ,N285030,142813634,Global Ledger Transaction Interface created
+AHF,202504_0019,170,19,0,19,748000,JE,5/7/2025,-317,P4 College Exp. Reduction     ,USD,0,3259.63,GL,4/30/2025,               ,19047,     ,N285032,142813636,Global Ledger Transaction Interface created
+,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,, 0.00 ,,,,,,,,

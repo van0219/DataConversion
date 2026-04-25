@@ -5,6 +5,7 @@ import BatchUpload from './pages/BatchUpload';
 import SetupDataManagement from './pages/SetupDataManagement';
 import RulesManagement from './pages/RulesManagement';
 import SchemaManagement from './pages/SchemaManagement';
+import GenAiChat from './components/GenAiChat';
 import api from './services/api';
 import { theme } from './theme';
 
@@ -14,6 +15,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState<Page>('login');
   const [account, setAccount] = useState<any>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in
@@ -175,7 +177,7 @@ function App() {
       </div>
 
       {/* Main Content */}
-      <div style={styles.main}>
+      <div style={{ ...styles.main, marginRight: chatOpen ? 400 : 0, transition: 'margin-right 0.3s ease' }}>
         {currentPage === 'dashboard' && <Dashboard onNewConversion={() => setCurrentPage('conversion')} onSetupData={() => setCurrentPage('setup')} onViewRules={() => setCurrentPage('rules')} />}
         {currentPage === 'conversion' && <ConversionWorkflow onBack={() => setCurrentPage('dashboard')} />}
         {currentPage === 'batch' && <BatchUpload />}
@@ -183,6 +185,33 @@ function App() {
         {currentPage === 'rules' && <RulesManagement />}
         {currentPage === 'schema' && <SchemaManagement />}
       </div>
+
+      {/* GenAI Chat Toggle Button */}
+      {!chatOpen && (
+        <button
+          onClick={() => setChatOpen(true)}
+          title="Open Infor GenAI Chat"
+          style={{
+            position: 'fixed',
+            bottom: 24, right: 24,
+            width: 52, height: 52,
+            borderRadius: 16,
+            background: `linear-gradient(135deg, ${theme.primary.main}, #8B5CF6)`,
+            border: 'none',
+            boxShadow: '0 4px 16px rgba(70, 0, 175, 0.35)',
+            cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 24,
+            zIndex: 800,
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(70, 0, 175, 0.45)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(70, 0, 175, 0.35)'; }}
+        >✨</button>
+      )}
+
+      {/* GenAI Chat Sidebar */}
+      <GenAiChat visible={chatOpen} onClose={() => setChatOpen(false)} appContext={{ page: currentPage }} />
     </div>
   );
 }

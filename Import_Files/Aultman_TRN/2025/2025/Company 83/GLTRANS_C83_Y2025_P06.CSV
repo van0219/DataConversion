@@ -1,0 +1,22 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID,Column1
+AHF,202506_0083,1,83,0,83,100000,MR,45967,MEDIPAC-1-1,MEDIPAC DAILY                 ,USD,0,686.04,GL,45936,               ,83000,     ,N101,143424131,Global Ledger Transaction Interface created
+AHF,202506_0083,2,83,0,83,100000,MR,45997,MEDIPAC-2-1,MEDIPAC DAILY                 ,USD,0,200,GL,45967,               ,83000,     ,N201,143431147,Global Ledger Transaction Interface created
+AHF,202506_0083,3,83,0,83,100000,MR,06/13/2025,MEDIPAC-3-1,MEDIPAC DAILY                 ,USD,0,-200,GL,45997,               ,83000,     ,N301,143449033,Global Ledger Transaction Interface created
+AHF,202506_0083,4,83,0,83,100000,MR,06/20/2025,MEDIPAC-4-1,MEDIPAC DAILY                 ,USD,0,130,GL,06/19/2025,               ,83000,     ,N401,143543214,Global Ledger Transaction Interface created
+AHF,202506_0083,5,83,0,83,101010,MR,45967,GL165-1-2,Summarized transaction        ,USD,0,-1284,GL,45936,               ,83000,     ,N102,143424132,Global Ledger Transaction Interface created
+AHF,202506_0083,6,83,0,83,101010,MR,06/13/2025,MEDIPAC-3-2,MEDIPAC DAILY                 ,USD,0,200,GL,45997,               ,83000,     ,N302,143449034,Global Ledger Transaction Interface created
+AHF,202506_0083,7,83,0,83,101010,MR,06/13/2025,MEDIPAC-3-3,MEDIPAC DAILY                 ,USD,0,-200,GL,45997,               ,83000,     ,N303,143449035,Global Ledger Transaction Interface created
+AHF,202506_0083,8,83,0,83,101010,MR,06/20/2025,MEDIPAC-4-2,MEDIPAC DAILY                 ,USD,0,-130,GL,06/19/2025,               ,83000,     ,N402,143543215,Global Ledger Transaction Interface created
+AHF,202506_0083,9,83,0,83,101010,MR,45664,MEDIPAC-5-1,MEDIPAC DAILY                 ,USD,0,-6273,GL,06/30/2025,               ,83000,     ,N501,143625336,Global Ledger Transaction Interface created
+AHF,202506_0083,10,83,0,83,102250,JE,45845,-7,P6 UHJV AR Allowances         ,USD,0,7687,GL,06/30/2025,               ,83000,     ,N601,143830824,Global Ledger Transaction Interface created
+AHF,202506_0083,11,83,0,83,113010,DE,06/30/2025,AM190-1-1,Summarized transaction        ,USD,0,-1027.73,AM,06/30/2025,               ,83000,     ,N101,143783522,Global Ledger Transaction Interface created
+AHF,202506_0083,12,83,0,83,113030,DE,06/30/2025,AM190-1-2,Summarized transaction        ,USD,0,-432.3,AM,06/30/2025,               ,83000,     ,N102,143783523,Global Ledger Transaction Interface created
+AHF,202506_0083,13,83,0,83,113040,DE,06/30/2025,AM190-1-3,Summarized transaction        ,USD,0,-8541.26,AM,06/30/2025,               ,83000,     ,N103,143783524,Global Ledger Transaction Interface created
+AHF,202506_0083,14,83,0,83,411160,JE,45845,-8,P6 UHJV AR Allowances         ,USD,0,-7687,GL,06/30/2025,               ,83021,     ,N602,143830825,Global Ledger Transaction Interface created
+AHF,202506_0083,15,83,0,83,411215,MR,45967,MEDIPAC-1-3,MEDIPAC DAILY                 ,USD,0,597.96,GL,45936,               ,83021,     ,N103,143424133,Global Ledger Transaction Interface created
+AHF,202506_0083,16,83,0,83,411265,MR,45664,MEDIPAC-5-2,MEDIPAC DAILY                 ,USD,0,6273,GL,06/30/2025,               ,83021,     ,N502,143625337,Global Ledger Transaction Interface created
+AHF,202506_0083,17,83,0,83,411415,MR,06/13/2025,MEDIPAC-3-4,MEDIPAC DAILY                 ,USD,0,200,GL,45997,               ,83021,     ,N304,143449036,Global Ledger Transaction Interface created
+AHF,202506_0083,18,83,0,83,412355,MR,45997,MEDIPAC-2-2,MEDIPAC DAILY                 ,USD,0,-200,GL,45967,               ,83021,     ,N202,143431148,Global Ledger Transaction Interface created
+AHF,202506_0083,19,83,0,83,741000,DE,06/30/2025,AM190-1-4,Summarized transaction        ,USD,0,1027.73,AM,06/30/2025,               ,83021,     ,N104,143783525,Global Ledger Transaction Interface created
+AHF,202506_0083,20,83,0,83,741020,DE,06/30/2025,AM190-1-5,Summarized transaction        ,USD,0,8541.26,AM,06/30/2025,               ,83021,     ,N105,143783526,Global Ledger Transaction Interface created
+AHF,202506_0083,21,83,0,83,741030,DE,06/30/2025,AM190-1-6,Summarized transaction        ,USD,0,432.3,AM,06/30/2025,               ,83021,     ,N106,143783527,Global Ledger Transaction Interface created

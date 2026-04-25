@@ -1007,10 +1007,31 @@ const BatchUpload: React.FC = () => {
                   {errorModalTotal.toLocaleString()} errors
                 </span>
               </div>
-              <button onClick={() => setErrorModalOpen(false)} style={{
-                background: 'none', border: 'none', color: theme.text.secondary,
-                fontSize: 22, cursor: 'pointer', padding: '2px 8px'
-              }}>✕</button>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <button
+                  onClick={async () => {
+                    if (!errorModalJobId) return;
+                    try {
+                      const resp = await api.get(`/validation/${errorModalJobId}/export`, { responseType: 'blob' });
+                      const url = window.URL.createObjectURL(new Blob([resp.data]));
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `errors_${errorModalFilename.replace(/\.[^/.]+$/, '')}.csv`;
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                    } catch { alert('Failed to download error report'); }
+                  }}
+                  style={{
+                    padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600,
+                    backgroundColor: theme.status.error, color: '#fff',
+                    border: 'none', cursor: 'pointer'
+                  }}
+                >📥 Download Error Report</button>
+                <button onClick={() => setErrorModalOpen(false)} style={{
+                  background: 'none', border: 'none', color: theme.text.secondary,
+                  fontSize: 22, cursor: 'pointer', padding: '2px 8px'
+                }}>✕</button>
+              </div>
             </div>
 
             {/* Table */}

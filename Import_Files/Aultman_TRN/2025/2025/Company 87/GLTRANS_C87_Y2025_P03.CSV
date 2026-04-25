@@ -1,0 +1,48 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID,Column1
+AHF,202503_0087,1,87,0,87,100000,JE,04/29/2025,-2,Reverse MASPC prior year      ,USD,0,-2400850,GL,03/31/2025,               ,87000,     ,N101,142549483,Global Ledger Transaction Interface created
+AHF,202503_0087,2,87,0,87,100000,JE,04/30/2025,-3,MASPC Quarterly Financials    ,USD,0,2506961,GL,03/31/2025,               ,87000,     ,N201,142554908,Global Ledger Transaction Interface created
+AHF,202503_0087,3,87,0,87,103820,JE,04/30/2025,-4,MASPC Quarterly Financials    ,USD,0,13700144,GL,03/31/2025,               ,87000,     ,N202,142554909,Global Ledger Transaction Interface created
+AHF,202503_0087,4,87,0,87,103820,JE,04/29/2025,-3,Reverse MASPC prior year      ,USD,0,-14713828,GL,03/31/2025,               ,87000,     ,N102,142549484,Global Ledger Transaction Interface created
+AHF,202503_0087,5,87,0,87,103840,JE,04/29/2025,-4,Reverse MASPC prior year      ,USD,0,-12325714,GL,03/31/2025,               ,87000,     ,N103,142549485,Global Ledger Transaction Interface created
+AHF,202503_0087,6,87,0,87,103840,JE,04/30/2025,-5,MASPC Quarterly Financials    ,USD,0,12669145,GL,03/31/2025,               ,87000,     ,N203,142554910,Global Ledger Transaction Interface created
+AHF,202503_0087,7,87,0,87,103865,JE,04/30/2025,-6,MASPC Quarterly Financials    ,USD,0,22629,GL,03/31/2025,               ,87000,     ,N204,142554911,Global Ledger Transaction Interface created
+AHF,202503_0087,8,87,0,87,103865,JE,04/29/2025,-5,Reverse MASPC prior year      ,USD,0,-22007,GL,03/31/2025,               ,87000,     ,N104,142549486,Global Ledger Transaction Interface created
+AHF,202503_0087,9,87,0,87,107060,JE,04/29/2025,-6,Reverse MASPC prior year      ,USD,0,-35976,GL,03/31/2025,               ,87000,     ,N105,142549487,Global Ledger Transaction Interface created
+AHF,202503_0087,10,87,0,87,107060,JE,04/30/2025,-9,MASPC Quarterly Financials    ,USD,0,36407,GL,03/31/2025,               ,87000,     ,N207,142554914,Global Ledger Transaction Interface created
+AHF,202503_0087,11,87,0,87,107063,JE,04/29/2025,-7,Reverse MASPC prior year      ,USD,0,-629832,GL,03/31/2025,               ,87000,     ,N106,142549488,Global Ledger Transaction Interface created
+AHF,202503_0087,12,87,0,87,107063,JE,04/30/2025,-7,MASPC Quarterly Financials    ,USD,0,254437,GL,03/31/2025,               ,87000,     ,N205,142554912,Global Ledger Transaction Interface created
+AHF,202503_0087,13,87,0,87,107064,JE,04/30/2025,-8,MASPC Quarterly Financials    ,USD,0,112741,GL,03/31/2025,               ,87000,     ,N206,142554913,Global Ledger Transaction Interface created
+AHF,202503_0087,14,87,0,87,107064,JE,04/29/2025,-8,Reverse MASPC prior year      ,USD,0,-166718,GL,03/31/2025,               ,87000,     ,N107,142549489,Global Ledger Transaction Interface created
+AHF,202503_0087,15,87,0,87,115211,JE,04/29/2025,-9,Reverse MASPC prior year      ,USD,0,-18321788,GL,03/31/2025,               ,87000,     ,N108,142549490,Global Ledger Transaction Interface created
+AHF,202503_0087,16,87,0,87,115211,JE,04/30/2025,-10,MASPC Quarterly Financials    ,USD,0,18492818,GL,03/31/2025,               ,87000,     ,N208,142554915,Global Ledger Transaction Interface created
+AHF,202503_0087,17,87,0,87,200000,JE,04/30/2025,-11,MASPC Quarterly Financials    ,USD,0,-30813,GL,03/31/2025,               ,87000,     ,N209,142554916,Global Ledger Transaction Interface created
+AHF,202503_0087,18,87,0,87,200000,JE,04/29/2025,-10,Reverse MASPC prior year      ,USD,0,28815,GL,03/31/2025,               ,87000,     ,N109,142549491,Global Ledger Transaction Interface created
+AHF,202503_0087,19,87,0,87,205000,JE,04/30/2025,-18,MASPC Quarterly Financials    ,USD,0,-3825927,GL,03/31/2025,               ,87000,     ,N2016,142554923,Global Ledger Transaction Interface created
+AHF,202503_0087,20,87,0,87,205000,JE,04/29/2025,-11,Reverse MASPC prior year      ,USD,0,9292207,GL,03/31/2025,               ,87000,     ,N1010,142549492,Global Ledger Transaction Interface created
+AHF,202503_0087,21,87,0,87,205062,JE,04/30/2025,-12,MASPC Quarterly Financials    ,USD,0,-9975,GL,03/31/2025,               ,87000,     ,N2010,142554917,Global Ledger Transaction Interface created
+AHF,202503_0087,22,87,0,87,205063,JE,04/30/2025,-13,MASPC Quarterly Financials    ,USD,0,-112741,GL,03/31/2025,               ,87000,     ,N2011,142554918,Global Ledger Transaction Interface created
+AHF,202503_0087,23,87,0,87,205063,JE,04/29/2025,-12,Reverse MASPC prior year      ,USD,0,166718,GL,03/31/2025,               ,87000,     ,N1011,142549493,Global Ledger Transaction Interface created
+AHF,202503_0087,24,87,0,87,205064,JE,04/29/2025,-13,Reverse MASPC prior year      ,USD,0,13769130,GL,03/31/2025,               ,87000,     ,N1012,142549494,Global Ledger Transaction Interface created
+AHF,202503_0087,25,87,0,87,205064,JE,04/30/2025,-14,MASPC Quarterly Financials    ,USD,0,-19001506,GL,03/31/2025,               ,87000,     ,N2012,142554919,Global Ledger Transaction Interface created
+AHF,202503_0087,26,87,0,87,205065,JE,04/30/2025,-15,MASPC Quarterly Financials    ,USD,0,-5772996,GL,03/31/2025,               ,87000,     ,N2013,142554920,Global Ledger Transaction Interface created
+AHF,202503_0087,27,87,0,87,205065,JE,04/29/2025,-14,Reverse MASPC prior year      ,USD,0,4769642,GL,03/31/2025,               ,87000,     ,N1013,142549495,Global Ledger Transaction Interface created
+AHF,202503_0087,28,87,0,87,205066,JE,04/30/2025,-16,MASPC Quarterly Financials    ,USD,0,-13175692,GL,03/31/2025,               ,87000,     ,N2014,142554921,Global Ledger Transaction Interface created
+AHF,202503_0087,29,87,0,87,205066,JE,04/29/2025,-15,Reverse MASPC prior year      ,USD,0,12677418,GL,03/31/2025,               ,87000,     ,N1014,142549496,Global Ledger Transaction Interface created
+AHF,202503_0087,30,87,0,87,205068,JE,04/29/2025,-16,Reverse MASPC prior year      ,USD,0,2780967,GL,03/31/2025,               ,87000,     ,N1015,142549497,Global Ledger Transaction Interface created
+AHF,202503_0087,31,87,0,87,205068,JE,04/30/2025,-17,MASPC Quarterly Financials    ,USD,0,-955120,GL,03/31/2025,               ,87000,     ,N2015,142554922,Global Ledger Transaction Interface created
+AHF,202503_0087,32,87,0,87,300000,JE,04/30/2025,-19,MASPC Quarterly Financials    ,USD,0,-4857372,GL,03/31/2025,               ,87000,     ,N2017,142554924,Global Ledger Transaction Interface created
+AHF,202503_0087,33,87,0,87,300000,JE,04/29/2025,-17,Reverse MASPC prior year      ,USD,0,5021194,GL,03/31/2025,               ,87000,     ,N1016,142549498,Global Ledger Transaction Interface created
+AHF,202503_0087,34,87,0,87,300011,JE,04/29/2025,-18,Reverse MASPC prior year      ,USD,0,-9379,GL,03/31/2025,               ,87000,     ,N1017,142549499,Global Ledger Transaction Interface created
+AHF,202503_0087,35,87,0,87,300011,JE,04/30/2025,-20,MASPC Quarterly Financials    ,USD,0,7185,GL,03/31/2025,               ,87000,     ,N2018,142554925,Global Ledger Transaction Interface created
+AHF,202503_0087,36,87,0,87,300015,JE,04/30/2025,-21,MASPC Quarterly Financials    ,USD,0,-120001,GL,03/31/2025,               ,87000,     ,N2019,142554926,Global Ledger Transaction Interface created
+AHF,202503_0087,37,87,0,87,300015,JE,04/29/2025,-19,Reverse MASPC prior year      ,USD,0,120001,GL,03/31/2025,               ,87000,     ,N1018,142549500,Global Ledger Transaction Interface created
+AHF,202503_0087,38,87,0,87,440040,JE,04/30/2025,-22,MASPC Quarterly Financials    ,USD,0,-2194,GL,03/31/2025,               ,87030,     ,N2020,142554927,Global Ledger Transaction Interface created
+AHF,202503_0087,39,87,0,87,440150,JE,04/30/2025,-23,MASPC Quarterly Financials    ,USD,0,-166709,GL,03/31/2025,               ,87030,     ,N2021,142554928,Global Ledger Transaction Interface created
+AHF,202503_0087,40,87,0,87,480000,JE,04/30/2025,-24,MASPC Quarterly Financials    ,USD,0,375396,GL,03/31/2025,               ,87030,     ,N2022,142554929,Global Ledger Transaction Interface created
+AHF,202503_0087,41,87,0,87,480075,JE,04/30/2025,-25,MASPC Quarterly Financials    ,USD,0,-5466279,GL,03/31/2025,               ,87030,     ,N2023,142554930,Global Ledger Transaction Interface created
+AHF,202503_0087,42,87,0,87,480080,JE,04/30/2025,-26,MASPC Quarterly Financials    ,USD,0,-163146,GL,03/31/2025,               ,87030,     ,N2024,142554931,Global Ledger Transaction Interface created
+AHF,202503_0087,43,87,0,87,490000,JE,04/30/2025,-27,MASPC Quarterly Financials    ,USD,0,-1365747,GL,03/31/2025,               ,87030,     ,N2025,142554932,Global Ledger Transaction Interface created
+AHF,202503_0087,44,87,0,87,700010,JE,04/30/2025,-28,MASPC Quarterly Financials    ,USD,0,116088,GL,03/31/2025,               ,87030,     ,N2026,142554933,Global Ledger Transaction Interface created
+AHF,202503_0087,45,87,0,87,749015,JE,04/30/2025,-29,MASPC Quarterly Financials    ,USD,0,1771874,GL,03/31/2025,               ,87030,     ,N2027,142554934,Global Ledger Transaction Interface created
+AHF,202503_0087,46,87,0,87,749020,JE,04/30/2025,-30,MASPC Quarterly Financials    ,USD,0,498274,GL,03/31/2025,               ,87030,     ,N2028,142554935,Global Ledger Transaction Interface created
+AHF,202503_0087,47,87,0,87,749030,JE,04/30/2025,-31,MASPC Quarterly Financials    ,USD,0,4462119,GL,03/31/2025,               ,87030,     ,N2029,142554936,Global Ledger Transaction Interface created

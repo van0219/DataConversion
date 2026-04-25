@@ -1,0 +1,3 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID,Column1
+AHF,202510_0084,1,84,0,84,105110,ZB,11/05/2025,GL190-82-43,Auto Offset From Zone 10      ,USD,0,-100,GL,10/31/2025,               ,84000,     ,I82043,146316791,Global Ledger Transaction Interface created
+AHF,202510_0084,2,84,0,84,701450,JE,11/05/2025,-104,AULTMAN INNO KEY BANK FEES    ,USD,0,100,GL,10/31/2025,               ,84010,     ,I82022,146315480,Global Ledger Transaction Interface created

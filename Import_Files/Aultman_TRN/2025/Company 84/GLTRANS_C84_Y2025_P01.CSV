@@ -1,8 +1,0 @@
-FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID
-AHF,202501_0084,1,84,0,84,100008,JE,01/08/2025,-18-1,2025-1MSA PYMT                ,USD,0.00,11174.58,GL,01/31/2025,               ,84000          ,     ,N1801,139676549
-AHF,202501_0084,2,84,0,84,103190,JE,01/31/2025,-82-1,P1 Pomerene MAR 2025 MSA      ,USD,0.00,11174.58,GL,01/31/2025,               ,84000          ,     ,N8201,140640814
-AHF,202501_0084,3,84,0,84,103190,JE,01/08/2025,-18-2,2025-1MSA PYMT                ,USD,0.00,-11174.58,GL,01/31/2025,               ,84000          ,     ,N1802,139676550
-AHF,202501_0084,4,84,0,84,105110,ZB,02/05/2025,GL190-68-41,Auto Offset From Zone 10      ,USD,0.00,-71.00,GL,01/31/2025,               ,84000          ,     ,I68041,140872980
-AHF,202501_0084,5,84,0,84,490407,JE,01/31/2025,-82-2,P1 Pomerene MAR 2025 MSA      ,USD,0.00,-11174.58,GL,01/31/2025,               ,84020          ,     ,N8202,140640815
-AHF,202501_0084,6,84,0,84,701450,JE,02/05/2025,-68-20,AULTMAN INNO KEY BANK FEES    ,USD,0.00,71.00,GL,01/31/2025,               ,84010          ,     ,I68020,140871614
-

@@ -13,6 +13,7 @@ from app.modules.validation.router import router as validation_router
 from app.modules.load.router import router as load_router
 from app.modules.rules.router import router as rules_router
 from app.modules.workflows.router import router as workflows_router
+from app.modules.genai.router import router as genai_router
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -42,6 +43,7 @@ app.include_router(validation_router, prefix="/api/validation", tags=["validatio
 app.include_router(load_router, prefix="/api/load", tags=["load"])
 app.include_router(rules_router, prefix="/api/rules", tags=["rules"])
 app.include_router(workflows_router, prefix="/api/workflows", tags=["workflows"])
+app.include_router(genai_router, prefix="/api/genai", tags=["genai"])
 
 @app.get("/")
 async def root():

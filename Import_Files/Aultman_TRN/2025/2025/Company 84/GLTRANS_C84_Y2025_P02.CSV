@@ -1,0 +1,7 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID,Column1
+AHF,202502_0084,1,84,0,84,100008,JE,02/06/2025,-14,2025-2MSA PYMT                ,USD,0,11174.58,GL,02/28/2025,               ,84000,     ,N1301,140880720,Global Ledger Transaction Interface created
+AHF,202502_0084,2,84,0,84,103190,JE,03/06/2025,-271,P2 Pomerene APR 2025 MSA      ,USD,0,11174.58,GL,02/28/2025,               ,84000,     ,N27001,141508158,Global Ledger Transaction Interface created
+AHF,202502_0084,3,84,0,84,103190,JE,02/06/2025,-15,2025-2MSA PYMT                ,USD,0,-11174.58,GL,02/28/2025,               ,84000,     ,N1302,140880721,Global Ledger Transaction Interface created
+AHF,202502_0084,4,84,0,84,105110,ZB,03/05/2025,GL190-75-43,Auto Offset From Zone 10      ,USD,0,-84,GL,02/28/2025,               ,84000,     ,I75043,141488543,Global Ledger Transaction Interface created
+AHF,202502_0084,5,84,0,84,490407,JE,03/06/2025,-272,P2 Pomerene APR 2025 MSA      ,USD,0,-11174.58,GL,02/28/2025,               ,84020,     ,N27002,141508159,Global Ledger Transaction Interface created
+AHF,202502_0084,6,84,0,84,701450,JE,03/05/2025,-97,AULTMAN INNO KEY BANK FEES    ,USD,0,84,GL,02/28/2025,               ,84010,     ,I75022,141484272,Global Ledger Transaction Interface created

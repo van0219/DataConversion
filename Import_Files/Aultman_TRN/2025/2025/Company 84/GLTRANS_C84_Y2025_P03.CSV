@@ -1,0 +1,5 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID,Column1
+AHF,202503_0084,1,84,0,84,100008,JE,03/06/2025,-14,2025-3MSA PYMT                ,USD,0,11174.58,GL,03/31/2025,               ,84000,     ,N1301,141511255,Global Ledger Transaction Interface created
+AHF,202503_0084,2,84,0,84,103190,JE,03/06/2025,-15,2025-3MSA PYMT                ,USD,0,-11174.58,GL,03/31/2025,               ,84000,     ,N1302,141511256,Global Ledger Transaction Interface created
+AHF,202503_0084,3,84,0,84,105110,ZB,04/01/2025,GL190-46-43,Auto Offset From Zone 10      ,USD,0,-86,GL,03/31/2025,               ,84000,     ,I46043,142121619,Global Ledger Transaction Interface created
+AHF,202503_0084,4,84,0,84,701450,JE,04/01/2025,-68,AULTMAN INNO KEY BANK FEES    ,USD,0,86,GL,03/31/2025,               ,84010,     ,I46022,142117903,Global Ledger Transaction Interface created

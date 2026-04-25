@@ -198,7 +198,26 @@ def get_schema_fields(
                 "source": "snapshot"
             }
         
-        # Not found in either location
+        # Not found in either location — try local swagger file as last resort
+        swagger_json = SchemaService._load_local_swagger(business_class)
+        if swagger_json:
+            try:
+                parsed = SchemaService._parse_local_swagger(swagger_json, business_class)
+                raw_schema = parsed.get("raw_schema", {})
+                field_names = list(raw_schema.get("properties", {}).keys())
+                if not field_names:
+                    # Try fields array format
+                    field_names = [f.get("name", "") for f in parsed.get("fields", []) if f.get("name")]
+                if field_names:
+                    return {
+                        "business_class": business_class,
+                        "field_count": len(field_names),
+                        "fields": sorted(field_names),
+                        "source": "local_swagger"
+                    }
+            except Exception:
+                pass
+        
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No schema or snapshot data found for {business_class}. Please sync setup data or fetch schema first."

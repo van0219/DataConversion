@@ -1,0 +1,3 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID,Column1
+AHF,202512_0083,1,83,0,83,412485,MR,12/18/2025,MEDIPAC-2-1,MEDIPAC DAILY                 ,USD,0,1747.06,GL,12/17/2025,               ,83021,     ,N201,147167699,Global Ledger Transaction Interface created
+AHF,202512_0083,2,83,0,83,412490,MR,12/18/2025,MEDIPAC-2-2,MEDIPAC DAILY                 ,USD,0,-1747.06,GL,12/17/2025,               ,83021,     ,N202,147167700,Global Ledger Transaction Interface created

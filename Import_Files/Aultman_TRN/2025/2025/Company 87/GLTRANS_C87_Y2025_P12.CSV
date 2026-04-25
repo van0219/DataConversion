@@ -1,0 +1,66 @@
+FinanceEnterpriseGroup,GLTransactionInterface.RunGroup,GLTransactionInterface.SequenceNumber,AccountingEntity,Status,ToAccountingEntity,AccountCode,GeneralLedgerEvent,TransactionDate,Reference,Description,CurrencyCode,UnitsAmount,TransactionAmount,System,PostingDate,Project,FinanceDimension1,FinanceDimension3,DocumentNumber,GLTObjectID,Column1
+AHF,202512_0087,1,87,0,87,100000,JE,01/27/2026,-2,MASPC Quarterly Financials    ,USD,0,1880343,GL,12/31/2025,               ,87000,     ,N101,147899185,Global Ledger Transaction Interface created
+AHF,202512_0087,2,87,0,87,100000,JE,10/23/2025,-2,MASPC Quarterly Financials    ,USD,0,-1706822,GL,45669,               ,87000,     ,A101,147899155,Global Ledger Transaction Interface created
+AHF,202512_0087,3,87,0,87,103820,JE,10/23/2025,-3,MASPC Quarterly Financials    ,USD,0,-20613889,GL,45669,               ,87000,     ,A102,147899156,Global Ledger Transaction Interface created
+AHF,202512_0087,4,87,0,87,103820,JE,02/16/2026,-3,MASPC Adjustment to new financ,USD,0,-10968,GL,12/31/2025,               ,87000,     ,N201,148482868,Global Ledger Transaction Interface created
+AHF,202512_0087,5,87,0,87,103820,JE,01/27/2026,-3,MASPC Quarterly Financials    ,USD,0,19533765,GL,12/31/2025,               ,87000,     ,N102,147899186,Global Ledger Transaction Interface created
+AHF,202512_0087,6,87,0,87,103840,JE,02/16/2026,-4,MASPC Adjustment to new financ,USD,0,776875,GL,12/31/2025,               ,87000,     ,N202,148482869,Global Ledger Transaction Interface created
+AHF,202512_0087,7,87,0,87,103840,JE,01/27/2026,-4,MASPC Quarterly Financials    ,USD,0,13336461,GL,12/31/2025,               ,87000,     ,N103,147899187,Global Ledger Transaction Interface created
+AHF,202512_0087,8,87,0,87,103840,JE,10/23/2025,-4,MASPC Quarterly Financials    ,USD,0,-11362548,GL,45669,               ,87000,     ,A103,147899157,Global Ledger Transaction Interface created
+AHF,202512_0087,9,87,0,87,103865,JE,10/23/2025,-5,MASPC Quarterly Financials    ,USD,0,-21015,GL,45669,               ,87000,     ,A104,147899158,Global Ledger Transaction Interface created
+AHF,202512_0087,10,87,0,87,103865,JE,01/27/2026,-5,MASPC Quarterly Financials    ,USD,0,19589,GL,12/31/2025,               ,87000,     ,N104,147899188,Global Ledger Transaction Interface created
+AHF,202512_0087,11,87,0,87,107060,JE,10/23/2025,-8,MASPC Quarterly Financials    ,USD,0,-11302,GL,45669,               ,87000,     ,A107,147899161,Global Ledger Transaction Interface created
+AHF,202512_0087,12,87,0,87,107060,JE,01/27/2026,-8,MASPC Quarterly Financials    ,USD,0,45773,GL,12/31/2025,               ,87000,     ,N107,147899191,Global Ledger Transaction Interface created
+AHF,202512_0087,13,87,0,87,107063,JE,01/27/2026,-6,MASPC Quarterly Financials    ,USD,0,733050,GL,12/31/2025,               ,87000,     ,N105,147899189,Global Ledger Transaction Interface created
+AHF,202512_0087,14,87,0,87,107063,JE,10/23/2025,-6,MASPC Quarterly Financials    ,USD,0,-1179678,GL,45669,               ,87000,     ,A105,147899159,Global Ledger Transaction Interface created
+AHF,202512_0087,15,87,0,87,107064,JE,10/23/2025,-7,MASPC Quarterly Financials    ,USD,0,-121388,GL,45669,               ,87000,     ,A106,147899160,Global Ledger Transaction Interface created
+AHF,202512_0087,16,87,0,87,107064,JE,01/27/2026,-7,MASPC Quarterly Financials    ,USD,0,173298,GL,12/31/2025,               ,87000,     ,N106,147899190,Global Ledger Transaction Interface created
+AHF,202512_0087,17,87,0,87,115211,JE,01/27/2026,-9,MASPC Quarterly Financials    ,USD,0,19821363,GL,12/31/2025,               ,87000,     ,N108,147899192,Global Ledger Transaction Interface created
+AHF,202512_0087,18,87,0,87,115211,JE,10/23/2025,-9,MASPC Quarterly Financials    ,USD,0,-19574991,GL,45669,               ,87000,     ,A108,147899162,Global Ledger Transaction Interface created
+AHF,202512_0087,19,87,0,87,200000,JE,10/23/2025,-10,MASPC Quarterly Financials    ,USD,0,37807,GL,45669,               ,87000,     ,A109,147899163,Global Ledger Transaction Interface created
+AHF,202512_0087,20,87,0,87,200000,JE,01/27/2026,-10,MASPC Quarterly Financials    ,USD,0,-23526,GL,12/31/2025,               ,87000,     ,N109,147899193,Global Ledger Transaction Interface created
+AHF,202512_0087,21,87,0,87,205000,JE,01/27/2026,-16,MASPC Quarterly Financials    ,USD,0,-5666443,GL,12/31/2025,               ,87000,     ,N1015,147899199,Global Ledger Transaction Interface created
+AHF,202512_0087,22,87,0,87,205000,JE,10/23/2025,-17,MASPC Quarterly Financials    ,USD,0,8809341,GL,45669,               ,87000,     ,A1016,147899170,Global Ledger Transaction Interface created
+AHF,202512_0087,23,87,0,87,205062,JE,02/16/2026,-5,MASPC Adjustment to new financ,USD,0,-6056018,GL,12/31/2025,               ,87000,     ,N203,148482870,Global Ledger Transaction Interface created
+AHF,202512_0087,24,87,0,87,205062,JE,10/23/2025,-11,MASPC Quarterly Financials    ,USD,0,9975,GL,45669,               ,87000,     ,A1010,147899164,Global Ledger Transaction Interface created
+AHF,202512_0087,25,87,0,87,205063,JE,01/27/2026,-11,MASPC Quarterly Financials    ,USD,0,-173298,GL,12/31/2025,               ,87000,     ,N1010,147899194,Global Ledger Transaction Interface created
+AHF,202512_0087,26,87,0,87,205063,JE,10/23/2025,-12,MASPC Quarterly Financials    ,USD,0,121388,GL,45669,               ,87000,     ,A1011,147899165,Global Ledger Transaction Interface created
+AHF,202512_0087,27,87,0,87,205064,JE,10/23/2025,-13,MASPC Quarterly Financials    ,USD,0,19363613,GL,45669,               ,87000,     ,A1012,147899166,Global Ledger Transaction Interface created
+AHF,202512_0087,28,87,0,87,205064,JE,02/16/2026,-6,MASPC Adjustment to new financ,USD,0,4799939,GL,12/31/2025,               ,87000,     ,N204,148482871,Global Ledger Transaction Interface created
+AHF,202512_0087,29,87,0,87,205064,JE,01/27/2026,-12,MASPC Quarterly Financials    ,USD,0,-19444970,GL,12/31/2025,               ,87000,     ,N1011,147899195,Global Ledger Transaction Interface created
+AHF,202512_0087,30,87,0,87,205065,JE,01/27/2026,-13,MASPC Quarterly Financials    ,USD,0,-5125865,GL,12/31/2025,               ,87000,     ,N1012,147899196,Global Ledger Transaction Interface created
+AHF,202512_0087,31,87,0,87,205065,JE,10/23/2025,-14,MASPC Quarterly Financials    ,USD,0,2774978,GL,45669,               ,87000,     ,A1013,147899167,Global Ledger Transaction Interface created
+AHF,202512_0087,32,87,0,87,205066,JE,10/23/2025,-15,MASPC Quarterly Financials    ,USD,0,15148344,GL,45669,               ,87000,     ,A1014,147899168,Global Ledger Transaction Interface created
+AHF,202512_0087,33,87,0,87,205066,JE,01/27/2026,-14,MASPC Quarterly Financials    ,USD,0,-16964128,GL,12/31/2025,               ,87000,     ,N1013,147899197,Global Ledger Transaction Interface created
+AHF,202512_0087,34,87,0,87,205068,JE,01/27/2026,-15,MASPC Quarterly Financials    ,USD,0,-1739585,GL,12/31/2025,               ,87000,     ,N1014,147899198,Global Ledger Transaction Interface created
+AHF,202512_0087,35,87,0,87,205068,JE,10/23/2025,-16,MASPC Quarterly Financials    ,USD,0,1673214,GL,45669,               ,87000,     ,A1015,147899169,Global Ledger Transaction Interface created
+AHF,202512_0087,36,87,0,87,300000,JE,10/23/2025,-18,MASPC Quarterly Financials    ,USD,0,4851619,GL,45669,               ,87000,     ,A1017,147899171,Global Ledger Transaction Interface created
+AHF,202512_0087,37,87,0,87,300000,JE,01/27/2026,-17,MASPC Quarterly Financials    ,USD,0,-4851256,GL,12/31/2025,               ,87000,     ,N1016,147899200,Global Ledger Transaction Interface created
+AHF,202512_0087,38,87,0,87,300011,JE,01/27/2026,-18,MASPC Quarterly Financials    ,USD,0,1071,GL,12/31/2025,               ,87000,     ,N1017,147899201,Global Ledger Transaction Interface created
+AHF,202512_0087,39,87,0,87,300011,JE,10/23/2025,-19,MASPC Quarterly Financials    ,USD,0,-1435,GL,45669,               ,87000,     ,A1018,147899172,Global Ledger Transaction Interface created
+AHF,202512_0087,40,87,0,87,300015,JE,10/23/2025,-20,MASPC Quarterly Financials    ,USD,0,120001,GL,45669,               ,87000,     ,A1019,147899173,Global Ledger Transaction Interface created
+AHF,202512_0087,41,87,0,87,300015,JE,01/27/2026,-19,MASPC Quarterly Financials    ,USD,0,-120001,GL,12/31/2025,               ,87000,     ,N1018,147899202,Global Ledger Transaction Interface created
+AHF,202512_0087,42,87,0,87,440040,JE,01/27/2026,-20,MASPC Quarterly Financials    ,USD,0,-8308,GL,12/31/2025,               ,87030,     ,N1019,147899203,Global Ledger Transaction Interface created
+AHF,202512_0087,43,87,0,87,440040,JE,10/23/2025,-21,MASPC Quarterly Financials    ,USD,0,7944,GL,45669,               ,87030,     ,A1020,147899174,Global Ledger Transaction Interface created
+AHF,202512_0087,44,87,0,87,440150,JE,10/23/2025,-22,MASPC Quarterly Financials    ,USD,0,1163453,GL,45669,               ,87030,     ,A1021,147899175,Global Ledger Transaction Interface created
+AHF,202512_0087,45,87,0,87,440150,JE,01/27/2026,-21,MASPC Quarterly Financials    ,USD,0,-1405656,GL,12/31/2025,               ,87030,     ,N1020,147899204,Global Ledger Transaction Interface created
+AHF,202512_0087,46,87,0,87,480000,JE,01/27/2026,-22,MASPC Quarterly Financials    ,USD,0,-103219,GL,12/31/2025,               ,87030,     ,N1021,147899205,Global Ledger Transaction Interface created
+AHF,202512_0087,47,87,0,87,480000,JE,10/23/2025,-23,MASPC Quarterly Financials    ,USD,0,549846,GL,45669,               ,87030,     ,A1022,147899176,Global Ledger Transaction Interface created
+AHF,202512_0087,48,87,0,87,480075,JE,10/23/2025,-24,MASPC Quarterly Financials    ,USD,0,482866,GL,45669,               ,87030,     ,A1023,147899177,Global Ledger Transaction Interface created
+AHF,202512_0087,49,87,0,87,480075,JE,01/27/2026,-23,MASPC Quarterly Financials    ,USD,0,-3625765,GL,12/31/2025,               ,87030,     ,N1022,147899206,Global Ledger Transaction Interface created
+AHF,202512_0087,50,87,0,87,480080,JE,01/27/2026,-24,MASPC Quarterly Financials    ,USD,0,-13344444,GL,12/31/2025,               ,87030,     ,N1023,147899207,Global Ledger Transaction Interface created
+AHF,202512_0087,51,87,0,87,480080,JE,10/23/2025,-25,MASPC Quarterly Financials    ,USD,0,13340566,GL,45669,               ,87030,     ,A1024,147899178,Global Ledger Transaction Interface created
+AHF,202512_0087,52,87,0,87,480090,JE,10/23/2025,-26,MASPC Quarterly Financials    ,USD,0,-1771943,GL,45669,               ,87030,     ,A1025,147899179,Global Ledger Transaction Interface created
+AHF,202512_0087,53,87,0,87,480090,JE,01/27/2026,-25,MASPC Quarterly Financials    ,USD,0,1771943,GL,12/31/2025,               ,87030,     ,N1024,147899208,Global Ledger Transaction Interface created
+AHF,202512_0087,54,87,0,87,490000,JE,01/27/2026,-26,MASPC Quarterly Financials    ,USD,0,-6246081,GL,12/31/2025,               ,87030,     ,N1025,147899209,Global Ledger Transaction Interface created
+AHF,202512_0087,55,87,0,87,490000,JE,10/23/2025,-27,MASPC Quarterly Financials    ,USD,0,4493659,GL,45669,               ,87030,     ,A1026,147899180,Global Ledger Transaction Interface created
+AHF,202512_0087,56,87,0,87,700010,JE,10/23/2025,-28,MASPC Quarterly Financials    ,USD,0,-381664,GL,45669,               ,87030,     ,A1027,147899181,Global Ledger Transaction Interface created
+AHF,202512_0087,57,87,0,87,700010,JE,01/27/2026,-27,MASPC Quarterly Financials    ,USD,0,485638,GL,12/31/2025,               ,87030,     ,N1026,147899210,Global Ledger Transaction Interface created
+AHF,202512_0087,58,87,0,87,749015,JE,02/16/2026,-7,MASPC Adjustment to new financ,USD,0,10969,GL,12/31/2025,               ,87030,     ,N205,148482872,Global Ledger Transaction Interface created
+AHF,202512_0087,59,87,0,87,749015,JE,01/27/2026,-28,MASPC Quarterly Financials    ,USD,0,9154682,GL,12/31/2025,               ,87030,     ,N1027,147899211,Global Ledger Transaction Interface created
+AHF,202512_0087,60,87,0,87,749015,JE,10/23/2025,-29,MASPC Quarterly Financials    ,USD,0,-6979484,GL,45669,               ,87030,     ,A1028,147899182,Global Ledger Transaction Interface created
+AHF,202512_0087,61,87,0,87,749020,JE,10/23/2025,-30,MASPC Quarterly Financials    ,USD,0,-2470926,GL,45669,               ,87030,     ,A1029,147899183,Global Ledger Transaction Interface created
+AHF,202512_0087,62,87,0,87,749020,JE,01/27/2026,-29,MASPC Quarterly Financials    ,USD,0,4286710,GL,12/31/2025,               ,87030,     ,N1028,147899212,Global Ledger Transaction Interface created
+AHF,202512_0087,63,87,0,87,749030,JE,02/16/2026,-8,MASPC Adjustment to new financ,USD,0,479203,GL,12/31/2025,               ,87030,     ,N206,148482873,Global Ledger Transaction Interface created
+AHF,202512_0087,64,87,0,87,749030,JE,01/27/2026,-30,MASPC Quarterly Financials    ,USD,0,7598859,GL,12/31/2025,               ,87030,     ,N1029,147899213,Global Ledger Transaction Interface created
+AHF,202512_0087,65,87,0,87,749030,JE,10/23/2025,-31,MASPC Quarterly Financials    ,USD,0,-6751529,GL,45669,               ,87030,     ,A1030,147899184,Global Ledger Transaction Interface created
