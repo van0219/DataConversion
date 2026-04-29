@@ -5,11 +5,12 @@ import BatchUpload from './pages/BatchUpload';
 import SetupDataManagement from './pages/SetupDataManagement';
 import RulesManagement from './pages/RulesManagement';
 import SchemaManagement from './pages/SchemaManagement';
+import PostValidation from './pages/PostValidation';
 import GenAiChat from './components/GenAiChat';
 import api from './services/api';
 import { theme } from './theme';
 
-type Page = 'login' | 'dashboard' | 'conversion' | 'batch' | 'setup' | 'rules' | 'schema';
+type Page = 'login' | 'dashboard' | 'conversion' | 'batch' | 'postValidation' | 'setup' | 'rules' | 'schema';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('login');
@@ -146,6 +147,14 @@ function App() {
             {!sidebarCollapsed && 'Batch Upload'}
           </button>
           <button
+            onClick={() => setCurrentPage('postValidation')}
+            style={currentPage === 'postValidation' ? styles.navItemActive : styles.navItem}
+            title="Post Validation"
+          >
+            <span style={styles.navIcon}>🔍</span>
+            {!sidebarCollapsed && 'Post Validation'}
+          </button>
+          <button
             onClick={() => setCurrentPage('setup')}
             style={currentPage === 'setup' ? styles.navItemActive : styles.navItem}
             title="Reference Data"
@@ -181,6 +190,7 @@ function App() {
         {currentPage === 'dashboard' && <Dashboard onNewConversion={() => setCurrentPage('conversion')} onSetupData={() => setCurrentPage('setup')} onViewRules={() => setCurrentPage('rules')} />}
         {currentPage === 'conversion' && <ConversionWorkflow onBack={() => setCurrentPage('dashboard')} />}
         {currentPage === 'batch' && <BatchUpload />}
+        {currentPage === 'postValidation' && <PostValidation />}
         {currentPage === 'setup' && <SetupDataManagement />}
         {currentPage === 'rules' && <RulesManagement />}
         {currentPage === 'schema' && <SchemaManagement />}

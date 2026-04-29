@@ -165,7 +165,8 @@ class RuleSetService:
             existing = db.query(ValidationRuleSet).filter(
                 ValidationRuleSet.business_class == rule_set.business_class,
                 ValidationRuleSet.name == name,
-                ValidationRuleSet.id != rule_set_id
+                ValidationRuleSet.id != rule_set_id,
+                ValidationRuleSet.account_id == rule_set.account_id
             ).first()
             
             if existing:

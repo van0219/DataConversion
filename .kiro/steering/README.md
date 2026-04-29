@@ -528,6 +528,19 @@ python -m uvicorn app.main:app --reload
 
 ## Version History
 
+### April 25, 2026 - Post Validation Report Feature ⭐⭐⭐
+
+- **Post Validation Report**: New standalone page for querying and reconciling data loaded into FSM. Queries FSM's `_generic` list API for any business class.
+- **Detail + Summary Views**: Toggle between raw record detail view and summary/aggregation view with GROUP BY and SUM/AVG/MIN/MAX
+- **Date Granularity**: Group date fields by Exact Date, Year-Month, Year-Quarter, or Year for period-level aggregation
+- **Saved Reports**: Save report configurations (fields, filters, grouping, aggregation) for quick reuse. Full CRUD with account isolation.
+- **Drag-and-Drop Column Ordering**: Reorder selected field tags to control table column arrangement
+- **Required Fields Priority**: Pre-selects required fields from swagger schema when choosing a business class
+- **Sidebar Navigation**: New 🔍 Post Validation menu item after Batch Upload. Removed from ConversionWorkflow step series.
+- **New Database Table**: `saved_reports` for persisting report configurations
+- **Files**: 4 new files (model, router, __init__, page), 4 modified files (main.py, models/__init__.py, App.tsx, ConversionWorkflow.tsx)
+- **Status**: Complete, production-ready
+
 ### April 7, 2026 - Rule Set Export/Import, Validation UX, Detection Fixes ⭐⭐
 
 - **Rule Set Export/Import**: Custom rule sets can be exported as JSON and imported into other DataBridge instances. Preserves `is_readonly` flag for rules copied from System Default. Auto-renames on collision.
@@ -707,6 +720,7 @@ Architecture, implementation, testing, documentation
 **Demo Ready**: Wednesday, March 4, 2026
 
 **Recent Additions**:
+- ✅ Post Validation Report page (query FSM data, detail + summary views, saved reports, date granularity)
 - ✅ Validation mapping format fix (validation fully working)
 - ✅ Token refresh implementation (8-hour access, 30-day refresh)
 - ✅ Upload endpoint fixes (FormData handling, Content-Type)

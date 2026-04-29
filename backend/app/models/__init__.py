@@ -9,6 +9,8 @@ from app.models.job import ConversionJob, ValidationError, LoadResult
 from app.models.rule import ValidationRuleTemplate, ValidationRuleAssignment
 from app.models.validation_rule_set import ValidationRuleSet
 from app.models.mapping import MappingTemplate
+from app.models.saved_report import SavedReport
+from app.models.post_validation_data import PostValidationData
 
 __all__ = [
     "Account",
@@ -25,4 +27,6 @@ __all__ = [
     "ValidationRuleAssignment",
     "ValidationRuleSet",
     "MappingTemplate",
+    "SavedReport",
+    "PostValidationData",
 ]

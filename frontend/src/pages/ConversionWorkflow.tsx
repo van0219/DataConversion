@@ -136,14 +136,14 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
   }, []);
 
   // Step management
-  const [currentStep, setCurrentStep] = useState<'upload' | 'mapping' | 'validation' | 'load' | 'postValidation' | 'completed'>('upload');
-  const [previousStep, setPreviousStep] = useState<'upload' | 'mapping' | 'validation' | 'load' | 'postValidation' | 'completed'>('upload');
+  const [currentStep, setCurrentStep] = useState<'upload' | 'mapping' | 'validation' | 'load' | 'completed'>('upload');
+  const [previousStep, setPreviousStep] = useState<'upload' | 'mapping' | 'validation' | 'load' | 'completed'>('upload');
   const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward'>('forward');
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set(['upload'])); // Track completed steps
 
   // Helper function to change steps with animation
-  const changeStep = (newStep: 'upload' | 'mapping' | 'validation' | 'load' | 'postValidation' | 'completed') => {
-    const stepOrder = ['upload', 'mapping', 'validation', 'load', 'postValidation', 'completed'];
+  const changeStep = (newStep: 'upload' | 'mapping' | 'validation' | 'load' | 'completed') => {
+    const stepOrder = ['upload', 'mapping', 'validation', 'load', 'completed'];
     const currentIndex = stepOrder.indexOf(currentStep);
     const newIndex = stepOrder.indexOf(newStep);
     
@@ -163,7 +163,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
   };
 
   // Helper function to handle step click
-  const handleStepClick = (step: 'upload' | 'mapping' | 'validation' | 'load' | 'postValidation' | 'completed') => {
+  const handleStepClick = (step: 'upload' | 'mapping' | 'validation' | 'load' | 'completed') => {
     if (canNavigateToStep(step) && step !== currentStep) {
       // Block navigation to load/completed if zero valid records
       if ((step === 'load' || step === 'completed') && validationProgress && validationProgress.valid_records === 0 && validationProgress.total_records > 0) {
@@ -1417,34 +1417,7 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               }
             }}
           >
-            4. Load {canNavigateToStep('load') && currentStep !== 'load' && currentStep !== 'postValidation' && currentStep !== 'completed' && '✓'}
-          </div>
-          <div 
-            onClick={() => handleStepClick('postValidation')}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: currentStep === 'postValidation' ? theme.primary.main : (canNavigateToStep('postValidation') ? theme.background.tertiary : theme.interactive.disabled),
-              color: currentStep === 'postValidation' ? '#ffffff' : theme.text.primary,
-              borderRadius: '6px',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: canNavigateToStep('postValidation') ? 'pointer' : 'default',
-              transition: 'all 0.2s ease',
-              border: canNavigateToStep('postValidation') ? `1px solid ${theme.background.quaternary}` : '1px solid transparent',
-              opacity: canNavigateToStep('postValidation') ? 1 : 0.6
-            }}
-            onMouseEnter={(e) => {
-              if (canNavigateToStep('postValidation') && currentStep !== 'postValidation') {
-                e.currentTarget.style.backgroundColor = theme.interactive.hover;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (canNavigateToStep('postValidation') && currentStep !== 'postValidation') {
-                e.currentTarget.style.backgroundColor = theme.background.tertiary;
-              }
-            }}
-          >
-            5. Post Validation {canNavigateToStep('postValidation') && currentStep !== 'postValidation' && '✓'}
+            4. Load {canNavigateToStep('load') && currentStep !== 'load' && currentStep !== 'completed' && '✓'}
           </div>
         </div>
         
@@ -1466,9 +1439,6 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
           )}
           {currentStep === 'load' && (
             <p>Load validated records to FSM system with automatic error handling</p>
-          )}
-          {currentStep === 'postValidation' && (
-            <p>Post-load validation and reconciliation features (coming soon)</p>
           )}
           {currentStep === 'completed' && (
             <p>Review load results and optionally interface transactions to General Ledger</p>
@@ -3877,53 +3847,6 @@ const ConversionWorkflow: React.FC<ConversionWorkflowProps> = ({ onBack }) => {
               </div>
             </div>
           )}
-        </div>
-      )}
-
-      {/* Post Validation Step */}
-      {currentStep === 'postValidation' && (
-        <div className={getAnimationClass()} style={{
-          backgroundColor: theme.background.secondary,
-          border: `2px solid ${theme.accent.purpleTintMedium}`,
-          borderRadius: '12px',
-          padding: '24px',
-          marginBottom: '24px'
-        }}>
-          <div style={{ 
-            textAlign: 'center',
-            padding: '60px 20px'
-          }}>
-            <div style={{
-              fontSize: '64px',
-              marginBottom: '24px'
-            }}>
-              🚧
-            </div>
-            <h3 style={{ 
-              fontSize: '24px', 
-              fontWeight: '600', 
-              color: theme.primary.main,
-              marginBottom: '12px'
-            }}>
-              Post Validation
-            </h3>
-            <p style={{
-              fontSize: '16px',
-              color: theme.text.secondary,
-              marginBottom: '8px'
-            }}>
-              Coming Soon
-            </p>
-            <p style={{
-              fontSize: '14px',
-              color: theme.text.tertiary,
-              maxWidth: '600px',
-              margin: '0 auto',
-              lineHeight: '1.6'
-            }}>
-              This feature will provide post-load validation and reconciliation capabilities to verify data integrity after loading to FSM.
-            </p>
-          </div>
         </div>
       )}
 

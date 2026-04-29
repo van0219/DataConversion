@@ -22,7 +22,8 @@ class LoadService:
         trigger_interface: bool = False,
         interface_params: Optional[Dict] = None,
         run_group_override: Optional[str] = None,
-        date_source_format: Optional[str] = None
+        date_source_format: Optional[str] = None,
+        use_file_run_group: bool = False
     ):
         """
         Load validated records to FSM in chunks.
@@ -91,8 +92,54 @@ class LoadService:
         
         logger.info(f"Starting load for job {job_id}. Skipping {len(invalid_row_numbers)} invalid rows.")
         
-        # Use override RunGroup if provided (from Step 2 mapping), otherwise derive from filename
-        if run_group_override and run_group_override.strip():
+        # Determine RunGroup
+        if use_file_run_group:
+            # Pre-scan the file to extract and validate a single RunGroup value
+            run_group_field_name = None
+            # Find the RunGroup field name from the mapping
+            for csv_col, field_info in mapping.items():
+                if isinstance(field_info, dict) and 'rungroup' in field_info.get('fsm_field', '').lower():
+                    run_group_field_name = csv_col
+                    break
+            
+            if not run_group_field_name:
+                # Check CSV headers directly for a RunGroup column
+                headers = StreamingEngine.get_csv_headers(file_path)
+                for h in headers:
+                    if 'rungroup' in h.lower():
+                        run_group_field_name = h
+                        break
+            
+            if not run_group_field_name:
+                job.status = "validated"
+                db.commit()
+                raise ValueError("Cannot use RunGroup from file: no RunGroup column found in CSV or mapping")
+            
+            # Scan all valid records for unique RunGroup values
+            unique_run_groups = set()
+            for chunk in StreamingEngine.stream_csv(file_path, chunk_size=5000):
+                for record in chunk:
+                    row_num = record.get('_row_number', 0)
+                    if row_num in invalid_row_numbers:
+                        continue
+                    rg_val = (record.get(run_group_field_name) or '').strip()
+                    if rg_val:
+                        unique_run_groups.add(rg_val)
+            
+            if len(unique_run_groups) == 0:
+                job.status = "validated"
+                db.commit()
+                raise ValueError("Cannot use RunGroup from file: all RunGroup values are empty")
+            
+            if len(unique_run_groups) > 1:
+                job.status = "validated"
+                db.commit()
+                rg_list = ', '.join(sorted(unique_run_groups)[:5])
+                raise ValueError(f"File contains {len(unique_run_groups)} different RunGroups ({rg_list}{'...' if len(unique_run_groups) > 5 else ''}). Each file must have exactly one RunGroup.")
+            
+            run_group = unique_run_groups.pop()[:30]
+            logger.info(f"RunGroup from file: {run_group}")
+        elif run_group_override and run_group_override.strip():
             run_group = run_group_override.strip()[:30]
             logger.info(f"RunGroup from override: {run_group}")
         else:
@@ -124,28 +171,29 @@ class LoadService:
                     from app.modules.validation.service import ValidationService
                     mapped_record = ValidationService._apply_date_transform(mapped_record, date_source_format)
                 
-                # Inject RunGroup from filename into the mapped record.
-                # Find the RunGroup field name from the schema mapping if it exists,
-                # otherwise fall back to the business-class-prefixed field name convention.
-                # We search the original mapping for any key whose fsm_field contains 'rungroup'.
-                run_group_field = None
-                for csv_col, field_info in mapping.items():
-                    if isinstance(field_info, dict) and 'rungroup' in field_info.get('fsm_field', '').lower():
-                        run_group_field = field_info['fsm_field']
-                        break
-                
-                if run_group_field is None:
-                    # No RunGroup in mapping — check if it's already in the mapped record
-                    for field_name in list(mapped_record.keys()):
-                        if 'rungroup' in field_name.lower():
-                            run_group_field = field_name
+                # Inject RunGroup into the mapped record (unless using file's own RunGroup).
+                if not use_file_run_group:
+                    # Find the RunGroup field name from the schema mapping if it exists,
+                    # otherwise fall back to the business-class-prefixed field name convention.
+                    # We search the original mapping for any key whose fsm_field contains 'rungroup'.
+                    run_group_field = None
+                    for csv_col, field_info in mapping.items():
+                        if isinstance(field_info, dict) and 'rungroup' in field_info.get('fsm_field', '').lower():
+                            run_group_field = field_info['fsm_field']
                             break
-                
-                if run_group_field is None:
-                    # Still not found — use the standard FSM convention: BusinessClass.RunGroup
-                    run_group_field = f"{business_class}.RunGroup"
-                
-                mapped_record[run_group_field] = run_group
+                    
+                    if run_group_field is None:
+                        # No RunGroup in mapping — check if it's already in the mapped record
+                        for field_name in list(mapped_record.keys()):
+                            if 'rungroup' in field_name.lower():
+                                run_group_field = field_name
+                                break
+                    
+                    if run_group_field is None:
+                        # Still not found — use the standard FSM convention: BusinessClass.RunGroup
+                        run_group_field = f"{business_class}.RunGroup"
+                    
+                    mapped_record[run_group_field] = run_group
                 
                 # Remove internal fields
                 mapped_record.pop('_row_number', None)

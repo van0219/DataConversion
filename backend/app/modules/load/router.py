@@ -16,6 +16,7 @@ class LoadStartRequest(BaseModel):
     run_group_override: Optional[str] = None
     date_source_format: Optional[str] = None
     trigger_interface: bool = False
+    use_file_run_group: bool = False
     # Interface parameters (used when trigger_interface is True)
     interface_params: Optional[dict] = None
 
@@ -63,7 +64,8 @@ async def start_load(
             request.trigger_interface,
             request.interface_params,
             run_group_override=request.run_group_override,
-            date_source_format=request.date_source_format
+            date_source_format=request.date_source_format,
+            use_file_run_group=request.use_file_run_group
         )
         
         # Transform response to match frontend expectations

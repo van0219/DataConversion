@@ -562,34 +562,33 @@ class ValidationService:
         # Read original CSV and append Error Message column
         output = io.StringIO()
         try:
-            with open(file_path, 'r', encoding='utf-8-sig') as f:
-                # Read and clean the file (remove leading/trailing blank lines)
-                raw = f.read()
-                lines = raw.splitlines(keepends=True)
-                while lines and not lines[0].strip():
-                    lines.pop(0)
-                while lines and not lines[-1].strip():
-                    lines.pop()
-                
-                # Parse CSV
-                reader = csv.DictReader(io.StringIO(''.join(lines)))
-                
-                # Get original fieldnames and add Error Message column
-                fieldnames = list(reader.fieldnames or [])
-                fieldnames.append('Error Message')
-                
-                writer = csv.DictWriter(output, fieldnames=fieldnames)
-                writer.writeheader()
-                
-                # Write all rows with error messages
-                row_number = 1
-                for row in reader:
-                    # Add error message if exists, otherwise blank
-                    row['Error Message'] = error_map.get(row_number, '')
-                    writer.writerow(row)
-                    row_number += 1
-                
-                logger.info(f"Exported {row_number - 1} total rows with error annotations")
+            from app.services.streaming_engine import StreamingEngine
+            raw = StreamingEngine._read_file(file_path)
+            lines = raw.splitlines(keepends=True)
+            while lines and not lines[0].strip():
+                lines.pop(0)
+            while lines and not lines[-1].strip():
+                lines.pop()
+            
+            # Parse CSV
+            reader = csv.DictReader(io.StringIO(''.join(lines)))
+            
+            # Get original fieldnames and add Error Message column
+            fieldnames = list(reader.fieldnames or [])
+            fieldnames.append('Error Message')
+            
+            writer = csv.DictWriter(output, fieldnames=fieldnames)
+            writer.writeheader()
+            
+            # Write all rows with error messages
+            row_number = 1
+            for row in reader:
+                # Add error message if exists, otherwise blank
+                row['Error Message'] = error_map.get(row_number, '')
+                writer.writerow(row)
+                row_number += 1
+            
+            logger.info(f"Exported {row_number - 1} total rows with error annotations")
         except Exception as e:
             logger.error(f"Error exporting full CSV with errors: {e}")
             return None

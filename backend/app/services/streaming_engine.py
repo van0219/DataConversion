@@ -10,6 +10,35 @@ class StreamingEngine:
     Processes files in chunks without loading entire file into memory.
     Designed to handle millions of records efficiently.
     """
+
+    @staticmethod
+    def _read_file(file_path: Path) -> str:
+        """Read file content with encoding fallback: UTF-8 → Latin-1."""
+        for enc in ('utf-8-sig', 'latin-1'):
+            try:
+                with open(file_path, 'r', encoding=enc, newline='') as f:
+                    return f.read()
+            except UnicodeDecodeError:
+                continue
+        raise ValueError(f"Cannot decode file {file_path} with UTF-8 or Latin-1")
+
+    @staticmethod
+    def _open_file(file_path: Path, **kwargs):
+        """Open file with encoding fallback: UTF-8 → Latin-1."""
+        for enc in ('utf-8-sig', 'latin-1'):
+            try:
+                f = open(file_path, 'r', encoding=enc, **kwargs)
+                # Try reading a small chunk to verify encoding works
+                f.read(4096)
+                f.seek(0)
+                return f
+            except UnicodeDecodeError:
+                try:
+                    f.close()
+                except:
+                    pass
+                continue
+        raise ValueError(f"Cannot decode file {file_path} with UTF-8 or Latin-1")
     
     @staticmethod
     def stream_csv(
@@ -31,8 +60,7 @@ class StreamingEngine:
         logger.info(f"Starting CSV stream: {file_path} (chunk_size={chunk_size})")
         
         try:
-            with open(file_path, 'r', encoding='utf-8-sig', newline='') as f:
-                raw = f.read()
+            raw = StreamingEngine._read_file(file_path)
             
             # Strip leading and trailing blank lines only
             lines = raw.splitlines(keepends=True)
@@ -124,9 +152,11 @@ class StreamingEngine:
         Used for mapping interface.
         """
         try:
-            with open(file_path, 'r', encoding='utf-8-sig', newline='') as f:
-                reader = csv.DictReader(f)
-                return reader.fieldnames or []
+            f = StreamingEngine._open_file(file_path, newline='')
+            reader = csv.DictReader(f)
+            headers = reader.fieldnames or []
+            f.close()
+            return headers
         except Exception as e:
             logger.error(f"Failed to read CSV headers: {str(e)}")
             raise ValueError(f"Failed to read CSV headers: {str(e)}")
@@ -138,16 +168,17 @@ class StreamingEngine:
         Returns first N records without loading entire file.
         """
         try:
-            with open(file_path, 'r', encoding='utf-8-sig', newline='') as f:
-                reader = csv.DictReader(f)
-                samples = []
-                
-                for i, row in enumerate(reader):
-                    if i >= sample_size:
-                        break
-                    samples.append(row)
-                
-                return samples
+            f = StreamingEngine._open_file(file_path, newline='')
+            reader = csv.DictReader(f)
+            samples = []
+            
+            for i, row in enumerate(reader):
+                if i >= sample_size:
+                    break
+                samples.append(row)
+            
+            f.close()
+            return samples
         except Exception as e:
             logger.error(f"Failed to read sample records: {str(e)}")
             raise ValueError(f"Failed to read sample records: {str(e)}")
@@ -159,12 +190,13 @@ class StreamingEngine:
         Excludes header and blank lines.
         """
         try:
-            with open(file_path, 'r', encoding='utf-8-sig') as f:
-                # Skip header
-                next(f)
-                # Count non-blank lines only
-                count = sum(1 for line in f if line.strip())
-                return count
+            f = StreamingEngine._open_file(file_path)
+            # Skip header
+            next(f)
+            # Count non-blank lines only
+            count = sum(1 for line in f if line.strip())
+            f.close()
+            return count
         except Exception as e:
             logger.error(f"Failed to estimate record count: {str(e)}")
             return 0

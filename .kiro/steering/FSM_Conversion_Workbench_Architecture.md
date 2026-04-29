@@ -15,7 +15,7 @@ Local-first web application (FastAPI + React + SQLite) for FSM data conversion. 
 
 **Frontend**: React 18.2.0 + TypeScript, Vite 5.0.11, Axios, inline styles (Infor purple theme: #4600AF primary)
 
-**Database**: SQLite with 10 tables (accounts, schemas, snapshot_records, snapshot_registry, setup_business_classes, conversion_jobs, validation_errors, load_results, mapping_templates, validation_rule_templates, validation_rule_assignments)
+**Database**: SQLite with 11 tables (accounts, schemas, snapshot_records, snapshot_registry, setup_business_classes, conversion_jobs, validation_errors, load_results, mapping_templates, validation_rule_templates, validation_rule_assignments, saved_reports)
 
 ## Project Structure
 
@@ -23,16 +23,16 @@ Local-first web application (FastAPI + React + SQLite) for FSM data conversion. 
 backend/
 ├── app/
 │   ├── core/              # database.py, config.py, security.py, logging.py, dependency_config.py
-│   ├── models/            # SQLAlchemy models (account, schema, snapshot, job, mapping, rule)
+│   ├── models/            # SQLAlchemy models (account, schema, snapshot, job, mapping, rule, saved_report)
 │   ├── services/          # Business logic (fsm_client, streaming_engine, mapping_engine, schema_validator, rule_executor, openapi_parser)
-│   └── modules/           # API routers (accounts, schema, snapshot, upload, mapping, validation, load)
+│   └── modules/           # API routers (accounts, schema, snapshot, upload, mapping, validation, load, post_validation)
 ├── init_db.py             # Database initialization
 ├── requirements.txt
 └── .env                   # JWT_SECRET_KEY, ENCRYPTION_KEY, DATABASE_URL
 
 frontend/
 ├── src/
-│   ├── pages/             # Login.tsx, ConversionWorkflow.tsx, ValidationDashboard.tsx, SetupDataManagement.tsx
+│   ├── pages/             # Login.tsx, ConversionWorkflow.tsx, ValidationDashboard.tsx, SetupDataManagement.tsx, PostValidation.tsx
 │   ├── services/          # api.ts (Axios client with JWT interceptor)
 │   └── App.tsx            # Main app with navigation
 ├── package.json
@@ -2226,3 +2226,207 @@ const performAutomaticMapping = async (uploadJobId: number, detectedBusinessClas
 - Business class name is always the first segment before the first underscore
 - Everything after the first underscore is metadata (dates, codes, sizes, periods)
 - Simple `split('_')[0]` is more reliable than complex regex patterns
+
+
+## Recent Updates (April 25, 2026)
+
+### Post Validation Report Feature (April 25, 2026) ⭐⭐⭐
+
+- **Achievement**: Complete Post Validation reporting page for verifying data loaded into FSM
+- **Purpose**: After loading data via Conversions or Batch Upload, consultants need to verify records actually made it into FSM and reconcile totals. This page queries FSM's `_generic` list API directly and provides detail + summary/aggregation views.
+
+- **Architecture**:
+  - New backend module: `backend/app/modules/post_validation/` with router
+  - New model: `SavedReport` (saved_reports table) for persisting report configurations
+  - New frontend page: `frontend/src/pages/PostValidation.tsx`
+  - Sidebar menu item: 🔍 Post Validation (after Batch Upload)
+  - Removed "Post Validation" step from ConversionWorkflow (was step 5, now 4 steps only)
+
+- **Backend Endpoints** (`/api/post-validation/`):
+  - `GET /available-classes` — scans `FSM_Swagger/Conversion/` and `Setup/` folders for business classes
+  - `GET /schema-fields/{business_class}` — returns available fields + required fields from swagger `_generic` endpoint enum
+  - `POST /query` — queries FSM `_generic` list API with selected fields, limit, LPL filter
+  - `GET /reports` — list saved reports (account-isolated)
+  - `POST /reports` — save new report configuration
+  - `PUT /reports/{id}` — update existing report
+  - `DELETE /reports/{id}` — delete report
+
+- **FSM _generic List API Pattern**:
+  ```
+  GET {base_url}/{tenant_id}/FSM/fsm/soap/classes/{business_class}/lists/_generic
+  ?_fields={comma-separated fields or _all}
+  &_limit={number}
+  &_lplFilter={LPL expression}
+  &_links=false&_pageNav=true&_out=JSON&_flatten=false&_omitCountValue=false
+  ```
+  Response: `[metadata, {_fields: {...}}, {_fields: {...}}, ...]` — index 0 is metadata, rest are records.
+
+- **Frontend Features**:
+  - **Saved Reports Panel**: Collapsible section with report cards, search, load/delete. Active report highlighted.
+  - **Report Setup**: Business class search dropdown (conversion/setup badges), field picker with drag-to-reorder tags, LPL filter input, record limit selector
+  - **Required Fields Priority**: When selecting a business class, pre-selects required fields first (from swagger `createAllFieldsMultipart.required`), then fills remaining slots
+  - **Drag-and-Drop Column Ordering**: Selected field tags are draggable; table columns follow the tag order
+  - **Detail View**: Full data table with per-column filters, sorting, pagination (default 10 rows, adjustable dropdown: 10/25/50/100), CSV export
+  - **Summary / Aggregation View**: Group By field selector + Aggregate field selector (SUM/AVG/MIN/MAX). Grand Total row. Sortable. CSV export.
+  - **Date Granularity**: When a date field (detected by `/date/i` regex) is selected in Group By, a dropdown appears: Exact Date, Year-Month, Year-Quarter, Year. Defaults to Year-Month. Transforms `YYYYMMDD` → `YYYY-MM`, `YYYY-QN`, or `YYYY` for grouping.
+  - **KPI Cards**: Record count, field count, unique groups, grand totals per aggregate field
+  - **Save/Update Report**: Modal with name, description, config preview badges. Saves all settings including field order, granularity, filters.
+
+- **Key Design Patterns Learned**:
+
+  **Pattern: Account credential access**
+  - Use `AccountService.get_decrypted_credentials(account)` — NOT a `decrypt_credentials()` function
+  - Account model has individual encrypted fields (`client_id_encrypted`, etc.), not a single `fsm_credentials` blob
+  - Always follow the existing pattern in `load/service.py` for FSMClient construction
+
+  **Pattern: FSM _generic API for any business class**
+  - URL: `/classes/{business_class}/lists/_generic`
+  - Required param: `_fields` (comma-separated or `_all`)
+  - Response is always a list: index 0 = metadata dict (has `message` key), index 1+ = record dicts with `_fields` wrapper
+  - Use `_lplFilter` for complex filters (LPL syntax: `FieldName = "value" AND ...`)
+  - Use `_filter` for simple filters (`name::value|name2::value2`)
+
+  **Pattern: Client-side aggregation for reporting**
+  - Fetch raw records from FSM, aggregate in the browser
+  - Supports GROUP BY with multiple fields, SUM/AVG/MIN/MAX on numeric fields
+  - Date granularity transforms applied before grouping (YYYYMMDD → YYYY-MM etc.)
+  - Grand totals computed from all summary rows
+  - This avoids needing server-side aggregation — FSM's API doesn't support it natively
+
+  **Pattern: Drag-and-drop field reordering**
+  - Use HTML5 drag events (`draggable`, `onDragStart`, `onDragEnter`, `onDragEnd`, `onDragOver`)
+  - Store drag source/target indices in refs (not state — avoids re-renders during drag)
+  - On drag end, splice the array to move the item
+  - Table columns use `selectedFields.filter(f => result.columns.includes(f))` to follow user order
+
+  **Pattern: Saved report configurations**
+  - Store as JSON blob in `config_json` column (flexible schema)
+  - Config includes: fields array (ordered), groupByFields, aggregateFields, dateGranularity map, lplFilter, limit, reportMode
+  - Account-level isolation on all CRUD operations
+  - Loading a report sets all state at once; selecting a new class manually clears `activeReportId`
+
+- **Database Schema**:
+  ```sql
+  CREATE TABLE saved_reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    account_id INTEGER NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    description VARCHAR(500),
+    business_class VARCHAR(255) NOT NULL,
+    config_json TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+  ```
+
+- **Files Created**:
+  - `backend/app/models/saved_report.py`
+  - `backend/app/modules/post_validation/__init__.py`
+  - `backend/app/modules/post_validation/router.py`
+  - `frontend/src/pages/PostValidation.tsx`
+
+- **Files Modified**:
+  - `backend/app/main.py` — registered post_validation router
+  - `backend/app/models/__init__.py` — added SavedReport import
+  - `frontend/src/App.tsx` — added PostValidation page, sidebar menu item, page type
+  - `frontend/src/pages/ConversionWorkflow.tsx` — removed Post Validation step (step 5), now 4 steps only
+
+- **Status**: Complete, production-ready
+
+
+## Recent Updates (April 26, 2026)
+
+### Post Validation Report — Large Volume Architecture (April 26, 2026) ⭐⭐⭐
+
+- **Achievement**: Post Validation Report now handles 100K+ record queries with server-side paging, temp table storage, and instant aggregation
+
+- **Architecture Change — Temp Table Pattern**:
+  - "Run Report" fetches ALL matching records from FSM via `_generic` paging (10,000/page)
+  - Records stored in `post_validation_data` SQLite table (cleared before each new report)
+  - Detail View reads from the stored data
+  - Summary/Aggregation reads from the stored data — instant GROUP BY + SUM computed in Python, no FSM API calls
+  - Summary mode only available after Detail View report is run (data must be in temp table first)
+  - Selecting group-by/aggregate fields auto-triggers aggregation in real-time via `useEffect`
+
+- **Record Count Check Flow**:
+  - Removed auto-count on class selection — user must click "🔢 Check Count" button manually
+  - If LPL filter is empty, shows confirmation dialog warning about counting all records
+  - Uses `_recordCountOnly=true` on `_generic` endpoint: returns `{"_count": 265812}`
+  - Count result shows record count + estimated batches badge
+  - Run Report and Save Report buttons only enabled after count is available and > 0
+  - Count passed to backend as `limit` for safety stop
+
+- **Progress Tracking**:
+  - In-memory `_query_progress` dict on backend tracks `{fetched, total, status}` per account
+  - `GET /query-progress` endpoint polled every 1.5s from frontend during fetch
+  - Progress bar + "120,000 / 245,262 — 49%" display inline next to Run Report button
+  - Total uses `Math.max(recordCount, fetched)` to handle count discrepancies
+
+- **Critical FSM API Discovery — `_paging=NEXT` Ignores `_lplFilter`**:
+  ```
+  ⚠️ CRITICAL: FSM's _paging=NEXT on _generic endpoint IGNORES the _lplFilter 
+  on subsequent pages. The first page returns filtered results, but NEXT pages 
+  return ALL records from the unfiltered dataset.
+  
+  WORKAROUND: Use the _recordCountOnly count as a hard stop. When total_fetched 
+  >= expected_count, stop paging. This prevents fetching the entire unfiltered 
+  dataset (which could be millions of records).
+  ```
+  - Root cause: FSM cursor-based paging creates a server-side cursor on first call, subsequent `_paging=NEXT` calls traverse that cursor without re-applying the filter
+  - Impact: Without the safety stop, a filtered query for 245K records fetched 620K+ before being manually stopped
+  - Fix: `if request.limit > 0 and total_fetched >= request.limit: break`
+
+- **FSM Named List Aggregation — Does NOT Work**:
+  ```
+  ⚠️ FSM's _groupBy + _aggregateOperation + _aggregateColumn parameters on named 
+  list endpoints (e.g. GLTransactionInterfaceList) return 400 errors:
+  "SpecArray Invalid Operation: An attempt to add a null object has been detected."
+  
+  DO NOT USE these parameters. Use client-side/server-side aggregation from stored data instead.
+  ```
+  - Tested with: `/classes/GLTransactionInterface/lists/GLTransactionInterfaceList?_groupBy=...&_aggregateOperation=sum&_aggregateColumn=TransactionAmount`
+  - Result: 400 Bad Request every time
+  - Conclusion: These swagger-documented parameters are not functional in practice
+
+- **New Backend Endpoints**:
+  - `POST /post-validation/count` — record count via `_recordCountOnly`
+  - `GET /post-validation/query-progress` — polling endpoint for fetch progress
+  - `POST /post-validation/aggregate` — reads from temp table, computes GROUP BY + SUM in Python with date granularity support
+
+- **New Database Table**:
+  - `post_validation_data` — temp storage for fetched FSM records (JSON per row, indexed by account_id + business_class)
+
+- **Frontend Changes**:
+  - Removed Record Limit dropdown — replaced with Check Count button + auto-calculated batches
+  - Summary/Aggregation tab disabled until data is loaded ("run report first")
+  - Aggregation auto-triggers on group-by/aggregate field changes (useEffect)
+  - Progress bar with fetched/total counter during fetch
+  - Default fields saved per business class in localStorage ("📌 Set as Default" button)
+  - Drag-and-drop field reordering controls table column order
+
+- **Key Patterns Learned**:
+
+  **Pattern: FSM _paging=NEXT ignores filters**
+  - Always use `_recordCountOnly` first to get expected count
+  - Use that count as a hard stop in the paging loop
+  - Never rely on `_paging=NEXT` to respect `_lplFilter` boundaries
+
+  **Pattern: Temp table for large dataset aggregation**
+  - Store fetched records as JSON in SQLite temp table
+  - Aggregate in Python (GROUP BY + SUM) — instant for 250K+ records
+  - Clear table before each new report run
+  - Account-level isolation on all queries
+
+  **Pattern: Manual count check before large queries**
+  - Don't auto-count on class selection (wastes API calls, may count millions)
+  - Require explicit user action (Check Count button)
+  - Warn if no LPL filter is set
+  - Gate Run Report behind successful count check
+
+- **Files Modified**:
+  - `backend/app/modules/post_validation/router.py` — paging query, count endpoint, progress tracking, temp table aggregation
+  - `backend/app/models/post_validation_data.py` — new model
+  - `backend/app/models/__init__.py` — registered new model
+  - `frontend/src/pages/PostValidation.tsx` — count check, progress bar, auto-aggregation, default fields
+
+- **Status**: Production-ready for 250K+ record reports. Paging safety stop prevents runaway queries.

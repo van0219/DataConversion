@@ -23,7 +23,7 @@ interface FileInfo {
   invalid?: number;
   errors?: number;
   error_message?: string | null;
-  load_result?: { success: number; failed: number; run_group?: string } | null;
+  load_result?: { success: number; failed: number; run_group?: string; error_message?: string | null; error_details?: any } | null;
   mapping?: Record<string, any>;
   interfacing?: boolean;
   interfaced?: boolean;
@@ -69,9 +69,11 @@ const BatchUpload: React.FC = () => {
   const [dateTransformEnabled, setDateTransformEnabled] = useState(false);
   const [dateSourceFormat, setDateSourceFormat] = useState('MM/DD/YYYY');
   const [loadChunkSize, setLoadChunkSize] = useState(1000);
+  const [useFileRunGroup, setUseFileRunGroup] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [cardVisible, setCardVisible] = useState<Record<string, boolean>>({});
+  const [rowCounts, setRowCounts] = useState<Record<string, number>>({});
 
   // Error modal state
   const [errorModalOpen, setErrorModalOpen] = useState(false);
@@ -113,6 +115,7 @@ const BatchUpload: React.FC = () => {
       .catch(() => { setRuleSets([]); setSelectedRuleSetId(null); });
   }, [businessClass]);
 
+
   // ── Fade-in cards when new files appear ─────────────────────────────────
   useEffect(() => {
     const names = selectedFiles.map(f => f.name);
@@ -136,11 +139,24 @@ const BatchUpload: React.FC = () => {
       const newFiles = csvFiles.filter(f => !existing.has(f.name));
       return [...prev, ...newFiles];
     });
+    // Count rows in each new CSV file (header excluded)
+    csvFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        if (!text) return;
+        const lines = text.split('\n').filter(l => l.trim().length > 0);
+        const dataRows = Math.max(0, lines.length - 1); // exclude header
+        setRowCounts(prev => ({ ...prev, [file.name]: dataRows }));
+      };
+      reader.readAsText(file);
+    });
   }, []);
 
   const removeFile = (name: string) => {
     setSelectedFiles(prev => prev.filter(f => f.name !== name));
     setCardVisible(prev => { const n = { ...prev }; delete n[name]; return n; });
+    setRowCounts(prev => { const n = { ...prev }; delete n[name]; return n; });
   };
 
   // ── Drag & drop handlers ───────────────────────────────────────────────
@@ -217,6 +233,7 @@ const BatchUpload: React.FC = () => {
     setRunning(false);
     setShowSummary(false);
     setCardVisible({});
+    setRowCounts({});
   };
 
   // ── Load a single file to FSM ─────────────────────────────────────────
@@ -238,21 +255,26 @@ const BatchUpload: React.FC = () => {
         business_class: businessClass,
         mapping: mapping,
         chunk_size: loadChunkSize,
-        date_source_format: dateTransformEnabled ? dateSourceFormat : undefined
+        date_source_format: dateTransformEnabled ? dateSourceFormat : undefined,
+        use_file_run_group: useFileRunGroup
       });
       const result = resp.data;
+      const successCount = result.success_count || result.total_success || 0;
       setFileStatuses(prev => ({
         ...prev,
         [filename]: {
           ...prev[filename],
           status: 'loaded',
           load_result: {
-            success: result.success_count || result.total_success || 0,
+            success: successCount,
             failed: result.failure_count || result.total_failure || 0,
-            run_group: result.run_group
+            run_group: result.run_group,
+            error_message: result.error_message || null,
+            error_details: result.error_details || null
           }
         }
       }));
+
     } catch (err: any) {
       const detail = err.response?.data?.detail;
       const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map((d: any) => d.msg || JSON.stringify(d)).join(', ') : err.message);
@@ -407,6 +429,14 @@ const BatchUpload: React.FC = () => {
           <div style={styles.progressHeader}>
             <span style={styles.progressLabel}>
               {running ? 'Processing' : 'Complete'}: {completed} of {total} files
+              {running && (() => {
+                const activeFile = Object.entries(fileStatuses).find(([_, info]) => isActive(info.status));
+                if (activeFile) {
+                  const [name, info] = activeFile;
+                  return <span style={{ marginLeft: 8, fontSize: 12, color: theme.primary.main, fontWeight: 600 }}>— {statusLabel(info.status)} {name.length > 30 ? name.slice(0, 30) + '...' : name}<AnimatedDots /></span>;
+                }
+                return null;
+              })()}
             </span>
             <span style={styles.progressPct}>{progressPct}%</span>
           </div>
@@ -414,11 +444,14 @@ const BatchUpload: React.FC = () => {
             <div
               style={{
                 ...styles.progressFill,
-                width: `${progressPct}%`,
-                backgroundColor: progressPct === 100 ? theme.status.success : theme.primary.main,
+                width: running && progressPct === 0 ? '100%' : `${progressPct}%`,
+                backgroundColor: progressPct === 100 && !running ? theme.status.success : theme.primary.main,
+                opacity: running && progressPct === 0 ? 0.3 : 1,
+                animation: running ? 'pulse 1.5s ease-in-out infinite' : 'none',
               }}
             />
           </div>
+          <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
         </div>
       )}
 
@@ -594,7 +627,49 @@ const BatchUpload: React.FC = () => {
                 <option value={500}>500 records/batch</option>
                 <option value={1000}>1,000 records/batch</option>
                 <option value={2000}>2,000 records/batch</option>
+                <option value={3000}>3,000 records/batch</option>
               </select>
+            </div>
+          </div>
+
+          {/* RunGroup Source Toggle */}
+          <div style={{
+            marginTop: 16,
+            padding: '14px 20px',
+            backgroundColor: useFileRunGroup ? '#f0fdf4' : theme.background.primary,
+            borderRadius: 8,
+            border: `1px solid ${useFileRunGroup ? '#86efac' : theme.background.quaternary}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            transition: 'all 0.3s ease'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 16 }}>🏷️</span>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: theme.text.primary }}>Use RunGroup from File</div>
+                <div style={{ fontSize: 11, color: theme.text.muted }}>
+                  {useFileRunGroup
+                    ? 'RunGroup will use the value from the CSV file\'s RunGroup column'
+                    : 'RunGroup will be derived from the filename (default)'}
+                </div>
+              </div>
+            </div>
+            <div
+              onClick={() => setUseFileRunGroup(!useFileRunGroup)}
+              style={{
+                width: 44, height: 24, borderRadius: 12,
+                backgroundColor: useFileRunGroup ? '#059669' : '#d1d5db',
+                position: 'relative' as const, cursor: 'pointer',
+                transition: 'background-color 0.2s ease'
+              }}
+            >
+              <div style={{
+                width: 20, height: 20, borderRadius: 10,
+                backgroundColor: '#fff',
+                position: 'absolute' as const, top: 2,
+                left: useFileRunGroup ? 22 : 2,
+                transition: 'left 0.2s ease',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+              }} />
             </div>
           </div>
 
@@ -704,7 +779,7 @@ const BatchUpload: React.FC = () => {
             onClick={startBatch}
             disabled={!businessClass.trim()}
           >
-            🚀 Start Batch ({selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''})
+            🚀 Start Batch ({selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''}{Object.keys(rowCounts).length > 0 ? ` · ${Object.values(rowCounts).reduce((a, b) => a + b, 0).toLocaleString()} rows` : ''})
           </button>
         )}
         {running && (
@@ -810,6 +885,13 @@ const BatchUpload: React.FC = () => {
                   <span style={styles.fileSize}>{formatSize(file.size)}</span>
                 </div>
 
+                {/* Record count (before processing starts) */}
+                {!info?.records && rowCounts[file.name] !== undefined && (
+                  <div style={{ fontSize: '11px', color: theme.text.secondary, fontWeight: '600', marginBottom: '4px', fontFamily: 'monospace' }}>
+                    📄 {rowCounts[file.name].toLocaleString()} rows
+                  </div>
+                )}
+
                 {/* Status badge */}
                 <div style={styles.badgeRow}>
                   <span
@@ -898,6 +980,21 @@ const BatchUpload: React.FC = () => {
                       <div style={{ color: theme.text.muted, marginTop: 2, fontFamily: 'monospace', fontSize: 11 }}>
                         RunGroup: {info.load_result.run_group}
                       </div>
+                    )}
+                    {/* Error details for failed records */}
+                    {info.load_result.failed > 0 && info.load_result.error_message && (
+                      <div style={{ marginTop: 6, padding: '6px 8px', backgroundColor: '#fef2f2', borderRadius: 4, border: '1px solid #fecaca' }}>
+                        <div style={{ fontSize: 11, fontWeight: 600, color: '#dc2626', marginBottom: 2 }}>Error:</div>
+                        <div style={{ fontSize: 10, color: '#7f1d1d', fontFamily: 'monospace', wordBreak: 'break-all' as const }}>{info.load_result.error_message}</div>
+                      </div>
+                    )}
+                    {info.load_result.failed > 0 && info.load_result.error_details && (
+                      <details style={{ marginTop: 4, fontSize: 10 }}>
+                        <summary style={{ cursor: 'pointer', color: theme.primary.main, fontWeight: 600 }}>View API Response</summary>
+                        <pre style={{ marginTop: 4, padding: 6, backgroundColor: '#f9fafb', borderRadius: 4, border: `1px solid ${theme.background.quaternary}`, fontSize: 9, maxHeight: 150, overflow: 'auto', whiteSpace: 'pre-wrap' as const, wordBreak: 'break-all' as const, color: theme.text.secondary }}>
+                          {JSON.stringify(info.load_result.error_details, null, 2)}
+                        </pre>
+                      </details>
                     )}
                   </div>
                 )}
@@ -1012,7 +1109,7 @@ const BatchUpload: React.FC = () => {
                   onClick={async () => {
                     if (!errorModalJobId) return;
                     try {
-                      const resp = await api.get(`/validation/${errorModalJobId}/export`, { responseType: 'blob' });
+                      const resp = await api.get(`/validation/${errorModalJobId}/errors/export`, { responseType: 'blob' });
                       const url = window.URL.createObjectURL(new Blob([resp.data]));
                       const a = document.createElement('a');
                       a.href = url;
