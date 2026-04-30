@@ -54,7 +54,7 @@ const isActive = (s: FileStatus): boolean =>
 // ── Main Component ──────────────────────────────────────────────────────────
 const BatchUpload: React.FC = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [batchId, setBatchId] = useState<string | null>(null);
+  const [batchId, setBatchId] = useState<string | null>(() => localStorage.getItem('active_batch_id'));
   const [fileStatuses, setFileStatuses] = useState<Record<string, FileInfo>>({});
   const [completed, setCompleted] = useState(0);
   const [total, setTotal] = useState(0);
@@ -91,6 +91,37 @@ const BatchUpload: React.FC = () => {
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
+  }, []);
+
+  // ── Resume polling if there's an active batch from a previous session ──
+  useEffect(() => {
+    const savedBatchId = localStorage.getItem('active_batch_id');
+    if (savedBatchId) {
+      // Check if batch is still running
+      api.get('/upload/batch-status', { params: { batch_id: savedBatchId } })
+        .then(res => {
+          const data = res.data;
+          if (data.total > 0) {
+            setBatchId(savedBatchId);
+            setFileStatuses(data.files);
+            setCompleted(data.completed);
+            setTotal(data.total);
+            if (data.running) {
+              setRunning(true);
+              startPolling(savedBatchId);
+            } else {
+              setRunning(false);
+              setShowSummary(true);
+            }
+          } else {
+            // Batch not found or empty — clear
+            localStorage.removeItem('active_batch_id');
+          }
+        })
+        .catch(() => {
+          localStorage.removeItem('active_batch_id');
+        });
+    }
   }, []);
 
   // ── Load available business classes on mount ────────────────────────────
@@ -186,6 +217,7 @@ const BatchUpload: React.FC = () => {
       const res = await api.post('/upload/batch', formData);
       const id: string = res.data.batch_id;
       setBatchId(id);
+      localStorage.setItem('active_batch_id', id);
       startPolling(id);
     } catch (err: any) {
       setRunning(false);
@@ -227,6 +259,7 @@ const BatchUpload: React.FC = () => {
   const resetBatch = () => {
     setSelectedFiles([]);
     setBatchId(null);
+    localStorage.removeItem('active_batch_id');
     setFileStatuses({});
     setCompleted(0);
     setTotal(0);

@@ -301,12 +301,14 @@ const SetupDataManagement: React.FC = () => {
     if (!editingClass) return;
     try {
       await api.put(`/snapshot/setup-classes/${editingClass.id}`, formData);
-      setShowEditModal(false);
+      // Close modal first, then refresh
       setEditingClass(null);
+      setShowEditModal(false);
       setFormData({ name: '', endpoint_url: '', key_field: '', is_active: true });
-      await loadSetupClasses();
+      loadSetupClasses();
+      alert('Setup class updated successfully.');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to update setup class');
+      alert(err.response?.data?.detail || 'Failed to update setup class');
     }
   };
 
